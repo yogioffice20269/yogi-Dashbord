@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yogi Growing Together - Fund Allocation System</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="public-wrap">
+  <div id="loading" class="loading">Loading dashboard...</div>
+  <main id="dashboard" class="hidden">
+    <div class="header">
+      <div class="logo-wrap"><img src="/yogi-logo.jpeg" alt="Yogi Growing Together Logo"></div>
+      <div class="brand"><h1 id="orgName"></h1><div class="title">FUND ALLOCATION SYSTEM</div></div>
+      <div class="meta"><div><span>Date:</span><b id="metaDate"></b></div><div><span>Version:</span><b id="metaVersion"></b></div><div><span>Prepared By:</span><b id="metaPrepared"></b></div></div>
+    </div>
+    <section class="summary-grid">
+      <div class="summary-card"><div class="label">TOTAL FUND CAPITAL</div><div id="totalCapital" class="big"></div></div>
+      <div class="summary-card"><div class="label">ALLOCATED CAPITAL</div><div id="allocatedCapital" class="big"></div></div>
+      <div class="summary-card"><div class="label">UNALLOCATED CAPITAL</div><div id="unallocatedCapital" class="big"></div></div>
+      <div class="summary-card"><div class="label">ALLOCATION STATUS</div><div id="status" class="status"></div></div>
+    </section>
+    <section id="allocationCards" class="allocation-row"></section>
+    <section class="charts-row">
+      <div class="chart-panel"><h3>VERTICAL WISE FUND ALLOCATION</h3><div class="donut-wrap"><div id="donut" class="donut"></div><div id="legend" class="legend"></div></div></div>
+      <div class="chart-panel"><h3>CAPITAL ALLOCATION (₹)</h3><div class="bar-chart"><div class="y-axis"><span>50L</span><span>40L</span><span>30L</span><span>20L</span><span>10L</span><span>0</span></div><div id="bars" class="bars"></div></div></div>
+    </section>
+    <section id="tablesGrid" class="tables-grid"></section>
+    <footer>Fund Allocation Dashboard • View Only</footer>
+  </main>
+</div>
+<script src="/dashboard.js"></script>
+</body>
+</html>
