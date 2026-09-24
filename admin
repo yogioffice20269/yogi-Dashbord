@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin - Fund Allocation System</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <img src="/yogi-logo.jpeg" alt="Yogi Growing Together" class="login-logo">
+    <h1>Admin Login</h1><p>Fund Allocation System</p>
+    <form id="loginForm">
+      <label>Username<input id="username" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Login</button><div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+</div>
+<div id="adminApp" class="hidden">
+  <div class="admin-bar"><strong>ADMIN PANEL</strong><span id="saveMessage"></span><div><a class="view-link" href="/">View Dashboard</a><button id="logoutBtn" class="danger">Logout</button></div></div>
+  <div class="admin-layout">
+    <aside class="editor">
+      <h2>Edit Dashboard Data</h2>
+      <p class="muted">Changes are saved on the server database and are visible on the public dashboard.</p>
+      <section><h3>Basic Information</h3>
+        <label>Organization<input data-path="meta.organization"></label>
+        <label>Date<input data-path="meta.date"></label>
+        <label>Version<input data-path="meta.version"></label>
+        <label>Prepared By<input data-path="meta.preparedBy"></label>
+      </section>
+      <section><h3>Capital</h3><label>Total Fund Capital (₹)<input type="number" min="0" data-path="capital.total"></label></section>
+      <section><h3>Vertical Allocation</h3><div class="two-col">
+        <label>Trading %<input type="number" min="0" max="100" step=".1" data-path="verticals.trading.percent"></label>
+        <label>Investment %<input type="number" min="0" max="100" step=".1" data-path="verticals.investment.percent"></label>
+        <label>Reserve %<input type="number" min="0" max="100" step=".1" data-path="verticals.reserve.percent"></label>
+        <label>R&amp;D %<input type="number" min="0" max="100" step=".1" data-path="verticals.rnd.percent"></label>
+      </div></section>
+      <section id="editSections"></section>
+      <button id="saveBtn" class="save-btn">Save All Changes</button>
+    </aside>
+    <main class="preview"><iframe src="/" title="Dashboard Preview"></iframe></main>
+  </div>
+</div>
+<script src="/admin.js"></script>
+</body>
+</html>
