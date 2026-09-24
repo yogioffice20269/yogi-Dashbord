@@ -4,3 +4,102 @@
 @media(max-width:900px){.admin-layout{grid-template-columns:1fr}.editor{border-right:0;border-bottom:1px solid #bbb}.admin-bar{position:relative}}
 
 body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10px}.loading{text-align:center;padding:80px;font-size:18px}.view-link{color:#fff;text-decoration:none;margin-right:12px;font-size:12px}.save-btn{width:100%;padding:12px;border:0;border-radius:4px;background:#0d7a3d;color:#fff;font-weight:800;cursor:pointer;margin-top:12px}.preview{padding:12px;background:#f4f6f8;overflow:auto}.preview iframe{width:100%;height:calc(100vh - 70px);min-height:900px;border:0;background:#f4f6f8}.public-wrap .header{min-width:900px}.public-wrap .summary-grid,.public-wrap .allocation-row,.public-wrap .charts-row,.public-wrap .tables-grid{min-width:900px}.login-card button{width:100%;margin-top:8px}.admin-bar{min-height:45px}
+/* ===== FINAL RESPONSIVE FIX ===== */
+
+@media (max-width: 650px) {
+
+    body {
+        min-width: 0;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .public-wrap {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 5px;
+    }
+
+    .public-wrap .header,
+    .public-wrap .summary-grid,
+    .public-wrap .allocation-row,
+    .public-wrap .charts-row,
+    .public-wrap .tables-grid {
+        min-width: 0 !important;
+        width: 100%;
+    }
+
+    .header {
+        flex-direction: column;
+        height: auto;
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .logo-wrap {
+        width: 180px;
+        height: 65px;
+    }
+
+    .brand {
+        width: 100%;
+    }
+
+    .brand h1 {
+        font-size: 18px;
+    }
+
+    .title {
+        width: 100%;
+        padding: 7px 5px;
+        font-size: 15px;
+    }
+
+    .meta {
+        width: 100%;
+    }
+
+    .summary-grid,
+    .allocation-row,
+    .charts-row,
+    .tables-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .summary-card {
+        width: 100%;
+    }
+
+    .chart-panel {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .donut-wrap {
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .bar-chart {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .bar {
+        width: 25px;
+    }
+
+    .department {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .department table {
+        min-width: 520px;
+    }
+
+    footer {
+        font-size: 9px;
+    }
+}
