@@ -103,3 +103,25 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         font-size: 9px;
     }
 }
+/* ===== TABLE ALLOCATION STATUS ===== */
+
+.department tfoot .surplus {
+    background: #d9f2d9;
+    color: #16803c;
+}
+
+.department tfoot .deficit {
+    background: #ffdede;
+    color: #c62828;
+}
+
+.department tfoot .fully-allocated {
+    background: #d9f2d9;
+    color: #16803c;
+}
+
+.department tfoot .surplus th,
+.department tfoot .deficit th,
+.department tfoot .fully-allocated th {
+    font-weight: 800;
+}
