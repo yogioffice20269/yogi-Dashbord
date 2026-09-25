@@ -13,7 +13,14 @@ function render(data){
  document.getElementById("totalCapital").textContent=money(total);
  document.getElementById("allocatedCapital").textContent=money(allocated);
  document.getElementById("unallocatedCapital").textContent=money(total-allocated);
- document.getElementById("status").innerHTML=Math.abs(total-allocated)<.01?'<span>✓</span> Balanced':'<span class="warning">!</span> Check Allocation';
+const difference = total - allocated;
+
+document.getElementById("status").innerHTML =
+    Math.abs(difference) < 0.01
+        ? '<span>✓</span> Fully Allocated'
+        : difference > 0
+            ? '<span style="color:#d99000;">↑</span> Surplus ₹ ' + fmt(difference)
+            : '<span class="warning">↓</span> Deficit ₹ ' + fmt(Math.abs(difference));
  document.getElementById("allocationCards").innerHTML=keys.map((k,i)=>`<div class="allocation-card ${k}"><div class="card-head" style="background:${colors[i]};color:${k==="reserve"?"#111":"#fff"}">${names[k]}</div><div class="percent">${pct(vs[k].percent)}</div><div class="amount">${money(total*vs[k].percent/100)}</div></div>`).join("");
  let start=0,stops=[];keys.forEach((k,i)=>{let end=start+Number(vs[k].percent||0);stops.push(`${colors[i]} ${start}% ${end}%`);start=end});
  document.getElementById("donut").style.background=`conic-gradient(${stops.join(",")})`;
