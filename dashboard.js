@@ -62,7 +62,7 @@ function render(data) {
 
 
     /* =========================
-       TOTAL ALLOCATION
+       TOTAL CAPITAL
     ========================= */
 
     const allocated = keys.reduce(
@@ -159,38 +159,111 @@ function render(data) {
 
     });
 
-    document.getElementById("donut").style.background =
-        `conic-gradient(${stops.join(",")})`;
+    const donut =
+        document.getElementById("donut");
+
+    if (donut) {
+        donut.style.background =
+            `conic-gradient(${stops.join(",")})`;
+    }
 
 
     /* =========================
-       CHART LEGEND
+       DONUT LEGEND
     ========================= */
 
-    document.getElementById("legend").innerHTML =
-        keys.map((k, i) => {
+    const legend =
+        document.getElementById("legend");
 
-            const label =
-                k === "rnd"
-                    ? "R&D"
-                    : k[0].toUpperCase() + k.slice(1);
+    if (legend) {
 
-            return `
-                <div>
-                    <i
-                        class="dot"
-                        style="background:${colors[i]}"
-                    ></i>
+        legend.innerHTML =
+            keys.map((k, i) => {
 
-                    ${label}
+                const label =
+                    k === "rnd"
+                        ? "R&D"
+                        : k[0].toUpperCase() + k.slice(1);
 
-                    <b>
-                        ${pct(vs[k].percent)}
-                    </b>
-                </div>
-            `;
+                return `
+                    <div>
+                        <i
+                            class="dot"
+                            style="background:${colors[i]}"
+                        ></i>
 
-        }).join("");
+                        ${label}
+
+                        <b>
+                            ${pct(vs[k].percent)}
+                        </b>
+                    </div>
+                `;
+
+            }).join("");
+    }
+
+
+    /* =========================
+       BAR CHART
+    ========================= */
+
+    const bars =
+        document.getElementById("bars");
+
+    if (bars) {
+
+        const values =
+            keys.map(k =>
+                total *
+                Number(vs[k].percent || 0) /
+                100
+            );
+
+        const max =
+            Math.max(1, ...values);
+
+        bars.innerHTML =
+            keys.map((k, i) => {
+
+                const value =
+                    total *
+                    Number(vs[k].percent || 0) /
+                    100;
+
+                const height =
+                    (value / max) * 80;
+
+                const label =
+                    k === "rnd"
+                        ? "R&D"
+                        : k[0].toUpperCase() +
+                          k.slice(1);
+
+                return `
+                    <div class="bar-group">
+
+                        <div
+                            class="bar"
+                            style="
+                                height:${height}%;
+                                background:${colors[i]}
+                            "
+                        >
+                            <span>
+                                ${fmt(value / 100000)}L
+                            </span>
+                        </div>
+
+                        <small>
+                            ${label}
+                        </small>
+
+                    </div>
+                `;
+
+            }).join("");
+    }
 
 
     /* =========================
@@ -202,14 +275,18 @@ function render(data) {
 
             const v = vs[k];
 
-            /* ----- ITEM ROWS ----- */
+
+            /* ITEM ROWS */
 
             const rows =
                 v.items.map((it, i) => {
 
                     return `
                         <tr>
-                            <td>${i + 1}</td>
+
+                            <td>
+                                ${i + 1}
+                            </td>
 
                             <td>
                                 ${esc(it[0])}
@@ -226,13 +303,14 @@ function render(data) {
                                     100
                                 )}
                             </td>
+
                         </tr>
                     `;
 
                 }).join("");
 
 
-            /* ----- TOTAL ITEM % ----- */
+            /* TOTAL ITEM PERCENTAGE */
 
             const sum =
                 v.items.reduce(
@@ -243,13 +321,13 @@ function render(data) {
                 );
 
 
-            /* ----- DEPARTMENT TARGET ----- */
+            /* DEPARTMENT TARGET */
 
             const target =
                 Number(v.percent) || 0;
 
 
-            /* ----- DIFFERENCE ----- */
+            /* DIFFERENCE */
 
             const difference =
                 sum - target;
@@ -261,15 +339,15 @@ function render(data) {
             let statusAmount = 0;
 
 
-            /* =========================
-               FULLY ALLOCATED
-            ========================= */
+            /* FULLY ALLOCATED */
 
             if (Math.abs(difference) < 0.01) {
 
-                status = "FULLY ALLOCATED";
+                status =
+                    "FULLY ALLOCATED";
 
-                statusClass = "fully-allocated";
+                statusClass =
+                    "fully-allocated";
 
                 statusPercent = 0;
 
@@ -278,17 +356,18 @@ function render(data) {
             }
 
 
-            /* =========================
-               SURPLUS
-            ========================= */
+            /* SURPLUS */
 
             else if (difference > 0) {
 
-                status = "SURPLUS";
+                status =
+                    "SURPLUS";
 
-                statusClass = "surplus";
+                statusClass =
+                    "surplus";
 
-                statusPercent = difference;
+                statusPercent =
+                    difference;
 
                 statusAmount =
                     total *
@@ -298,15 +377,15 @@ function render(data) {
             }
 
 
-            /* =========================
-               DEFICIT
-            ========================= */
+            /* DEFICIT */
 
             else {
 
-                status = "DEFICIT";
+                status =
+                    "DEFICIT";
 
-                statusClass = "deficit";
+                statusClass =
+                    "deficit";
 
                 statusPercent =
                     Math.abs(difference);
@@ -315,13 +394,8 @@ function render(data) {
                     total *
                     Math.abs(difference) /
                     100;
-
             }
 
-
-            /* =========================
-               DEPARTMENT HTML
-            ========================= */
 
             return `
 
