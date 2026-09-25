@@ -300,3 +300,127 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
     }
 
 }
+/* =====================================================
+   FINAL CHART LAYOUT
+   ROUND CHART + BAR CHART SIDE BY SIDE
+===================================================== */
+
+.charts-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin: 10px 0 !important;
+}
+
+.charts-row .chart-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 280px !important;
+    box-sizing: border-box !important;
+}
+
+
+/* =========================
+   ROUND CHART
+========================= */
+
+.charts-row .donut-wrap {
+    min-height: 220px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 45px !important;
+}
+
+.charts-row .donut {
+    width: 180px !important;
+    height: 180px !important;
+    flex-shrink: 0 !important;
+}
+
+.charts-row .donut:after {
+    width: 85px !important;
+    height: 85px !important;
+    left: 47.5px !important;
+    top: 47.5px !important;
+}
+
+.charts-row .legend {
+    font-size: 13px !important;
+    line-height: 2 !important;
+}
+
+
+/* =========================
+   BAR CHART
+========================= */
+
+.charts-row .bar-chart {
+    width: 100% !important;
+    height: 220px !important;
+    box-sizing: border-box !important;
+}
+
+.charts-row .bars {
+    width: 100% !important;
+    height: 180px !important;
+}
+
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 900px) {
+
+    .charts-row {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .charts-row .donut-wrap {
+        gap: 20px !important;
+    }
+
+    .charts-row .donut {
+        width: 150px !important;
+        height: 150px !important;
+    }
+
+    .charts-row .donut:after {
+        width: 70px !important;
+        height: 70px !important;
+        left: 40px !important;
+        top: 40px !important;
+    }
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 650px) {
+
+    .charts-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .charts-row .chart-panel {
+        min-height: 260px !important;
+    }
+
+    .charts-row .donut {
+        width: 170px !important;
+        height: 170px !important;
+    }
+
+    .charts-row .donut:after {
+        width: 80px !important;
+        height: 80px !important;
+        left: 45px !important;
+        top: 45px !important;
+    }
+
+}
