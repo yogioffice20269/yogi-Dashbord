@@ -424,3 +424,131 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
     }
 
 }
+/* =====================================================
+   AUTOMATIC DEPARTMENT ITEM BAR CHARTS
+===================================================== */
+
+.item-chart {
+    margin-top: 10px;
+    border: 1px solid #bbb;
+    background: #fff;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.item-chart-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 6px;
+    margin-bottom: 5px;
+    background: #f5f5f5;
+}
+
+.item-bars {
+    height: 205px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 8px;
+    padding: 10px 5px 0 5px;
+    border-bottom: 1px solid #999;
+    overflow-x: auto;
+}
+
+.item-bar-group {
+    height: 195px;
+    min-width: 55px;
+    flex: 1 1 55px;
+    max-width: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.item-bar-value {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 3px;
+    white-space: nowrap;
+}
+
+.item-bar {
+    width: 32px;
+    min-height: 8px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+}
+
+.item-bar-label {
+    width: 100%;
+    margin-top: 5px;
+    font-size: 10px;
+    text-align: center;
+    line-height: 12px;
+    word-break: break-word;
+}
+
+
+/* =========================
+   TRADING BLUE FAMILY
+========================= */
+
+.trading-box .item-chart-title {
+    background: #d8e9f8;
+}
+
+
+/* =========================
+   INVESTMENT GREEN FAMILY
+========================= */
+
+.investment-box .item-chart-title {
+    background: #d9f0dc;
+}
+
+
+/* =========================
+   RESERVE YELLOW FAMILY
+========================= */
+
+.reserve-box .item-chart-title {
+    background: #fff0b8;
+}
+
+
+/* =========================
+   R&D PURPLE FAMILY
+========================= */
+
+.rnd-box .item-chart-title {
+    background: #e2d8f3;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 650px) {
+
+    .item-bars {
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .item-bar-group {
+        min-width: 60px;
+        flex: 0 0 60px;
+    }
+
+    .item-bar {
+        width: 28px;
+    }
+
+    .item-bar-label {
+        font-size: 9px;
+    }
+
+}
