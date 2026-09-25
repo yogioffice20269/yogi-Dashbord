@@ -223,3 +223,80 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
 .department tfoot .fully-allocated td {
     color: #000 !important;
 }
+/* ===== LARGE DONUT CHART ===== */
+
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.donut-panel {
+    width: 100%;
+    min-height: 280px;
+}
+
+.donut-panel .donut-wrap {
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 70px;
+}
+
+.donut-panel .donut {
+    width: 190px;
+    height: 190px;
+    flex-shrink: 0;
+}
+
+.donut-panel .donut:after {
+    width: 90px;
+    height: 90px;
+    left: 50px;
+    top: 50px;
+}
+
+.donut-panel .legend {
+    font-size: 14px;
+    line-height: 2.2;
+}
+
+.donut-panel .legend div {
+    min-width: 190px;
+}
+
+.donut-panel .dot {
+    width: 12px;
+    height: 12px;
+}
+
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 650px) {
+
+    .donut-panel .donut-wrap {
+        gap: 25px;
+        flex-direction: column;
+    }
+
+    .donut-panel .donut {
+        width: 170px;
+        height: 170px;
+    }
+
+    .donut-panel .donut:after {
+        width: 80px;
+        height: 80px;
+        left: 45px;
+        top: 45px;
+    }
+
+    .donut-panel .legend {
+        width: 100%;
+        max-width: 220px;
+    }
+
+}
