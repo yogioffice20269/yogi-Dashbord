@@ -27,7 +27,114 @@ document.getElementById("status").innerHTML =
  document.getElementById("legend").innerHTML=keys.map((k,i)=>`<div><i class="dot" style="background:${colors[i]}"></i>${k==="rnd"?"R&D":k[0].toUpperCase()+k.slice(1)} <b>${pct(vs[k].percent)}</b></div>`).join("");
  const max=Math.max(1,...keys.map(k=>total*vs[k].percent/100));
  document.getElementById("bars").innerHTML=keys.map((k,i)=>{let val=total*vs[k].percent/100;return `<div class="bar-group"><div class="bar" style="height:${val/max*80}%;background:${colors[i]}"><span>${fmt(val/100000)}L</span></div><small>${k==="rnd"?"R&D":k[0].toUpperCase()+k.slice(1)}</small></div>`}).join("");
- document.getElementById("tablesGrid").innerHTML=keys.map(k=>{let v=vs[k], rows=v.items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it[0])}</td><td>${pct(it[1])}</td><td>${money(total*it[1]/100)}</td></tr>`).join(""), sum=v.items.reduce((s,x)=>s+Number(x[1]||0),0);return `<div class="department ${k}-box"><h2>${names[k]} <span>${k==="reserve"||k==="rnd"?"(5–10%)":"("+v.percent+"%)"}</span></h2><table><thead><tr><th>Sr. No.</th><th>Particular</th><th>Target %</th><th>Allocation (₹)</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><th colspan="2">TOTAL</th><th>${pct(sum)}</th><th>${money(total*sum/100)}</th></tr></tfoot></table><div class="purpose"><b>PURPOSE</b><p>${esc(v.purpose)}</p></div></div>`}).join("");
+ document.getElementById("tablesGrid").innerHTML=keys.map(k=>{
+
+    let v=vs[k];
+
+    let rows=v.items.map((it,i)=>
+        `<tr>
+            <td>${i+1}</td>
+            <td>${esc(it[0])}</td>
+            <td>${pct(it[1])}</td>
+            <td>${money(total*it[1]/100)}</td>
+        </tr>`
+    ).join("");
+
+    // Actual total of table items
+    let sum=v.items.reduce(
+        (s,x)=>s+Number(x[1]||0),
+        0
+    );
+
+    // Department target
+    let target=Number(v.percent)||0;
+
+    // Difference between item total and department target
+    let difference=sum-target;
+
+    let status="";
+    let statusClass="";
+    let statusPercent=0;
+    let statusAmount=0;
+
+    if(Math.abs(difference)<0.01){
+
+        status="FULLY ALLOCATED";
+        statusClass="fully-allocated";
+        statusPercent=0;
+        statusAmount=0;
+
+    }else if(difference>0){
+
+        status="SURPLUS";
+        statusClass="surplus";
+        statusPercent=difference;
+        statusAmount=total*difference/100;
+
+    }else{
+
+        status="DEFICIT";
+        statusClass="deficit";
+        statusPercent=Math.abs(difference);
+        statusAmount=total*Math.abs(difference)/100;
+    }
+
+    return `
+        <div class="department ${k}-box">
+
+            <h2>
+                ${names[k]}
+                <span>
+                    ${k==="reserve"||k==="rnd"
+                        ?"("+v.percent+"%)"
+                        :"("+v.percent+"%)"}
+                </span>
+            </h2>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Particular</th>
+                        <th>Target %</th>
+                        <th>Allocation (₹)</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${rows}
+                </tbody>
+
+                <tfoot>
+
+                    <!-- TOTAL -->
+                    <tr>
+                        <th colspan="2">TOTAL</th>
+                        <th>${pct(sum)}</th>
+                        <th>${money(total*sum/100)}</th>
+                    </tr>
+
+                    <!-- STATUS -->
+                    <tr class="${statusClass}">
+                        <th colspan="2">${status}</th>
+                        <th>${pct(statusPercent)}</th>
+                        <th>${money(statusAmount)}</th>
+                    </tr>
+
+                </tfoot>
+
+            </table>
+
+            <div class="purpose">
+                <b>PURPOSE</b>
+                <p>${esc(v.purpose)}</p>
+            </div>
+
+        </div>
+    `;
+
+}).join("");let v=vs[k], rows=v.items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it[0])}</td><td>${pct(it[1])}</td><td>${money(total*it[1]/100)}</td></tr>`).join(""), sum=v.items.reduce((s,x)=>s+Number(x[1]||0),0);return `<div class="department ${k}-box"><h2>${names[k]} <span>${k==="reserve"||k==="rnd"?"(5–10%)":"("+v.percent+"%)"}</span></h2><table><thead><tr><th>Sr. No.</th><th>Particular</th><th>Target %</th><th>Allocation (₹)</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><th colspan="2">TOTAL</th><th>${pct(sum)}</th><th>${money(total*sum/100)}</th></tr></tfoot></table><div class="purpose"><b>PURPOSE</b><p>${esc(v.purpose)}</p></div></div>`}).join("");
  document.getElementById("loading").classList.add("hidden");document.getElementById("dashboard").classList.remove("hidden");
 }
 fetch("/api/data",{credentials:"same-origin"}).then(r=>r.json()).then(render).catch(()=>document.getElementById("loading").textContent="Unable to load dashboard.");
