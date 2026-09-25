@@ -17,6 +17,61 @@ const esc = s =>
     }[c]));
 
 
+/* =====================================================
+   BAR COLORS FOR EACH DEPARTMENT
+===================================================== */
+
+const chartColors = {
+    trading: [
+        "#438ddd",
+        "#5b9be3",
+        "#73a9e8",
+        "#8bb7ed",
+        "#a3c5f2",
+        "#bbd3f6",
+        "#d3e1fa",
+        "#e3ecfc"
+    ],
+
+    investment: [
+        "#67bd72",
+        "#78c581",
+        "#89cd90",
+        "#9ad59f",
+        "#abdda8",
+        "#bce5b1",
+        "#cdeeba",
+        "#def6c3"
+    ],
+
+    reserve: [
+        "#f1d65d",
+        "#f2da6d",
+        "#f3de7d",
+        "#f4e28d",
+        "#f5e69d",
+        "#f6eaae",
+        "#f7eebe",
+        "#f8f2ce"
+    ],
+
+    rnd: [
+        "#a184d6",
+        "#aa91db",
+        "#b3a0df",
+        "#bcaee4",
+        "#c5bce8",
+        "#cec9ed",
+        "#d7d7f1",
+        "#e0e3f6"
+    ]
+};
+
+
+/* =====================================================
+   MAIN RENDER
+===================================================== */
+
 function render(data) {
 
     const total = Number(data.capital.total) || 0;
@@ -44,9 +99,9 @@ function render(data) {
     ];
 
 
-    /* =========================
+    /* =================================================
        HEADER
-    ========================= */
+    ================================================= */
 
     document.getElementById("orgName").textContent =
         data.meta.organization;
@@ -61,9 +116,9 @@ function render(data) {
         data.meta.preparedBy;
 
 
-    /* =========================
+    /* =================================================
        TOTAL CAPITAL
-    ========================= */
+    ================================================= */
 
     const allocated = keys.reduce(
         (sum, key) =>
@@ -84,9 +139,9 @@ function render(data) {
         money(total - allocated);
 
 
-    /* =========================
-       ALLOCATION STATUS
-    ========================= */
+    /* =================================================
+       MAIN STATUS
+    ================================================= */
 
     const difference = total - allocated;
 
@@ -100,9 +155,9 @@ function render(data) {
                   fmt(Math.abs(difference));
 
 
-    /* =========================
+    /* =================================================
        ALLOCATION CARDS
-    ========================= */
+    ================================================= */
 
     document.getElementById("allocationCards").innerHTML =
         keys.map((k, i) => {
@@ -138,9 +193,9 @@ function render(data) {
         }).join("");
 
 
-    /* =========================
-       ROUND / DOUGHNUT CHART
-    ========================= */
+    /* =================================================
+       MAIN ROUND / DONUT CHART
+    ================================================= */
 
     let start = 0;
     let stops = [];
@@ -163,14 +218,16 @@ function render(data) {
         document.getElementById("donut");
 
     if (donut) {
+
         donut.style.background =
             `conic-gradient(${stops.join(",")})`;
+
     }
 
 
-    /* =========================
+    /* =================================================
        DONUT LEGEND
-    ========================= */
+    ================================================= */
 
     const legend =
         document.getElementById("legend");
@@ -183,10 +240,12 @@ function render(data) {
                 const label =
                     k === "rnd"
                         ? "R&D"
-                        : k[0].toUpperCase() + k.slice(1);
+                        : k[0].toUpperCase() +
+                          k.slice(1);
 
                 return `
                     <div>
+
                         <i
                             class="dot"
                             style="background:${colors[i]}"
@@ -197,6 +256,7 @@ function render(data) {
                         <b>
                             ${pct(vs[k].percent)}
                         </b>
+
                     </div>
                 `;
 
@@ -204,9 +264,9 @@ function render(data) {
     }
 
 
-    /* =========================
-       BAR CHART
-    ========================= */
+    /* =================================================
+       MAIN CAPITAL BAR CHART
+    ================================================= */
 
     const bars =
         document.getElementById("bars");
@@ -266,9 +326,9 @@ function render(data) {
     }
 
 
-    /* =========================
-       DEPARTMENT TABLES
-    ========================= */
+    /* =================================================
+       DEPARTMENT TABLES + AUTOMATIC ITEM BAR CHARTS
+    ================================================= */
 
     document.getElementById("tablesGrid").innerHTML =
         keys.map(k => {
@@ -276,7 +336,9 @@ function render(data) {
             const v = vs[k];
 
 
-            /* ITEM ROWS */
+            /* -----------------------------------------
+               TABLE ROWS
+            ----------------------------------------- */
 
             const rows =
                 v.items.map((it, i) => {
@@ -310,7 +372,9 @@ function render(data) {
                 }).join("");
 
 
-            /* TOTAL ITEM PERCENTAGE */
+            /* -----------------------------------------
+               TOTAL %
+            ----------------------------------------- */
 
             const sum =
                 v.items.reduce(
@@ -321,13 +385,9 @@ function render(data) {
                 );
 
 
-            /* DEPARTMENT TARGET */
-
             const target =
                 Number(v.percent) || 0;
 
-
-            /* DIFFERENCE */
 
             const difference =
                 sum - target;
@@ -339,7 +399,9 @@ function render(data) {
             let statusAmount = 0;
 
 
-            /* FULLY ALLOCATED */
+            /* -----------------------------------------
+               STATUS
+            ----------------------------------------- */
 
             if (Math.abs(difference) < 0.01) {
 
@@ -349,14 +411,13 @@ function render(data) {
                 statusClass =
                     "fully-allocated";
 
-                statusPercent = 0;
+                statusPercent =
+                    0;
 
-                statusAmount = 0;
+                statusAmount =
+                    0;
 
             }
-
-
-            /* SURPLUS */
 
             else if (difference > 0) {
 
@@ -376,9 +437,6 @@ function render(data) {
 
             }
 
-
-            /* DEFICIT */
-
             else {
 
                 status =
@@ -397,18 +455,87 @@ function render(data) {
             }
 
 
+            /* =================================================
+               AUTOMATIC ITEM BAR CHART
+            ================================================= */
+
+            const itemValues =
+                v.items.map(it =>
+                    Number(it[1] || 0)
+                );
+
+            const maxItem =
+                Math.max(
+                    1,
+                    ...itemValues
+                );
+
+
+            const itemBars =
+                v.items.map((it, i) => {
+
+                    const itemPercent =
+                        Number(it[1] || 0);
+
+                    const height =
+                        Math.max(
+                            8,
+                            (itemPercent / maxItem) * 150
+                        );
+
+
+                    const barColor =
+                        chartColors[k][
+                            i % chartColors[k].length
+                        ];
+
+
+                    return `
+                        <div class="item-bar-group">
+
+                            <div class="item-bar-value">
+                                ${itemPercent}%
+                            </div>
+
+                            <div
+                                class="item-bar"
+                                style="
+                                    height:${height}px;
+                                    background:${barColor};
+                                "
+                            ></div>
+
+                            <div class="item-bar-label">
+                                ${esc(it[0])}
+                            </div>
+
+                        </div>
+                    `;
+
+                }).join("");
+
+
+            /* =================================================
+               COMPLETE DEPARTMENT CARD
+            ================================================= */
+
             return `
 
                 <div class="department ${k}-box">
 
+
                     <h2>
+
                         ${names[k]}
 
                         <span>
                             (${v.percent}%)
                         </span>
+
                     </h2>
 
+
+                    <!-- TABLE -->
 
                     <table>
 
@@ -446,8 +573,6 @@ function render(data) {
 
                         <tfoot>
 
-                            <!-- TOTAL -->
-
                             <tr>
 
                                 <th colspan="2">
@@ -468,8 +593,6 @@ function render(data) {
 
                             </tr>
 
-
-                            <!-- STATUS -->
 
                             <tr class="${statusClass}">
 
@@ -492,6 +615,25 @@ function render(data) {
                     </table>
 
 
+                    <!-- AUTOMATIC ITEM BAR CHART -->
+
+                    <div class="item-chart">
+
+                        <div class="item-chart-title">
+                            ${names[k]} ALLOCATION BREAKDOWN
+                        </div>
+
+                        <div class="item-bars">
+
+                            ${itemBars}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PURPOSE -->
+
                     <div class="purpose">
 
                         <b>PURPOSE</b>
@@ -502,6 +644,7 @@ function render(data) {
 
                     </div>
 
+
                 </div>
 
             `;
@@ -509,9 +652,9 @@ function render(data) {
         }).join("");
 
 
-    /* =========================
+    /* =================================================
        SHOW DASHBOARD
-    ========================= */
+    ================================================= */
 
     document
         .getElementById("loading")
@@ -525,9 +668,9 @@ function render(data) {
 }
 
 
-/* =========================
+/* =====================================================
    LOAD DATA
-========================= */
+===================================================== */
 
 fetch("/api/data", {
     credentials: "same-origin"
