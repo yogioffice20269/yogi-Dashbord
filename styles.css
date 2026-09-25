@@ -125,3 +125,61 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
 .department tfoot .fully-allocated th {
     font-weight: 800;
 }
+/* =========================================
+   DEPARTMENT STATUS ROW COLORS
+   ========================================= */
+
+/* TRADING - BLUE */
+.department.trading-box tfoot .surplus,
+.department.trading-box tfoot .deficit,
+.department.trading-box tfoot .fully-allocated {
+    background: #d8e9f8;
+}
+
+.department.trading-box tfoot .surplus th,
+.department.trading-box tfoot .deficit th,
+.department.trading-box tfoot .fully-allocated th {
+    color: #16803c;
+}
+
+
+/* INVESTMENT - GREEN */
+.department.investment-box tfoot .surplus,
+.department.investment-box tfoot .deficit,
+.department.investment-box tfoot .fully-allocated {
+    background: #d9f0dc;
+}
+
+.department.investment-box tfoot .surplus th,
+.department.investment-box tfoot .deficit th,
+.department.investment-box tfoot .fully-allocated th {
+    color: #16803c;
+}
+
+
+/* RESERVE - YELLOW */
+.department.reserve-box tfoot .surplus,
+.department.reserve-box tfoot .deficit,
+.department.reserve-box tfoot .fully-allocated {
+    background: #fff0b8;
+}
+
+.department.reserve-box tfoot .surplus th,
+.department.reserve-box tfoot .deficit th,
+.department.reserve-box tfoot .fully-allocated th {
+    color: #16803c;
+}
+
+
+/* RESEARCH & DEVELOPMENT - PURPLE */
+.department.rnd-box tfoot .surplus,
+.department.rnd-box tfoot .deficit,
+.department.rnd-box tfoot .fully-allocated {
+    background: #e2d8f3;
+}
+
+.department.rnd-box tfoot .surplus th,
+.department.rnd-box tfoot .deficit th,
+.department.rnd-box tfoot .fully-allocated th {
+    color: #16803c;
+}
