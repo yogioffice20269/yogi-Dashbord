@@ -16,23 +16,11 @@ const esc = s =>
         "'": "&#39;"
     }[c]));
 
+
 function render(data) {
 
     const total = Number(data.capital.total) || 0;
     const vs = data.verticals;
-
-    document.getElementById("orgName").textContent =
-        data.meta.organization;
-
-    document.getElementById("metaDate").textContent =
-        data.meta.date;
-
-    document.getElementById("metaVersion").textContent =
-        data.meta.version;
-
-    document.getElementById("metaPrepared").textContent =
-        data.meta.preparedBy;
-
 
     const keys = [
         "trading",
@@ -56,15 +44,32 @@ function render(data) {
     ];
 
 
-    /* =====================================================
-       OVERALL ALLOCATION
-       ===================================================== */
+    /* =========================
+       HEADER
+    ========================= */
+
+    document.getElementById("orgName").textContent =
+        data.meta.organization;
+
+    document.getElementById("metaDate").textContent =
+        data.meta.date;
+
+    document.getElementById("metaVersion").textContent =
+        data.meta.version;
+
+    document.getElementById("metaPrepared").textContent =
+        data.meta.preparedBy;
+
+
+    /* =========================
+       TOTAL ALLOCATION
+    ========================= */
 
     const allocated = keys.reduce(
-        (s, k) =>
-            s +
+        (sum, key) =>
+            sum +
             total *
-            (Number(vs[k].percent) || 0) /
+            (Number(vs[key].percent) || 0) /
             100,
         0
     );
@@ -79,68 +84,70 @@ function render(data) {
         money(total - allocated);
 
 
-    /* =====================================================
-       OVERALL STATUS
-       ===================================================== */
+    /* =========================
+       ALLOCATION STATUS
+    ========================= */
 
-    const overallDifference = total - allocated;
+    const difference = total - allocated;
 
     document.getElementById("status").innerHTML =
-        Math.abs(overallDifference) < 0.01
-
+        Math.abs(difference) < 0.01
             ? '<span>✓</span> Fully Allocated'
-
-            : overallDifference > 0
-
+            : difference > 0
                 ? '<span style="color:#d99000;">↑</span> Surplus ₹ ' +
-                  fmt(overallDifference)
-
+                  fmt(difference)
                 : '<span class="warning">↓</span> Deficit ₹ ' +
-                  fmt(Math.abs(overallDifference));
+                  fmt(Math.abs(difference));
 
 
-    /* =====================================================
+    /* =========================
        ALLOCATION CARDS
-       ===================================================== */
+    ========================= */
 
     document.getElementById("allocationCards").innerHTML =
-        keys.map((k, i) => `
+        keys.map((k, i) => {
 
-            <div class="allocation-card ${k}">
+            return `
+                <div class="allocation-card ${k}">
 
-                <div
-                    class="card-head"
-                    style="
-                        background:${colors[i]};
-                        color:${k === "reserve" ? "#111" : "#fff"}
-                    "
-                >
-                    ${names[k]}
+                    <div
+                        class="card-head"
+                        style="
+                            background:${colors[i]};
+                            color:${k === "reserve" ? "#111" : "#fff"}
+                        "
+                    >
+                        ${names[k]}
+                    </div>
+
+                    <div class="percent">
+                        ${pct(vs[k].percent)}
+                    </div>
+
+                    <div class="amount">
+                        ${money(
+                            total *
+                            Number(vs[k].percent || 0) /
+                            100
+                        )}
+                    </div>
+
                 </div>
+            `;
 
-                <div class="percent">
-                    ${pct(vs[k].percent)}
-                </div>
-
-                <div class="amount">
-                    ${money(total * vs[k].percent / 100)}
-                </div>
-
-            </div>
-
-        `).join("");
+        }).join("");
 
 
-    /* =====================================================
-       DONUT CHART
-       ===================================================== */
+    /* =========================
+       ROUND / DOUGHNUT CHART
+    ========================= */
 
     let start = 0;
     let stops = [];
 
     keys.forEach((k, i) => {
 
-        let end =
+        const end =
             start +
             Number(vs[k].percent || 0);
 
@@ -156,131 +163,76 @@ function render(data) {
         `conic-gradient(${stops.join(",")})`;
 
 
-    /* =====================================================
-       LEGEND
-       ===================================================== */
+    /* =========================
+       CHART LEGEND
+    ========================= */
 
     document.getElementById("legend").innerHTML =
-        keys.map((k, i) => `
-
-            <div>
-
-                <i
-                    class="dot"
-                    style="background:${colors[i]}"
-                ></i>
-
-                ${k === "rnd"
-                    ? "R&D"
-                    : k[0].toUpperCase() + k.slice(1)}
-
-                <b>
-                    ${pct(vs[k].percent)}
-                </b>
-
-            </div>
-
-        `).join("");
-
-
-    /* =====================================================
-       BAR CHART
-       ===================================================== */
-
-    const max = Math.max(
-        1,
-        ...keys.map(
-            k =>
-                total *
-                vs[k].percent /
-                100
-        )
-    );
-
-    document.getElementById("bars").innerHTML =
         keys.map((k, i) => {
 
-            let val =
-                total *
-                vs[k].percent /
-                100;
+            const label =
+                k === "rnd"
+                    ? "R&D"
+                    : k[0].toUpperCase() + k.slice(1);
 
             return `
+                <div>
+                    <i
+                        class="dot"
+                        style="background:${colors[i]}"
+                    ></i>
 
-                <div class="bar-group">
+                    ${label}
 
-                    <div
-                        class="bar"
-                        style="
-                            height:${val / max * 80}%;
-                            background:${colors[i]}
-                        "
-                    >
-                        <span>
-                            ${fmt(val / 100000)}L
-                        </span>
-                    </div>
-
-                    <small>
-                        ${k === "rnd"
-                            ? "R&D"
-                            : k[0].toUpperCase() + k.slice(1)}
-                    </small>
-
+                    <b>
+                        ${pct(vs[k].percent)}
+                    </b>
                 </div>
-
             `;
 
         }).join("");
 
 
-    /* =====================================================
+    /* =========================
        DEPARTMENT TABLES
-       ===================================================== */
+    ========================= */
 
     document.getElementById("tablesGrid").innerHTML =
         keys.map(k => {
 
             const v = vs[k];
 
-
-            /* ---------------------------------------------
-               ITEM ROWS
-               --------------------------------------------- */
+            /* ----- ITEM ROWS ----- */
 
             const rows =
-                v.items.map((it, i) => `
+                v.items.map((it, i) => {
 
-                    <tr>
+                    return `
+                        <tr>
+                            <td>${i + 1}</td>
 
-                        <td>
-                            ${i + 1}
-                        </td>
+                            <td>
+                                ${esc(it[0])}
+                            </td>
 
-                        <td>
-                            ${esc(it[0])}
-                        </td>
+                            <td>
+                                ${pct(it[1])}
+                            </td>
 
-                        <td>
-                            ${pct(it[1])}
-                        </td>
+                            <td>
+                                ${money(
+                                    total *
+                                    Number(it[1] || 0) /
+                                    100
+                                )}
+                            </td>
+                        </tr>
+                    `;
 
-                        <td>
-                            ${money(
-                                total *
-                                it[1] /
-                                100
-                            )}
-                        </td>
-
-                    </tr>
-
-                `).join("");
+                }).join("");
 
 
-            /* ---------------------------------------------
-               ACTUAL ITEM TOTAL
-               --------------------------------------------- */
+            /* ----- TOTAL ITEM % ----- */
 
             const sum =
                 v.items.reduce(
@@ -291,17 +243,13 @@ function render(data) {
                 );
 
 
-            /* ---------------------------------------------
-               DEPARTMENT TARGET
-               --------------------------------------------- */
+            /* ----- DEPARTMENT TARGET ----- */
 
             const target =
                 Number(v.percent) || 0;
 
 
-            /* ---------------------------------------------
-               DIFFERENCE
-               --------------------------------------------- */
+            /* ----- DIFFERENCE ----- */
 
             const difference =
                 sum - target;
@@ -313,9 +261,9 @@ function render(data) {
             let statusAmount = 0;
 
 
-            /* ---------------------------------------------
+            /* =========================
                FULLY ALLOCATED
-               --------------------------------------------- */
+            ========================= */
 
             if (Math.abs(difference) < 0.01) {
 
@@ -330,9 +278,9 @@ function render(data) {
             }
 
 
-            /* ---------------------------------------------
+            /* =========================
                SURPLUS
-               --------------------------------------------- */
+            ========================= */
 
             else if (difference > 0) {
 
@@ -350,9 +298,9 @@ function render(data) {
             }
 
 
-            /* ---------------------------------------------
+            /* =========================
                DEFICIT
-               --------------------------------------------- */
+            ========================= */
 
             else {
 
@@ -371,22 +319,20 @@ function render(data) {
             }
 
 
-            /* ---------------------------------------------
-               TABLE
-               --------------------------------------------- */
+            /* =========================
+               DEPARTMENT HTML
+            ========================= */
 
             return `
 
                 <div class="department ${k}-box">
 
                     <h2>
-
                         ${names[k]}
 
                         <span>
                             (${v.percent}%)
                         </span>
-
                     </h2>
 
 
@@ -426,7 +372,7 @@ function render(data) {
 
                         <tfoot>
 
-                            <!-- TOTAL ROW -->
+                            <!-- TOTAL -->
 
                             <tr>
 
@@ -449,7 +395,7 @@ function render(data) {
                             </tr>
 
 
-                            <!-- STATUS ROW -->
+                            <!-- STATUS -->
 
                             <tr class="${statusClass}">
 
@@ -474,9 +420,7 @@ function render(data) {
 
                     <div class="purpose">
 
-                        <b>
-                            PURPOSE
-                        </b>
+                        <b>PURPOSE</b>
 
                         <p>
                             ${esc(v.purpose)}
@@ -491,9 +435,9 @@ function render(data) {
         }).join("");
 
 
-    /* =====================================================
+    /* =========================
        SHOW DASHBOARD
-       ===================================================== */
+    ========================= */
 
     document
         .getElementById("loading")
@@ -504,21 +448,17 @@ function render(data) {
         .getElementById("dashboard")
         .classList
         .remove("hidden");
-
 }
 
 
-/* =========================================================
+/* =========================
    LOAD DATA
-   ========================================================= */
+========================= */
 
-fetch(
-    "/api/data",
-    {
-        credentials: "same-origin"
-    }
-)
-    .then(r => r.json())
+fetch("/api/data", {
+    credentials: "same-origin"
+})
+    .then(response => response.json())
     .then(render)
     .catch(() => {
 
