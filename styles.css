@@ -1188,3 +1188,255 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         font-size: 9px !important;
     }
 }
+/* =========================================================
+   FINAL FIX - ALL DEPARTMENT CHARTS SAME BOTTOM LEVEL
+   ========================================================= */
+
+/* All 4 department cards equal */
+.tables-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+}
+
+/* Department card */
+.tables-grid .department {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 700px !important;
+    min-height: 700px !important;
+    box-sizing: border-box !important;
+}
+
+/* =========================================================
+   ALLOCATION CHART
+   ========================================================= */
+
+.tables-grid .item-chart {
+    height: 360px !important;
+    min-height: 360px !important;
+    max-height: 360px !important;
+
+    margin-top: 10px !important;
+    padding: 8px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    box-sizing: border-box !important;
+}
+
+/* Chart title */
+.tables-grid .item-chart-title {
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+    line-height: 16px !important;
+
+    margin: 0 0 5px 0 !important;
+    padding: 5px !important;
+
+    box-sizing: border-box !important;
+}
+
+/* =========================================================
+   USE THE WHOLE BLANK AREA FOR THE DATA/BARS
+   ========================================================= */
+
+.tables-grid .item-bars {
+    flex: 1 !important;
+
+    height: auto !important;
+    min-height: 275px !important;
+    max-height: 275px !important;
+
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-around !important;
+
+    gap: 5px !important;
+
+    padding: 10px 5px 0 5px !important;
+
+    border-bottom: 1px solid #999 !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+}
+
+/* Each bar group */
+.tables-grid .item-bar-group {
+    height: 260px !important;
+    min-height: 260px !important;
+
+    flex: 1 1 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    justify-content: flex-end !important;
+    align-items: center !important;
+
+    min-width: 0 !important;
+}
+
+/* Percentage */
+.tables-grid .item-bar-value {
+    height: 22px !important;
+    min-height: 22px !important;
+
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+
+    margin-bottom: 3px !important;
+
+    font-size: 11px !important;
+    font-weight: bold !important;
+}
+
+/* Bars */
+.tables-grid .item-bar {
+    width: 32px !important;
+    min-height: 8px !important;
+
+    flex-shrink: 0 !important;
+
+    border-radius: 2px 2px 0 0 !important;
+}
+
+/* =========================================================
+   SAME LABEL AREA FOR EVERY CHART
+   ========================================================= */
+
+.tables-grid .item-bar-label {
+    width: 100% !important;
+
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+
+    margin-top: 5px !important;
+
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+
+    font-size: 10px !important;
+    line-height: 12px !important;
+
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+
+    box-sizing: border-box !important;
+}
+
+/* =========================================================
+   PURPOSE ALWAYS AT EXACT SAME BOTTOM
+   ========================================================= */
+
+.tables-grid .department .purpose {
+    margin-top: auto !important;
+
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+
+    width: 100% !important;
+
+    box-sizing: border-box !important;
+
+    flex-shrink: 0 !important;
+}
+
+.tables-grid .department .purpose h3 {
+    height: 30px !important;
+    min-height: 30px !important;
+
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.tables-grid .department .purpose p {
+    height: 42px !important;
+    min-height: 42px !important;
+
+    margin: 0 !important;
+    padding: 5px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+    line-height: 15px !important;
+}
+
+/* =========================================================
+   REMOVE OLD EXTRA SPACE / BLUE LINE AREA
+   ========================================================= */
+
+/* Prevent an extra chart/canvas area from creating uneven space */
+.tables-grid .item-chart canvas {
+    max-height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .tables-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .tables-grid .department {
+        height: 700px !important;
+        min-height: 700px !important;
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .tables-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .tables-grid .department {
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    .tables-grid .item-chart {
+        height: 360px !important;
+        min-height: 360px !important;
+    }
+
+    .tables-grid .item-bars {
+        overflow-x: auto !important;
+    }
+
+    .tables-grid .item-bar-group {
+        min-width: 60px !important;
+        flex: 0 0 60px !important;
+    }
+}
