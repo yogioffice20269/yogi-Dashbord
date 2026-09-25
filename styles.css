@@ -1440,3 +1440,194 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         flex: 0 0 60px !important;
     }
 }
+/* =========================================================
+   REMOVE EMPTY SPACE ABOVE PURPOSE
+   ========================================================= */
+
+/* Do not force a fixed height on department cards */
+.tables-grid .department {
+    height: auto !important;
+    min-height: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Allocation chart uses only its real content */
+.tables-grid .item-chart {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    margin-top: 10px !important;
+    padding: 8px !important;
+
+    box-sizing: border-box !important;
+}
+
+/* Chart title */
+.tables-grid .item-chart-title {
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+
+    box-sizing: border-box !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+}
+
+/* Actual bar area */
+.tables-grid .item-bars {
+    height: 300px !important;
+    min-height: 300px !important;
+    max-height: 300px !important;
+
+    flex: none !important;
+
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-around !important;
+
+    box-sizing: border-box !important;
+
+    padding: 10px 5px 0 !important;
+
+    border-bottom: 1px solid #999 !important;
+
+    overflow: hidden !important;
+}
+
+/* Bar groups */
+.tables-grid .item-bar-group {
+    height: 275px !important;
+    min-height: 275px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+
+    flex: 1 1 0 !important;
+}
+
+/* Percentage */
+.tables-grid .item-bar-value {
+    height: 22px !important;
+    min-height: 22px !important;
+
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+
+    margin-bottom: 3px !important;
+}
+
+/* Bar */
+.tables-grid .item-bar {
+    width: 32px !important;
+    min-height: 8px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Labels - same height */
+.tables-grid .item-bar-label {
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+
+    margin-top: 5px !important;
+
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+
+    font-size: 10px !important;
+    line-height: 12px !important;
+
+    overflow-wrap: anywhere !important;
+    box-sizing: border-box !important;
+}
+
+/* =========================================================
+   PURPOSE DIRECTLY AFTER CHART
+   ========================================================= */
+
+.tables-grid .department .purpose {
+    margin-top: 10px !important;
+
+    width: 100% !important;
+
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+
+    flex-shrink: 0 !important;
+
+    box-sizing: border-box !important;
+}
+
+/* Purpose heading */
+.tables-grid .department .purpose h3 {
+    height: 30px !important;
+    min-height: 30px !important;
+
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Purpose text */
+.tables-grid .department .purpose p {
+    height: 42px !important;
+    min-height: 42px !important;
+
+    margin: 0 !important;
+    padding: 5px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+}
+
+/* =========================================================
+   KEEP ALL 4 DEPARTMENT CARDS SAME BOTTOM
+   WITHOUT EMPTY SPACE
+   ========================================================= */
+
+.tables-grid {
+    align-items: stretch !important;
+}
+
+.tables-grid .department {
+    align-self: stretch !important;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .tables-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .tables-grid .item-bars {
+        overflow-x: auto !important;
+    }
+
+    .tables-grid .item-bar-group {
+        min-width: 60px !important;
+        flex: 0 0 60px !important;
+    }
+}
