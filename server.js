@@ -173,6 +173,10 @@ function normalizeData(data) {
             : defaultData;
 
     const result = {
+         settings: {
+        overallROIEnabled:
+            source.settings?.overallROIEnabled !== false
+    },
 
         meta: {
             organization:
