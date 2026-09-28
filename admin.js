@@ -1,7 +1,6 @@
-``javascript
 let data = null;
 
-const $ = s => document.querySelector(s);
+const $ = (selector) => document.querySelector(selector);
 
 const keys = [
     "trading",
@@ -17,27 +16,35 @@ const labels = {
     rnd: "Research & Development"
 };
 
-const esc = s =>
-    String(s ?? "").replace(/[&<>"']/g, c => ({
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
-    }[c]));
+    }[char]));
+}
+
 
 function get(obj, path) {
     return path
         .split(".")
-        .reduce((a, k) => a?.[k], obj);
+        .reduce((current, key) => current?.[key], obj);
 }
+
 
 function set(obj, path, value) {
     const parts = path.split(".");
     const last = parts.pop();
 
     const target = parts.reduce(
-        (x, k) => x[k],
+        (current, key) => current[key],
         obj
     );
 
@@ -46,18 +53,20 @@ function set(obj, path, value) {
 
 
 /* =========================================================
-   BUILD ADMIN EDITOR
+   NORMALIZE DATA FOR ADMIN
 ========================================================= */
 
-function buildEditors() {
+function prepareData() {
 
-    /* ---------------------------------------------
-       SETTINGS
-    --------------------------------------------- */
+    if (!data || typeof data !== "object") {
+        data = {};
+    }
+
 
     if (!data.settings) {
         data.settings = {};
     }
+
 
     if (
         typeof data.settings.overallROIEnabled !==
@@ -67,11 +76,100 @@ function buildEditors() {
     }
 
 
-    /* ---------------------------------------------
-       MAIN EDITOR HTML
-    --------------------------------------------- */
+    if (!data.meta) {
+        data.meta = {};
+    }
 
-    $("#editSections").innerHTML = `
+
+    if (!data.capital) {
+        data.capital = {
+            total: 0
+        };
+    }
+
+
+    if (!data.verticals) {
+        data.verticals = {};
+    }
+
+
+    keys.forEach((key) => {
+
+        if (!data.verticals[key]) {
+            data.verticals[key] = {
+                percent: 0,
+                purpose: "",
+                items: []
+            };
+        }
+
+
+        if (
+            !Array.isArray(
+                data.verticals[key].items
+            )
+        ) {
+            data.verticals[key].items = [];
+        }
+
+
+        data.verticals[key].items =
+            data.verticals[key].items.map((item) => {
+
+                if (!Array.isArray(item)) {
+                    return [
+                        item?.name || "New Item",
+                        Number(
+                            item?.allocation ??
+                            item?.percent ??
+                            0
+                        ) || 0,
+                        Number(
+                            item?.weekROI ??
+                            item?.lastWeekROI ??
+                            0
+                        ) || 0,
+                        Number(
+                            item?.monthROI ??
+                            item?.lastMonthROI ??
+                            0
+                        ) || 0
+                    ];
+                }
+
+
+                return [
+                    item[0] ?? "",
+                    Number(item[1]) || 0,
+                    Number(item[2]) || 0,
+                    Number(item[3]) || 0
+                ];
+            });
+
+    });
+
+}
+
+
+/* =========================================================
+   BUILD ADMIN EDITOR
+========================================================= */
+
+function buildEditors() {
+
+    prepareData();
+
+
+    const editSections =
+        $("#editSections");
+
+
+    if (!editSections) {
+        return;
+    }
+
+
+    editSections.innerHTML = `
 
         <!-- =========================================
              DASHBOARD CONTROLS
@@ -108,8 +206,9 @@ function buildEditors() {
                         color:#666;
                         font-size:13px;
                     ">
-                        Show or hide the overall ROI table
-                        and pie chart on the public dashboard.
+                        Show or hide the overall ROI
+                        table and pie chart on the
+                        public dashboard.
                     </div>
 
                 </div>
@@ -156,61 +255,79 @@ function buildEditors() {
              DEPARTMENT EDITORS
         ========================================== -->
 
-        ${keys.map(k => `
+        ${keys.map((key) => `
 
             <section>
 
                 <h3>
-                    ${labels[k]}
+                    ${labels[key]}
                 </h3>
 
 
-                <!-- TABLE HEADER -->
-
                 <div style="
-                    display:grid;
-                    grid-template-columns:
-                        1.5fr
-                        .7fr
-                        .7fr
-                        .7fr
-                        40px;
-                    gap:8px;
-                    margin-bottom:8px;
-                    font-size:12px;
-                    font-weight:800;
-                    color:#555;
+                    overflow-x:auto;
                 ">
 
-                    <div>PARTICULAR</div>
-                    <div>ALLOCATION %</div>
-                    <div>WEEK ROI %</div>
-                    <div>MONTH ROI %</div>
-                    <div></div>
+                    <div style="
+                        min-width:650px;
+                    ">
+
+                        <div style="
+                            display:grid;
+                            grid-template-columns:
+                                1.5fr
+                                .7fr
+                                .7fr
+                                .7fr
+                                40px;
+                            gap:8px;
+                            margin-bottom:8px;
+                            font-size:12px;
+                            font-weight:800;
+                            color:#555;
+                        ">
+
+                            <div>
+                                PARTICULAR
+                            </div>
+
+                            <div>
+                                ALLOCATION %
+                            </div>
+
+                            <div>
+                                WEEK ROI %
+                            </div>
+
+                            <div>
+                                MONTH ROI %
+                            </div>
+
+                            <div></div>
+
+                        </div>
+
+
+                        <div
+                            id="${key}Rows"
+                        ></div>
+
+
+                        <button
+                            type="button"
+                            class="add-row"
+                            data-add="${key}"
+                            style="
+                                margin-top:8px;
+                            "
+                        >
+                            + Add Item
+                        </button>
+
+                    </div>
 
                 </div>
 
-
-                <!-- ITEMS -->
-
-                <div id="${k}Rows"></div>
-
-
-                <!-- ADD ITEM -->
-
-                <button
-                    type="button"
-                    class="add-row"
-                    data-add="${k}"
-                    style="
-                        margin-top:8px;
-                    "
-                >
-                    + Add Item
-                </button>
-
-
-                <!-- PURPOSE -->
 
                 <label style="
                     display:block;
@@ -220,7 +337,7 @@ function buildEditors() {
                     Purpose
 
                     <textarea
-                        data-path="verticals.${k}.purpose"
+                        data-path="verticals.${key}.purpose"
                         rows="3"
                     ></textarea>
 
@@ -233,9 +350,20 @@ function buildEditors() {
     `;
 
 
-    /* =====================================================
-       OVERALL ROI SWITCH
-    ===================================================== */
+    setupOverallROIToggle();
+
+    setupAddButtons();
+
+    renderEditors();
+
+}
+
+
+/* =========================================================
+   OVERALL ROI TOGGLE
+========================================================= */
+
+function setupOverallROIToggle() {
 
     const toggle =
         $("#overallROIEnabled");
@@ -244,24 +372,32 @@ function buildEditors() {
         $("#overallROISlider");
 
 
-    function updateToggleUI() {
+    if (!toggle || !slider) {
+        return;
+    }
+
+
+    function updateToggle() {
 
         const enabled =
-            !!data.settings.overallROIEnabled;
+            data.settings.overallROIEnabled === true;
+
 
         toggle.checked = enabled;
+
 
         slider.style.background =
             enabled
                 ? "#075c32"
                 : "#999";
 
+
         slider.innerHTML = `
 
             <span style="
                 position:absolute;
-                height:24px;
                 width:24px;
+                height:24px;
                 left:${enabled ? "30px" : "4px"};
                 top:4px;
                 background:white;
@@ -275,34 +411,44 @@ function buildEditors() {
     }
 
 
-    toggle.onchange = () => {
+    toggle.addEventListener(
+        "change",
+        () => {
 
-        data.settings.overallROIEnabled =
-            toggle.checked;
+            data.settings.overallROIEnabled =
+                toggle.checked;
 
-        updateToggleUI();
+            updateToggle();
 
-    };
-
-
-    updateToggleUI();
+        }
+    );
 
 
-    /* =====================================================
-       ADD ITEM BUTTONS
-    ===================================================== */
+    updateToggle();
+
+}
+
+
+/* =========================================================
+   ADD ITEM BUTTONS
+========================================================= */
+
+function setupAddButtons() {
 
     document
         .querySelectorAll("[data-add]")
-        .forEach(button => {
+        .forEach((button) => {
 
             button.onclick = () => {
 
                 const department =
                     button.dataset.add;
 
+
                 if (
-                    !data.verticals[department]
+                    !data.verticals[
+                        department
+                    ]
                 ) {
                     return;
                 }
@@ -324,21 +470,20 @@ function buildEditors() {
 
         });
 
-
-    renderEditors();
 }
 
 
 /* =========================================================
-   RENDER DEPARTMENT ITEMS
+   RENDER ITEMS
 ========================================================= */
 
 function renderEditors() {
 
-    keys.forEach(k => {
+    keys.forEach((key) => {
 
         const box =
-            $("#" + k + "Rows");
+            $("#" + key + "Rows");
+
 
         if (!box) {
             return;
@@ -346,64 +491,26 @@ function renderEditors() {
 
 
         const items =
-            data.verticals[k].items || [];
+            data.verticals[key].items || [];
 
 
         box.innerHTML =
             items.map((item, index) => {
 
-                /* -----------------------------------------
-                   SUPPORT OLD DATA FORMAT
-                ----------------------------------------- */
-
-                let name = "";
-                let allocation = 0;
-                let weekROI = 0;
-                let monthROI = 0;
+                const name =
+                    item[0] ?? "";
 
 
-                if (Array.isArray(item)) {
+                const allocation =
+                    Number(item[1]) || 0;
 
-                    name =
-                        item[0] ?? "";
 
-                    allocation =
-                        Number(item[1]) || 0;
+                const weekROI =
+                    Number(item[2]) || 0;
 
-                    weekROI =
-                        Number(item[2]) || 0;
 
-                    monthROI =
-                        Number(item[3]) || 0;
-
-                } else {
-
-                    name =
-                        item.name ||
-                        "Item";
-
-                    allocation =
-                        Number(
-                            item.percent ??
-                            item.allocation ??
-                            0
-                        ) || 0;
-
-                    weekROI =
-                        Number(
-                            item.weekROI ??
-                            item.lastWeekROI ??
-                            0
-                        ) || 0;
-
-                    monthROI =
-                        Number(
-                            item.monthROI ??
-                            item.lastMonthROI ??
-                            0
-                        ) || 0;
-
-                }
+                const monthROI =
+                    Number(item[3]) || 0;
 
 
                 return `
@@ -421,21 +528,22 @@ function renderEditors() {
                             gap:8px;
                             align-items:center;
                             margin-bottom:8px;
+                            min-width:650px;
                         "
                     >
 
                         <!-- PARTICULAR -->
 
                         <input
+                            type="text"
                             value="${esc(name)}"
-                            data-name="${k}"
+                            data-name="${key}"
                             data-i="${index}"
                             placeholder="Particular"
-                            type="text"
                         >
 
 
-                        <!-- ALLOCATION % -->
+                        <!-- ALLOCATION -->
 
                         <input
                             type="number"
@@ -443,31 +551,31 @@ function renderEditors() {
                             max="100"
                             step="0.01"
                             value="${allocation}"
-                            data-pct="${k}"
+                            data-pct="${key}"
                             data-i="${index}"
                             placeholder="Allocation %"
                         >
 
 
-                        <!-- LAST WEEK ROI % -->
+                        <!-- WEEK ROI -->
 
                         <input
                             type="number"
                             step="0.01"
                             value="${weekROI}"
-                            data-week-roi="${k}"
+                            data-week-roi="${key}"
                             data-i="${index}"
                             placeholder="Week ROI %"
                         >
 
 
-                        <!-- LAST MONTH ROI % -->
+                        <!-- MONTH ROI -->
 
                         <input
                             type="number"
                             step="0.01"
                             value="${monthROI}"
-                            data-month-roi="${k}"
+                            data-month-roi="${key}"
                             data-i="${index}"
                             placeholder="Month ROI %"
                         >
@@ -477,7 +585,7 @@ function renderEditors() {
 
                         <button
                             type="button"
-                            data-del="${k}"
+                            data-delete="${key}"
                             data-i="${index}"
                             title="Delete item"
                             style="
@@ -500,240 +608,318 @@ function renderEditors() {
             }).join("");
 
 
-    /* =====================================================
-       NORMAL DATA-PATH INPUTS
-    ===================================================== */
+    setupNormalInputs();
+
+    setupItemInputs();
+
+}
+
+
+/* =========================================================
+   NORMAL DATA INPUTS
+========================================================= */
+
+function setupNormalInputs() {
 
     document
         .querySelectorAll("[data-path]")
-        .forEach(el => {
+        .forEach((element) => {
+
+            const path =
+                element.dataset.path;
+
 
             const value =
-                get(
-                    data,
-                    el.dataset.path
-                );
+                get(data, path);
 
 
-            el.value =
-                value ?? "";
+            if (
+                element.type === "date"
+            ) {
 
-
-            el.oninput = () => {
-
-                set(
-                    data,
-                    el.dataset.path,
-                    el.type === "number"
-                        ? Number(el.value)
-                        : el.value
-                );
-
-            };
-
-        });
-
-
-    /* =====================================================
-       ITEM NAME
-    ===================================================== */
-
-    document
-        .querySelectorAll("[data-name]")
-        .forEach(el => {
-
-            el.oninput = () => {
-
-                const department =
-                    el.dataset.name;
-
-                const index =
-                    Number(el.dataset.i);
-
-                const item =
-                    data.verticals[
-                        department
-                    ].items[index];
-
-
-                if (Array.isArray(item)) {
-
-                    item[0] =
-                        el.value;
-
-                } else {
-
-                    item.name =
-                        el.value;
-
-                }
-
-            };
-
-        });
-
-
-    /* =====================================================
-       ALLOCATION %
-    ===================================================== */
-
-    document
-        .querySelectorAll("[data-pct]")
-        .forEach(el => {
-
-            el.oninput = () => {
-
-                const department =
-                    el.dataset.pct;
-
-                const index =
-                    Number(el.dataset.i);
-
-                const item =
-                    data.verticals[
-                        department
-                    ].items[index];
-
-
-                const value =
-                    Number(el.value) || 0;
-
-
-                if (Array.isArray(item)) {
-
-                    item[1] =
-                        value;
-
-                } else {
-
-                    item.percent =
-                        value;
-
-                }
-
-            };
-
-        });
-
-
-    /* =====================================================
-       LAST WEEK ROI %
-    ===================================================== */
-
-    document
-        .querySelectorAll("[data-week-roi]")
-        .forEach(el => {
-
-            el.oninput = () => {
-
-                const department =
-                    el.dataset.weekRoi;
-
-                const index =
-                    Number(el.dataset.i);
-
-                const item =
-                    data.verticals[
-                        department
-                    ].items[index];
-
-
-                const value =
-                    Number(el.value) || 0;
-
-
-                if (Array.isArray(item)) {
-
-                    item[2] =
-                        value;
-
-                } else {
-
-                    item.weekROI =
-                        value;
-
-                }
-
-            };
-
-        });
-
-
-    /* =====================================================
-       LAST MONTH ROI %
-    ===================================================== */
-
-    document
-        .querySelectorAll("[data-month-roi]")
-        .forEach(el => {
-
-            el.oninput = () => {
-
-                const department =
-                    el.dataset.monthRoi;
-
-                const index =
-                    Number(el.dataset.i);
-
-                const item =
-                    data.verticals[
-                        department
-                    ].items[index];
-
-
-                const value =
-                    Number(el.value) || 0;
-
-
-                if (Array.isArray(item)) {
-
-                    item[3] =
-                        value;
-
-                } else {
-
-                    item.monthROI =
-                        value;
-
-                }
-
-            };
-
-        });
-
-
-    /* =====================================================
-       DELETE ITEM
-    ===================================================== */
-
-    document
-        .querySelectorAll("[data-del]")
-        .forEach(button => {
-
-            button.onclick = () => {
-
-                const department =
-                    button.dataset.del;
-
-                const index =
-                    Number(button.dataset.i);
+                let dateValue =
+                    String(value ?? "");
 
 
                 if (
-                    !data.verticals[
-                        department
-                    ]
+                    dateValue.includes("-")
+                ) {
+
+                    const match =
+                        dateValue.match(
+                            /^(\d{1,2})[-\/](\w+)[-\/](\d{4})$/
+                        );
+
+
+                    if (match) {
+
+                        const day =
+                            match[1].padStart(
+                                2,
+                                "0"
+                            );
+
+
+                        const monthNames = {
+                            Jan: "01",
+                            Feb: "02",
+                            Mar: "03",
+                            Apr: "04",
+                            May: "05",
+                            Jun: "06",
+                            Jul: "07",
+                            Aug: "08",
+                            Sep: "09",
+                            Oct: "10",
+                            Nov: "11",
+                            Dec: "12"
+                        };
+
+
+                        const month =
+                            monthNames[
+                                match[2]
+                            ];
+
+
+                        if (month) {
+
+                            dateValue =
+                                `${match[3]}-${month}-${day}`;
+
+                        }
+
+                    }
+
+                }
+
+
+                element.value =
+                    /^\d{4}-\d{2}-\d{2}$/.test(
+                        dateValue
+                    )
+                        ? dateValue
+                        : "";
+
+            } else {
+
+                element.value =
+                    value ?? "";
+
+            }
+
+
+            element.oninput = () => {
+
+                let newValue =
+                    element.value;
+
+
+                if (
+                    element.type === "number"
+                ) {
+                    newValue =
+                        Number(
+                            element.value
+                        ) || 0;
+                }
+
+
+                if (
+                    element.type === "date"
+                ) {
+
+                    data.meta.date =
+                        newValue;
+
+                } else {
+
+                    set(
+                        data,
+                        path,
+                        newValue
+                    );
+
+                }
+
+            };
+
+        });
+
+}
+
+
+/* =========================================================
+   ITEM INPUTS
+========================================================= */
+
+function setupItemInputs() {
+
+
+    /* -----------------------------------------
+       NAME
+    ----------------------------------------- */
+
+    document
+        .querySelectorAll("[data-name]")
+        .forEach((element) => {
+
+            element.oninput = () => {
+
+                const key =
+                    element.dataset.name;
+
+                const index =
+                    Number(
+                        element.dataset.i
+                    );
+
+
+                const item =
+                    data.verticals[key]
+                        .items[index];
+
+
+                item[0] =
+                    element.value;
+
+            };
+
+        });
+
+
+    /* -----------------------------------------
+       ALLOCATION
+    ----------------------------------------- */
+
+    document
+        .querySelectorAll("[data-pct]")
+        .forEach((element) => {
+
+            element.oninput = () => {
+
+                const key =
+                    element.dataset.pct;
+
+                const index =
+                    Number(
+                        element.dataset.i
+                    );
+
+
+                const item =
+                    data.verticals[key]
+                        .items[index];
+
+
+                item[1] =
+                    Number(
+                        element.value
+                    ) || 0;
+
+            };
+
+        });
+
+
+    /* -----------------------------------------
+       WEEK ROI
+    ----------------------------------------- */
+
+    document
+        .querySelectorAll("[data-week-roi]")
+        .forEach((element) => {
+
+            element.oninput = () => {
+
+                const key =
+                    element.dataset.weekRoi;
+
+                const index =
+                    Number(
+                        element.dataset.i
+                    );
+
+
+                const item =
+                    data.verticals[key]
+                        .items[index];
+
+
+                item[2] =
+                    Number(
+                        element.value
+                    ) || 0;
+
+            };
+
+        });
+
+
+    /* -----------------------------------------
+       MONTH ROI
+    ----------------------------------------- */
+
+    document
+        .querySelectorAll("[data-month-roi]")
+        .forEach((element) => {
+
+            element.oninput = () => {
+
+                const key =
+                    element.dataset.monthRoi;
+
+                const index =
+                    Number(
+                        element.dataset.i
+                    );
+
+
+                const item =
+                    data.verticals[key]
+                        .items[index];
+
+
+                item[3] =
+                    Number(
+                        element.value
+                    ) || 0;
+
+            };
+
+        });
+
+
+    /* -----------------------------------------
+       DELETE
+    ----------------------------------------- */
+
+    document
+        .querySelectorAll("[data-delete]")
+        .forEach((button) => {
+
+            button.onclick = () => {
+
+                const key =
+                    button.dataset.delete;
+
+
+                const index =
+                    Number(
+                        button.dataset.i
+                    );
+
+
+                if (
+                    !data.verticals[key]
                 ) {
                     return;
                 }
 
 
-                data.verticals[
-                    department
-                ].items.splice(
-                    index,
-                    1
-                );
+                data.verticals[key]
+                    .items
+                    .splice(index, 1);
 
 
                 renderEditors();
@@ -746,20 +932,38 @@ function renderEditors() {
 
 
 /* =========================================================
-   LOGIN / LOAD
+   LOAD ADMIN
 ========================================================= */
 
-async function load() {
+async function loadAdmin() {
+
+    const loginScreen =
+        $("#loginScreen");
+
+    const adminApp =
+        $("#adminApp");
+
 
     try {
 
-        let response =
+        const response =
             await fetch(
                 "/api/me",
                 {
+                    method: "GET",
+                    credentials: "same-origin",
                     cache: "no-store"
                 }
             );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Session check failed"
+            );
+
+        }
 
 
         const me =
@@ -768,11 +972,11 @@ async function load() {
 
         if (!me.authenticated) {
 
-            $("#loginScreen")
+            loginScreen
                 .classList
                 .remove("hidden");
 
-            $("#adminApp")
+            adminApp
                 .classList
                 .add("hidden");
 
@@ -781,94 +985,74 @@ async function load() {
         }
 
 
-        response =
-            await fetch(
-                "/api/data",
-                {
-                    cache: "no-store"
-                }
-            );
+        await loadDashboardData();
 
-
-        if (!response.ok) {
-            throw new Error(
-                "Unable to load dashboard data."
-            );
-        }
-
-
-        data =
-            await response.json();
-
-
-        /* -----------------------------------------
-           SAFETY DEFAULTS
-        ----------------------------------------- */
-
-        if (!data.settings) {
-            data.settings = {};
-        }
-
-        if (
-            typeof
-            data.settings.overallROIEnabled
-            !== "boolean"
-        ) {
-            data.settings.overallROIEnabled =
-                true;
-        }
-
-
-        if (!data.verticals) {
-            data.verticals = {};
-        }
-
-
-        keys.forEach(k => {
-
-            if (!data.verticals[k]) {
-
-                data.verticals[k] = {
-                    percent: 0,
-                    purpose: "",
-                    items: []
-                };
-
-            }
-
-
-            if (
-                !Array.isArray(
-                    data.verticals[k].items
-                )
-            ) {
-
-                data.verticals[k].items = [];
-
-            }
-
-        });
-
-
-        $("#loginScreen")
-            .classList
-            .add("hidden");
-
-        $("#adminApp")
-            .classList
-            .remove("hidden");
-
-
-        buildEditors();
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Admin load error:",
+            error
+        );
 
-        $("#loginError").textContent =
-            "Unable to load dashboard.";
+
+        loginScreen
+            .classList
+            .remove("hidden");
+
+        adminApp
+            .classList
+            .add("hidden");
 
     }
+
+}
+
+
+/* =========================================================
+   LOAD DASHBOARD DATA
+========================================================= */
+
+async function loadDashboardData() {
+
+    const response =
+        await fetch(
+            "/api/data",
+            {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Unable to load dashboard data."
+        );
+
+    }
+
+
+    data =
+        await response.json();
+
+
+    prepareData();
+
+
+    $("#loginScreen")
+        .classList
+        .add("hidden");
+
+
+    $("#adminApp")
+        .classList
+        .remove("hidden");
+
+
+    buildEditors();
 
 }
 
@@ -877,217 +1061,294 @@ async function load() {
    LOGIN
 ========================================================= */
 
-$("#loginForm").onsubmit =
-    async event => {
-
-        event.preventDefault();
+const loginForm =
+    $("#loginForm");
 
 
-        try {
+if (loginForm) {
 
-            const response =
-                await fetch(
-                    "/api/login",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-                        body:
-                            JSON.stringify({
-                                username:
-                                    $("#username")
-                                        .value,
+    loginForm.addEventListener(
+        "submit",
+        async (event) => {
 
-                                password:
-                                    $("#password")
-                                        .value
-                            })
-                    }
+            event.preventDefault();
+
+
+            const loginError =
+                $("#loginError");
+
+
+            const username =
+                $("#username").value.trim();
+
+
+            const password =
+                $("#password").value;
+
+
+            loginError.textContent =
+                "Logging in...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/login",
+                        {
+                            method: "POST",
+
+                            credentials:
+                                "same-origin",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    username,
+                                    password
+                                })
+                        }
+                    );
+
+
+                let result = {};
+
+                try {
+                    result =
+                        await response.json();
+                } catch {
+                    result = {};
+                }
+
+
+                if (!response.ok) {
+
+                    loginError.textContent =
+                        result.error ||
+                        "Invalid username or password.";
+
+                    return;
+
+                }
+
+
+                loginError.textContent =
+                    "Login successful. Loading...";
+
+
+                await loadDashboardData();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Login error:",
+                    error
                 );
 
 
-            if (response.ok) {
-
-                $("#loginError")
-                    .textContent = "";
-
-                await load();
-
-            } else {
-
-                $("#loginError")
-                    .textContent =
-                    "Invalid username or password.";
+                loginError.textContent =
+                    "Login failed. Please refresh and try again.";
 
             }
 
-        } catch (error) {
-
-            console.error(error);
-
-            $("#loginError")
-                .textContent =
-                "Login failed. Please try again.";
-
         }
+    );
 
-    };
+}
 
 
 /* =========================================================
-   SAVE ALL DATA
+   SAVE
 ========================================================= */
 
-$("#saveBtn").onclick =
-    async () => {
-
-        const saveButton =
-            $("#saveBtn");
+const saveButton =
+    $("#saveBtn");
 
 
-        try {
+if (saveButton) {
 
-            saveButton.disabled =
-                true;
+    saveButton.addEventListener(
+        "click",
+        async () => {
 
-            saveButton.textContent =
-                "Saving...";
+            const saveMessage =
+                $("#saveMessage");
 
 
-            const response =
-                await fetch(
-                    "/api/data",
-                    {
-                        method: "PUT",
+            try {
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+                saveButton.disabled =
+                    true;
 
-                        body:
-                            JSON.stringify(data)
-                    }
+                saveButton.textContent =
+                    "Saving...";
+
+
+                const response =
+                    await fetch(
+                        "/api/data",
+                        {
+                            method: "PUT",
+
+                            credentials:
+                                "same-origin",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(data)
+                        }
+                    );
+
+
+                let result = {};
+
+                try {
+
+                    result =
+                        await response.json();
+
+                } catch {
+
+                    result = {};
+
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        "Save failed."
+                    );
+
+                }
+
+
+                if (result.data) {
+
+                    data =
+                        result.data;
+
+                    prepareData();
+
+                }
+
+
+                saveMessage.textContent =
+                    "✓ Saved successfully";
+
+
+                const iframe =
+                    document.querySelector(
+                        ".preview iframe"
+                    );
+
+
+                if (iframe) {
+
+                    iframe.src =
+                        iframe.src;
+
+                }
+
+
+                setTimeout(
+                    () => {
+
+                        saveMessage.textContent =
+                            "";
+
+                    },
+                    4000
                 );
 
 
-            const result =
-                await response.json();
+            } catch (error) {
 
-
-            if (!response.ok) {
-
-                throw new Error(
-                    result.error ||
-                    "Save failed"
+                console.error(
+                    "Save error:",
+                    error
                 );
+
+
+                saveMessage.textContent =
+                    "✕ " +
+                    (
+                        error.message ||
+                        "Save failed."
+                    );
+
+
+            } finally {
+
+                saveButton.disabled =
+                    false;
+
+                saveButton.textContent =
+                    "Save All Changes";
 
             }
-
-
-            /* -----------------------------------------
-               USE SERVER'S CLEANED DATA
-            ----------------------------------------- */
-
-            if (result.data) {
-                data = result.data;
-            }
-
-
-            $("#saveMessage")
-                .textContent =
-                "✓ Saved successfully";
-
-
-            /* -----------------------------------------
-               REFRESH ADMIN PREVIEW
-            ----------------------------------------- */
-
-            const iframe =
-                document.querySelector(
-                    ".preview iframe"
-                );
-
-
-            if (iframe) {
-
-                iframe.contentWindow
-                    .location
-                    .reload();
-
-            }
-
-
-            /* -----------------------------------------
-               REMOVE MESSAGE AFTER A FEW SECONDS
-            ----------------------------------------- */
-
-            setTimeout(() => {
-
-                $("#saveMessage")
-                    .textContent = "";
-
-            }, 4000);
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            $("#saveMessage")
-                .textContent =
-                "✕ " +
-                (
-                    error.message ||
-                    "Save failed"
-                );
-
-        } finally {
-
-            saveButton.disabled =
-                false;
-
-            saveButton.textContent =
-                "Save All Changes";
 
         }
+    );
 
-    };
+}
 
 
 /* =========================================================
    LOGOUT
 ========================================================= */
 
-$("#logoutBtn").onclick =
-    async () => {
+const logoutButton =
+    $("#logoutBtn");
 
-        try {
 
-            await fetch(
-                "/api/logout",
-                {
-                    method: "POST"
-                }
-            );
+if (logoutButton) {
 
-        } catch (error) {
+    logoutButton.addEventListener(
+        "click",
+        async () => {
 
-            console.error(error);
+            try {
+
+                await fetch(
+                    "/api/logout",
+                    {
+                        method: "POST",
+                        credentials:
+                            "same-origin"
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+            }
+
+
+            window.location.reload();
 
         }
+    );
 
-
-        location.reload();
-
-    };
+}
 
 
 /* =========================================================
    START
 ========================================================= */
 
-load();
-```
+loadAdmin();
