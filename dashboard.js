@@ -22,6 +22,7 @@ const esc = s =>
 ===================================================== */
 
 const chartColors = {
+
     trading: [
         "#438ddd",
         "#5b9be3",
@@ -75,6 +76,7 @@ const chartColors = {
 function render(data) {
 
     const total = Number(data.capital.total) || 0;
+
     const vs = data.verticals;
 
     const keys = [
@@ -147,10 +149,14 @@ function render(data) {
 
     document.getElementById("status").innerHTML =
         Math.abs(difference) < 0.01
+
             ? '<span>✓</span> Fully Allocated'
+
             : difference > 0
+
                 ? '<span style="color:#d99000;">↑</span> Surplus ₹ ' +
                   fmt(difference)
+
                 : '<span class="warning">↓</span> Deficit ₹ ' +
                   fmt(Math.abs(difference));
 
@@ -194,10 +200,11 @@ function render(data) {
 
 
     /* =================================================
-       MAIN ROUND / DONUT CHART
+       DONUT CHART
     ================================================= */
 
     let start = 0;
+
     let stops = [];
 
     keys.forEach((k, i) => {
@@ -327,7 +334,9 @@ function render(data) {
 
 
     /* =================================================
-       DEPARTMENT TABLES + AUTOMATIC ITEM BAR CHARTS
+       DEPARTMENT TABLES
+       + ROI TABLE
+       + ITEM BAR CHART
     ================================================= */
 
     document.getElementById("tablesGrid").innerHTML =
@@ -336,12 +345,20 @@ function render(data) {
             const v = vs[k];
 
 
-            /* -----------------------------------------
-               TABLE ROWS
-            ----------------------------------------- */
+            /* =========================================
+               ALLOCATION TABLE ROWS
+            ========================================= */
 
             const rows =
                 v.items.map((it, i) => {
+
+                    const targetPercent =
+                        Number(it[1] || 0);
+
+                    const capital =
+                        total *
+                        targetPercent /
+                        100;
 
                     return `
                         <tr>
@@ -355,15 +372,11 @@ function render(data) {
                             </td>
 
                             <td>
-                                ${pct(it[1])}
+                                ${pct(targetPercent)}
                             </td>
 
                             <td>
-                                ${money(
-                                    total *
-                                    Number(it[1] || 0) /
-                                    100
-                                )}
+                                ${money(capital)}
                             </td>
 
                         </tr>
@@ -372,9 +385,133 @@ function render(data) {
                 }).join("");
 
 
-            /* -----------------------------------------
-               TOTAL %
-            ----------------------------------------- */
+            /* =========================================
+               ROI CALCULATION
+            ========================================= */
+
+            let roiTotalCapital = 0;
+
+            let roiLastWeekAmount = 0;
+
+            let roiLastMonthAmount = 0;
+
+
+            const roiRows =
+                v.items.map((it, i) => {
+
+                    const targetPercent =
+                        Number(it[1] || 0);
+
+                    const capital =
+                        total *
+                        targetPercent /
+                        100;
+
+
+                    /*
+                       Item format:
+
+                       [0] = Particular
+                       [1] = Target %
+                       [2] = Last Week ROI %
+                       [3] = Last Month ROI %
+                    */
+
+                    const lastWeekPercent =
+                        Number(it[2] || 0);
+
+                    const lastMonthPercent =
+                        Number(it[3] || 0);
+
+
+                    /* ROI AMOUNT */
+
+                    const lastWeekAmount =
+                        capital *
+                        lastWeekPercent /
+                        100;
+
+                    const lastMonthAmount =
+                        capital *
+                        lastMonthPercent /
+                        100;
+
+
+                    roiTotalCapital += capital;
+
+                    roiLastWeekAmount +=
+                        lastWeekAmount;
+
+                    roiLastMonthAmount +=
+                        lastMonthAmount;
+
+
+                    return `
+                        <tr>
+
+                            <td>
+                                ${i + 1}
+                            </td>
+
+                            <td>
+                                ${esc(it[0])}
+                            </td>
+
+                            <td>
+                                ${money(capital)}
+                            </td>
+
+                            <td>
+                                ${lastWeekPercent.toFixed(2)}%
+                            </td>
+
+                            <td>
+                                ${money(lastWeekAmount)}
+                            </td>
+
+                            <td>
+                                ${lastMonthPercent.toFixed(2)}%
+                            </td>
+
+                            <td>
+                                ${money(lastMonthAmount)}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }).join("");
+
+
+            /* =========================================
+               WEIGHTED ROI %
+            ========================================= */
+
+            const roiLastWeekPercent =
+                roiTotalCapital > 0
+
+                    ? (
+                        roiLastWeekAmount /
+                        roiTotalCapital
+                    ) * 100
+
+                    : 0;
+
+
+            const roiLastMonthPercent =
+                roiTotalCapital > 0
+
+                    ? (
+                        roiLastMonthAmount /
+                        roiTotalCapital
+                    ) * 100
+
+                    : 0;
+
+
+            /* =========================================
+               ALLOCATION TOTAL
+            ========================================= */
 
             const sum =
                 v.items.reduce(
@@ -394,16 +531,21 @@ function render(data) {
 
 
             let status = "";
+
             let statusClass = "";
+
             let statusPercent = 0;
+
             let statusAmount = 0;
 
 
-            /* -----------------------------------------
-               STATUS
-            ----------------------------------------- */
+            /* =========================================
+               ALLOCATION STATUS
+            ========================================= */
 
-            if (Math.abs(difference) < 0.01) {
+            if (
+                Math.abs(difference) < 0.01
+            ) {
 
                 status =
                     "FULLY ALLOCATED";
@@ -419,7 +561,9 @@ function render(data) {
 
             }
 
-            else if (difference > 0) {
+            else if (
+                difference > 0
+            ) {
 
                 status =
                     "SURPLUS";
@@ -452,17 +596,19 @@ function render(data) {
                     total *
                     Math.abs(difference) /
                     100;
+
             }
 
 
-            /* =================================================
-               AUTOMATIC ITEM BAR CHART
-            ================================================= */
+            /* =========================================
+               ITEM BAR CHART
+            ========================================= */
 
             const itemValues =
                 v.items.map(it =>
                     Number(it[1] || 0)
                 );
+
 
             const maxItem =
                 Math.max(
@@ -477,23 +623,30 @@ function render(data) {
                     const itemPercent =
                         Number(it[1] || 0);
 
+
                     const height =
                         Math.max(
                             8,
-                            (itemPercent / maxItem) * 150
+                            (itemPercent / maxItem) *
+                            150
                         );
 
 
                     const barColor =
                         chartColors[k][
-                            i % chartColors[k].length
+                            i %
+                            chartColors[k].length
                         ];
 
 
                     return `
-                        <div class="item-bar-group">
+                        <div
+                            class="item-bar-group"
+                        >
 
-                            <div class="item-bar-value">
+                            <div
+                                class="item-bar-value"
+                            >
                                 ${itemPercent}%
                             </div>
 
@@ -505,7 +658,9 @@ function render(data) {
                                 "
                             ></div>
 
-                            <div class="item-bar-label">
+                            <div
+                                class="item-bar-label"
+                            >
                                 ${esc(it[0])}
                             </div>
 
@@ -515,14 +670,15 @@ function render(data) {
                 }).join("");
 
 
-            /* =================================================
-               COMPLETE DEPARTMENT CARD
-            ================================================= */
+            /* =========================================
+               DEPARTMENT CARD
+            ========================================= */
 
             return `
 
-                <div class="department ${k}-box">
-
+                <div
+                    class="department ${k}-box"
+                >
 
                     <h2>
 
@@ -535,7 +691,7 @@ function render(data) {
                     </h2>
 
 
-                    <!-- TABLE -->
+                    <!-- ALLOCATION TABLE -->
 
                     <table>
 
@@ -594,18 +750,24 @@ function render(data) {
                             </tr>
 
 
-                            <tr class="${statusClass}">
+                            <tr
+                                class="${statusClass}"
+                            >
 
                                 <th colspan="2">
                                     ${status}
                                 </th>
 
                                 <th>
-                                    ${pct(statusPercent)}
+                                    ${pct(
+                                        statusPercent
+                                    )}
                                 </th>
 
                                 <th>
-                                    ${money(statusAmount)}
+                                    ${money(
+                                        statusAmount
+                                    )}
                                 </th>
 
                             </tr>
@@ -615,13 +777,144 @@ function render(data) {
                     </table>
 
 
-                    <!-- AUTOMATIC ITEM BAR CHART -->
+                    <!-- =================================
+                         ROI PERFORMANCE
+                    ================================= -->
+
+                    <div class="roi-section">
+
+                        <div class="roi-title">
+                            ROI PERFORMANCE
+                        </div>
+
+
+                        <table class="roi-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th rowspan="2">
+                                        Sr. No.
+                                    </th>
+
+                                    <th rowspan="2">
+                                        Particular
+                                    </th>
+
+                                    <th rowspan="2">
+                                        Capital (₹)
+                                    </th>
+
+                                    <th
+                                        colspan="2"
+                                        class="week-head"
+                                    >
+                                        LAST WEEK
+                                    </th>
+
+                                    <th
+                                        colspan="2"
+                                        class="month-head"
+                                    >
+                                        LAST MONTH
+                                    </th>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th
+                                        class="week-head"
+                                    >
+                                        ROI %
+                                    </th>
+
+                                    <th
+                                        class="week-head"
+                                    >
+                                        ROI Amount (₹)
+                                    </th>
+
+                                    <th
+                                        class="month-head"
+                                    >
+                                        ROI %
+                                    </th>
+
+                                    <th
+                                        class="month-head"
+                                    >
+                                        ROI Amount (₹)
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                ${roiRows}
+
+                            </tbody>
+
+
+                            <tfoot>
+
+                                <tr>
+
+                                    <th colspan="2">
+                                        TOTAL
+                                    </th>
+
+                                    <th>
+                                        ${money(
+                                            roiTotalCapital
+                                        )}
+                                    </th>
+
+                                    <th>
+                                        ${roiLastWeekPercent.toFixed(2)}%
+                                    </th>
+
+                                    <th>
+                                        ${money(
+                                            roiLastWeekAmount
+                                        )}
+                                    </th>
+
+                                    <th>
+                                        ${roiLastMonthPercent.toFixed(2)}%
+                                    </th>
+
+                                    <th>
+                                        ${money(
+                                            roiLastMonthAmount
+                                        )}
+                                    </th>
+
+                                </tr>
+
+                            </tfoot>
+
+                        </table>
+
+                    </div>
+
+
+                    <!-- ALLOCATION BREAKDOWN CHART -->
 
                     <div class="item-chart">
 
-                        <div class="item-chart-title">
-                            ${names[k]} ALLOCATION BREAKDOWN
+                        <div
+                            class="item-chart-title"
+                        >
+                            ${names[k]}
+                            ALLOCATION BREAKDOWN
                         </div>
+
 
                         <div class="item-bars">
 
@@ -636,14 +929,15 @@ function render(data) {
 
                     <div class="purpose">
 
-                        <b>PURPOSE</b>
+                        <b>
+                            PURPOSE
+                        </b>
 
                         <p>
                             ${esc(v.purpose)}
                         </p>
 
                     </div>
-
 
                 </div>
 
@@ -672,14 +966,29 @@ function render(data) {
    LOAD DATA
 ===================================================== */
 
-fetch("/api/data", {
-    credentials: "same-origin"
-})
-    .then(response => response.json())
-    .then(render)
-    .catch(() => {
+fetch(
+    "/api/data",
+    {
+        credentials: "same-origin"
+    }
+)
 
-        document.getElementById("loading").textContent =
-            "Unable to load dashboard.";
+    .then(
+        response =>
+            response.json()
+    )
 
-    });
+    .then(
+        render
+    )
+
+    .catch(
+        () => {
+
+            document
+                .getElementById("loading")
+                .textContent =
+                "Unable to load dashboard.";
+
+        }
+    );
