@@ -1673,3 +1673,30 @@ footer {
         width: 100%;
     }
 }
+/* =========================================================
+   DEPARTMENT PURPOSE COLORS
+========================================================= */
+
+/* Trading */
+.trading-box .purpose b {
+    background: #e5f1fa;
+    color: #185b92;
+}
+
+/* Investment */
+.investment-box .purpose b {
+    background: #e4f2e7;
+    color: #397541;
+}
+
+/* Reserve */
+.reserve-box .purpose b {
+    background: #fff3c6;
+    color: #795f00;
+}
+
+/* Research & Development */
+.rnd-box .purpose b {
+    background: #ece5f5;
+    color: #5b3d82;
+}
