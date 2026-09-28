@@ -1,4 +1,4 @@
-```javascript
+``javascript
 let data = null;
 
 const $ = s => document.querySelector(s);
