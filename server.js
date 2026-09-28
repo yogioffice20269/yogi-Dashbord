@@ -212,6 +212,12 @@ function normalizeData(data) {
         verticals: {}
     };
 
+/* -----------------------------------------------------
+   DASHBOARD SETTINGS
+----------------------------------------------------- */
+
+allowed.settings.overallROIEnabled =
+    data.settings?.overallROIEnabled !== false;
 
     for (const key of [
         "trading",
