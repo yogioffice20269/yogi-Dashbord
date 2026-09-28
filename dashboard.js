@@ -1,6 +1,6 @@
 /* =========================================================
    YOGI GROWING TOGETHER LLP
-   FUND ALLOCATION DASHBOARD
+   FUND ALLOCATION SYSTEM
    COMPLETE DASHBOARD.JS
 ========================================================= */
 
@@ -25,6 +25,7 @@ function formatNumber(value) {
 }
 
 function formatLakh(value) {
+
     value = Number(value) || 0;
 
     if (value >= 10000000) {
@@ -54,6 +55,7 @@ function formatLakh(value) {
 }
 
 function escapeHTML(value) {
+
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -70,10 +72,13 @@ function formatDisplayDate(value) {
 
     if (!value) return "";
 
-    const text = String(value).trim();
+    const text =
+        String(value).trim();
 
     const iso =
-        text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        text.match(
+            /^(\d{4})-(\d{2})-(\d{2})$/
+        );
 
     if (iso) {
         return `${iso[3]}-${iso[2]}-${iso[1]}`;
@@ -83,68 +88,22 @@ function formatDisplayDate(value) {
 }
 
 /* =========================================================
-   ITEM NORMALIZATION
-========================================================= */
-
-function normalizeItem(item) {
-
-    if (Array.isArray(item)) {
-
-        return {
-            name: String(item[0] ?? "Item"),
-            percent: Number(item[1]) || 0,
-            weekROI: Number(item[2]) || 0,
-            monthROI: Number(item[3]) || 0
-        };
-    }
-
-    if (item && typeof item === "object") {
-
-        return {
-            name: String(
-                item.name ?? "Item"
-            ),
-
-            percent: Number(
-                item.percent ??
-                item.allocation ??
-                0
-            ) || 0,
-
-            weekROI: Number(
-                item.weekROI ??
-                item.lastWeekROI ??
-                0
-            ) || 0,
-
-            monthROI: Number(
-                item.monthROI ??
-                item.lastMonthROI ??
-                0
-            ) || 0
-        };
-    }
-
-    return {
-        name: "Item",
-        percent: 0,
-        weekROI: 0,
-        monthROI: 0
-    };
-}
-
-/* =========================================================
    COLORS
 ========================================================= */
 
 const DEPARTMENT_COLORS = {
+
     trading: "#2f75b5",
+
     investment: "#70ad47",
+
     reserve: "#ffc000",
+
     rnd: "#7030a0"
 };
 
 function getDepartmentColor(key) {
+
     return (
         DEPARTMENT_COLORS[key] ||
         "#777777"
@@ -152,21 +111,131 @@ function getDepartmentColor(key) {
 }
 
 /* =========================================================
-   LOAD DATA
+   DEPARTMENT LIST
+========================================================= */
+
+const DEPARTMENTS = [
+
+    {
+        key: "trading",
+        name: "Trading"
+    },
+
+    {
+        key: "investment",
+        name: "Investment"
+    },
+
+    {
+        key: "reserve",
+        name: "Reserve"
+    },
+
+    {
+        key: "rnd",
+        name: "R&D"
+    }
+];
+
+/* =========================================================
+   NORMALIZE ITEM
+========================================================= */
+
+function normalizeItem(item) {
+
+    if (Array.isArray(item)) {
+
+        return {
+
+            name:
+                String(
+                    item[0] ??
+                    "Item"
+                ),
+
+            percent:
+                Number(
+                    item[1]
+                ) || 0,
+
+            weekROI:
+                Number(
+                    item[2]
+                ) || 0,
+
+            monthROI:
+                Number(
+                    item[3]
+                ) || 0
+        };
+    }
+
+    if (
+        item &&
+        typeof item === "object"
+    ) {
+
+        return {
+
+            name:
+                String(
+                    item.name ??
+                    "Item"
+                ),
+
+            percent:
+                Number(
+                    item.percent ??
+                    item.allocation ??
+                    0
+                ) || 0,
+
+            weekROI:
+                Number(
+                    item.weekROI ??
+                    item.lastWeekROI ??
+                    0
+                ) || 0,
+
+            monthROI:
+                Number(
+                    item.monthROI ??
+                    item.lastMonthROI ??
+                    0
+                ) || 0
+        };
+    }
+
+    return {
+
+        name: "Item",
+
+        percent: 0,
+
+        weekROI: 0,
+
+        monthROI: 0
+    };
+}
+
+/* =========================================================
+   LOAD DASHBOARD
 ========================================================= */
 
 async function loadDashboard() {
 
     try {
 
-        const response = await fetch(
-            "/api/data",
-            {
-                cache: "no-store"
-            }
-        );
+        const response =
+            await fetch(
+                "/api/data",
+                {
+                    cache: "no-store"
+                }
+            );
 
         if (!response.ok) {
+
             throw new Error(
                 "Unable to load dashboard data"
             );
@@ -177,18 +246,18 @@ async function loadDashboard() {
 
         renderDashboard(data);
 
-        const loading =
-            $("loading");
+        if ($("loading")) {
 
-        const dashboard =
-            $("dashboard");
-
-        if (loading) {
-            loading.classList.add("hidden");
+            $("loading")
+                .classList
+                .add("hidden");
         }
 
-        if (dashboard) {
-            dashboard.classList.remove("hidden");
+        if ($("dashboard")) {
+
+            $("dashboard")
+                .classList
+                .remove("hidden");
         }
 
     } catch (error) {
@@ -198,18 +267,16 @@ async function loadDashboard() {
             error
         );
 
-        const loading =
-            $("loading");
+        if ($("loading")) {
 
-        if (loading) {
-            loading.textContent =
+            $("loading").textContent =
                 "Unable to load dashboard. Please refresh the page.";
         }
     }
 }
 
 /* =========================================================
-   MAIN RENDER
+   MAIN DASHBOARD
 ========================================================= */
 
 function renderDashboard(data) {
@@ -222,21 +289,41 @@ function renderDashboard(data) {
     const verticals =
         data?.verticals || {};
 
-    const keys = [
-        "trading",
-        "investment",
-        "reserve",
-        "rnd"
-    ];
+    let allocatedCapital = 0;
 
-    /* HEADER */
+    DEPARTMENTS.forEach(
+        department => {
+
+            const percent =
+                Number(
+                    verticals?.[
+                        department.key
+                    ]?.percent
+                ) || 0;
+
+            allocatedCapital +=
+                totalCapital *
+                percent /
+                100;
+        }
+    );
+
+    const difference =
+        totalCapital -
+        allocatedCapital;
+
+    /* =====================================================
+       HEADER
+    ===================================================== */
 
     if ($("orgName")) {
+
         $("orgName").textContent =
             data?.meta?.organization || "";
     }
 
     if ($("metaDate")) {
+
         $("metaDate").textContent =
             formatDisplayDate(
                 data?.meta?.date
@@ -244,42 +331,33 @@ function renderDashboard(data) {
     }
 
     if ($("metaPrepared")) {
+
         $("metaPrepared").textContent =
             data?.meta?.preparedBy || "";
     }
 
-    /* TOTAL ALLOCATION */
-
-    let allocatedCapital = 0;
-
-    keys.forEach(key => {
-
-        const percent =
-            Number(
-                verticals?.[key]?.percent
-            ) || 0;
-
-        allocatedCapital +=
-            totalCapital *
-            percent /
-            100;
-    });
-
-    const difference =
-        totalCapital -
-        allocatedCapital;
+    /* =====================================================
+       SUMMARY
+    ===================================================== */
 
     if ($("totalCapital")) {
+
         $("totalCapital").textContent =
-            formatINR(totalCapital);
+            formatINR(
+                totalCapital
+            );
     }
 
     if ($("allocatedCapital")) {
+
         $("allocatedCapital").textContent =
-            formatINR(allocatedCapital);
+            formatINR(
+                allocatedCapital
+            );
     }
 
     if ($("unallocatedCapital")) {
+
         $("unallocatedCapital").textContent =
             formatINR(
                 Math.abs(difference)
@@ -291,19 +369,44 @@ function renderDashboard(data) {
         allocatedCapital
     );
 
+    /* =====================================================
+       ALLOCATION CARDS
+    ===================================================== */
+
     renderAllocationCards(
         data,
         totalCapital
     );
 
+    /* =====================================================
+       FUND ALLOCATION DONUT
+    ===================================================== */
+
     renderDonut(
         data
     );
+
+    /* =====================================================
+       CAPITAL BAR CHART
+    ===================================================== */
 
     renderCapitalBars(
         data,
         totalCapital
     );
+
+    /* =====================================================
+       OVERALL ROI
+    ===================================================== */
+
+    renderOverallROI(
+        data,
+        totalCapital
+    );
+
+    /* =====================================================
+       DEPARTMENT TABLES
+    ===================================================== */
 
     renderDepartmentTables(
         data,
@@ -330,7 +433,8 @@ function renderOverallStatus(
         allocatedCapital;
 
     if (
-        Math.abs(difference) < 0.01
+        Math.abs(difference) <
+        0.01
     ) {
 
         element.innerHTML = `
@@ -339,11 +443,15 @@ function renderOverallStatus(
             </span>
         `;
 
-    } else if (difference > 0) {
+    } else if (
+        difference > 0
+    ) {
 
         element.innerHTML = `
             <span class="status-surplus">
-                SURPLUS ${formatINR(difference)}
+                SURPLUS ${formatINR(
+                    difference
+                )}
             </span>
         `;
 
@@ -352,7 +460,9 @@ function renderOverallStatus(
         element.innerHTML = `
             <span class="status-deficit">
                 DEFICIT ${formatINR(
-                    Math.abs(difference)
+                    Math.abs(
+                        difference
+                    )
                 )}
             </span>
         `;
@@ -375,26 +485,7 @@ function renderAllocationCards(
 
     container.innerHTML = "";
 
-    const departments = [
-        {
-            key: "trading",
-            name: "TRADING"
-        },
-        {
-            key: "investment",
-            name: "INVESTMENT"
-        },
-        {
-            key: "reserve",
-            name: "RESERVE"
-        },
-        {
-            key: "rnd",
-            name: "R&D"
-        }
-    ];
-
-    departments.forEach(
+    DEPARTMENTS.forEach(
         department => {
 
             const percent =
@@ -410,32 +501,42 @@ function renderAllocationCards(
                 100;
 
             const card =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
             card.className =
                 `allocation-card ${department.key}`;
 
             card.innerHTML = `
-                <div class="allocation-card-title">
+
+                <div class="allocation-title">
                     ${department.name}
                 </div>
 
-                <div class="allocation-card-percent">
-                    ${formatNumber(percent)}%
+                <div class="allocation-percent">
+                    ${formatNumber(
+                        percent
+                    )}%
                 </div>
 
-                <div class="allocation-card-capital">
-                    ${formatINR(capital)}
+                <div class="allocation-capital">
+                    ${formatINR(
+                        capital
+                    )}
                 </div>
+
             `;
 
-            container.appendChild(card);
+            container.appendChild(
+                card
+            );
         }
     );
 }
 
 /* =========================================================
-   DONUT CHART
+   FUND ALLOCATION DONUT
 ========================================================= */
 
 function renderDonut(data) {
@@ -446,29 +547,13 @@ function renderDonut(data) {
     const legend =
         $("legend");
 
-    if (!donut || !legend) return;
-
-    const departments = [
-        {
-            key: "trading",
-            name: "Trading"
-        },
-        {
-            key: "investment",
-            name: "Investment"
-        },
-        {
-            key: "reserve",
-            name: "Reserve"
-        },
-        {
-            key: "rnd",
-            name: "R&D"
-        }
-    ];
+    if (
+        !donut ||
+        !legend
+    ) return;
 
     const values =
-        departments.map(
+        DEPARTMENTS.map(
             department =>
                 Math.max(
                     0,
@@ -487,11 +572,12 @@ function renderDonut(data) {
             0
         );
 
-    let current = 0;
+    let current =
+        0;
 
     const segments = [];
 
-    departments.forEach(
+    DEPARTMENTS.forEach(
         (department, index) => {
 
             const value =
@@ -500,9 +586,7 @@ function renderDonut(data) {
             if (
                 value <= 0 ||
                 total <= 0
-            ) {
-                return;
-            }
+            ) return;
 
             const start =
                 current /
@@ -539,7 +623,7 @@ function renderDonut(data) {
 
     legend.innerHTML = "";
 
-    departments.forEach(
+    DEPARTMENTS.forEach(
         (department, index) => {
 
             const row =
@@ -551,6 +635,7 @@ function renderDonut(data) {
                 "legend-item";
 
             row.innerHTML = `
+
                 <span
                     class="legend-dot"
                     style="
@@ -575,14 +660,15 @@ function renderDonut(data) {
                 </b>
             `;
 
-            legend.appendChild(row);
+            legend.appendChild(
+                row
+            );
         }
     );
 }
 
 /* =========================================================
    CAPITAL BAR CHART
-   FULLY DYNAMIC
 ========================================================= */
 
 function renderCapitalBars(
@@ -597,27 +683,8 @@ function renderCapitalBars(
 
     container.innerHTML = "";
 
-    const departments = [
-        {
-            key: "trading",
-            name: "Trading"
-        },
-        {
-            key: "investment",
-            name: "Investment"
-        },
-        {
-            key: "reserve",
-            name: "Reserve"
-        },
-        {
-            key: "rnd",
-            name: "R&D"
-        }
-    ];
-
     const values =
-        departments.map(
+        DEPARTMENTS.map(
             department => {
 
                 const percent =
@@ -628,9 +695,13 @@ function renderCapitalBars(
                     ) || 0;
 
                 return {
-                    key: department.key,
-                    name: department.name,
-                    percent: percent,
+
+                    key:
+                        department.key,
+
+                    name:
+                        department.name,
+
                     capital:
                         totalCapital *
                         percent /
@@ -638,8 +709,6 @@ function renderCapitalBars(
                 };
             }
         );
-
-    /* Highest value */
 
     const highest =
         Math.max(
@@ -650,64 +719,50 @@ function renderCapitalBars(
             1
         );
 
-    /*
-       Dynamic maximum.
-
-       Example:
-       ₹40L highest
-       => graph max = ₹40L
-
-       ₹70L highest
-       => graph max = ₹70L
-
-       ₹1Cr highest
-       => graph max = ₹1Cr
-    */
-
     let maxValue;
 
-    if (highest <= 100000) {
+    if (
+        highest <=
+        1000000
+    ) {
 
         maxValue =
             Math.ceil(
-                highest / 20000
-            ) * 20000;
+                highest /
+                100000
+            ) *
+            100000;
 
-    } else if (highest <= 1000000) {
-
-        maxValue =
-            Math.ceil(
-                highest / 100000
-            ) * 100000;
-
-    } else if (highest <= 10000000) {
+    } else if (
+        highest <=
+        10000000
+    ) {
 
         maxValue =
             Math.ceil(
-                highest / 1000000
-            ) * 1000000;
+                highest /
+                1000000
+            ) *
+            1000000;
 
     } else {
 
         maxValue =
             Math.ceil(
-                highest / 10000000
-            ) * 10000000;
+                highest /
+                10000000
+            ) *
+            10000000;
     }
 
-    if (maxValue <= 0) {
+    if (
+        maxValue <= 0
+    ) {
         maxValue = 1;
     }
 
-    /* Find chart wrapper */
-
     const wrapper =
         container.parentElement;
-
-    /*
-       Create dynamic Y-axis
-       if y-axis exists.
-    */
 
     if (wrapper) {
 
@@ -726,18 +781,17 @@ function renderCapitalBars(
                 i--
             ) {
 
-                const value =
-                    maxValue *
-                    i /
-                    5;
-
                 const label =
                     document.createElement(
                         "span"
                     );
 
                 label.textContent =
-                    formatLakh(value);
+                    formatLakh(
+                        maxValue *
+                        i /
+                        5
+                    );
 
                 yAxis.appendChild(
                     label
@@ -745,8 +799,6 @@ function renderCapitalBars(
             }
         }
     }
-
-    /* Create bars */
 
     values.forEach(
         item => {
@@ -759,15 +811,15 @@ function renderCapitalBars(
             group.className =
                 "bar-group";
 
-            const valueLabel =
+            const value =
                 document.createElement(
                     "div"
                 );
 
-            valueLabel.className =
+            value.className =
                 "bar-value";
 
-            valueLabel.textContent =
+            value.textContent =
                 formatINR(
                     item.capital
                 );
@@ -817,7 +869,7 @@ function renderCapitalBars(
                 item.name;
 
             group.appendChild(
-                valueLabel
+                value
             );
 
             group.appendChild(
@@ -832,6 +884,810 @@ function renderCapitalBars(
                 group
             );
         }
+    );
+}
+
+/* =========================================================
+   OVERALL ROI
+========================================================= */
+
+function calculateOverallROI(
+    data,
+    totalCapital
+) {
+
+    return DEPARTMENTS.map(
+        department => {
+
+            const vertical =
+                data?.verticals?.[
+                    department.key
+                ] || {};
+
+            const departmentPercent =
+                Number(
+                    vertical.percent
+                ) || 0;
+
+            const departmentCapital =
+                totalCapital *
+                departmentPercent /
+                100;
+
+            const items =
+                Array.isArray(
+                    vertical.items
+                )
+                    ? vertical.items
+                    : [];
+
+            let weekAmount = 0;
+
+            let monthAmount = 0;
+
+            items.forEach(
+                item => {
+
+                    const x =
+                        normalizeItem(
+                            item
+                        );
+
+                    const capital =
+                        totalCapital *
+                        x.percent /
+                        100;
+
+                    weekAmount +=
+                        capital *
+                        x.weekROI /
+                        100;
+
+                    monthAmount +=
+                        capital *
+                        x.monthROI /
+                        100;
+                }
+            );
+
+            const weekPercent =
+                departmentCapital > 0
+                    ? weekAmount /
+                      departmentCapital *
+                      100
+                    : 0;
+
+            const monthPercent =
+                departmentCapital > 0
+                    ? monthAmount /
+                      departmentCapital *
+                      100
+                    : 0;
+
+            return {
+
+                key:
+                    department.key,
+
+                name:
+                    department.name,
+
+                capital:
+                    departmentCapital,
+
+                weekPercent:
+                    weekPercent,
+
+                weekAmount:
+                    weekAmount,
+
+                monthPercent:
+                    monthPercent,
+
+                monthAmount:
+                    monthAmount
+            };
+        }
+    );
+}
+
+/* =========================================================
+   OVERALL ROI SECTION
+========================================================= */
+
+function renderOverallROI(
+    data,
+    totalCapital
+) {
+
+    const existing =
+        document.getElementById(
+            "overallROISection"
+        );
+
+    if (existing) {
+        existing.remove();
+    }
+
+    const tablesGrid =
+        $("tablesGrid");
+
+    if (!tablesGrid) return;
+
+    const results =
+        calculateOverallROI(
+            data,
+            totalCapital
+        );
+
+    const totalDepartmentCapital =
+        results.reduce(
+            (sum, item) =>
+                sum + item.capital,
+            0
+        );
+
+    const totalWeekROI =
+        results.reduce(
+            (sum, item) =>
+                sum + item.weekAmount,
+            0
+        );
+
+    const totalMonthROI =
+        results.reduce(
+            (sum, item) =>
+                sum + item.monthAmount,
+            0
+        );
+
+    const overallWeekPercent =
+        totalDepartmentCapital > 0
+            ? totalWeekROI /
+              totalDepartmentCapital *
+              100
+            : 0;
+
+    const overallMonthPercent =
+        totalDepartmentCapital > 0
+            ? totalMonthROI /
+              totalDepartmentCapital *
+              100
+            : 0;
+
+    const section =
+        document.createElement(
+            "section"
+        );
+
+    section.id =
+        "overallROISection";
+
+    section.style.cssText = `
+        width:100%;
+        margin:30px 0;
+        background:#ffffff;
+        border:1px solid #d7d7d7;
+        border-radius:10px;
+        overflow:hidden;
+        box-shadow:0 3px 12px rgba(0,0,0,.08);
+    `;
+
+    /* =====================================================
+       HEADER
+    ===================================================== */
+
+    const header =
+        document.createElement(
+            "div"
+        );
+
+    header.style.cssText = `
+        background:#075c32;
+        color:#ffffff;
+        padding:18px 22px;
+        text-align:center;
+        font-size:20px;
+        font-weight:800;
+        letter-spacing:.5px;
+    `;
+
+    header.textContent =
+        "OVERALL ROI PERFORMANCE";
+
+    section.appendChild(
+        header
+    );
+
+    /* =====================================================
+       CONTENT
+    ===================================================== */
+
+    const content =
+        document.createElement(
+            "div"
+        );
+
+    content.style.cssText = `
+        padding:24px;
+    `;
+
+    /* =====================================================
+       TABLE
+    ===================================================== */
+
+    const tableTitle =
+        document.createElement(
+            "div"
+        );
+
+    tableTitle.style.cssText = `
+        font-size:17px;
+        font-weight:800;
+        margin-bottom:14px;
+        color:#075c32;
+    `;
+
+    tableTitle.textContent =
+        "Department Wise ROI";
+
+    content.appendChild(
+        tableTitle
+    );
+
+    const tableWrap =
+        document.createElement(
+            "div"
+        );
+
+    tableWrap.style.cssText = `
+        width:100%;
+        overflow-x:auto;
+    `;
+
+    const table =
+        document.createElement(
+            "table"
+        );
+
+    table.style.cssText = `
+        width:100%;
+        border-collapse:collapse;
+        min-width:850px;
+        font-size:14px;
+    `;
+
+    table.innerHTML = `
+
+        <thead>
+
+            <tr style="
+                background:#f1f5f3;
+            ">
+
+                <th style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:left;
+                ">
+                    DEPARTMENT
+                </th>
+
+                <th style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                ">
+                    CAPITAL
+                </th>
+
+                <th style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                ">
+                    LAST WEEK ROI %
+                </th>
+
+                <th style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                ">
+                    LAST WEEK ROI (₹)
+                </th>
+
+                <th style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                ">
+                    LAST MONTH ROI %
+                </th>
+
+                <th style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                ">
+                    LAST MONTH ROI (₹)
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody></tbody>
+    `;
+
+    const tbody =
+        table.querySelector(
+            "tbody"
+        );
+
+    results.forEach(
+        item => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            row.innerHTML = `
+
+                <td style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    font-weight:700;
+                ">
+
+                    <span style="
+                        display:inline-block;
+                        width:10px;
+                        height:10px;
+                        border-radius:50%;
+                        background:${getDepartmentColor(
+                            item.key
+                        )};
+                        margin-right:7px;
+                    "></span>
+
+                    ${escapeHTML(
+                        item.name
+                    )}
+
+                </td>
+
+                <td style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                ">
+                    ${formatINR(
+                        item.capital
+                    )}
+                </td>
+
+                <td style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                    font-weight:700;
+                ">
+                    ${formatNumber(
+                        item.weekPercent
+                    )}%
+                </td>
+
+                <td style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                    font-weight:700;
+                ">
+                    ${formatINR(
+                        item.weekAmount
+                    )}
+                </td>
+
+                <td style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                    font-weight:700;
+                ">
+                    ${formatNumber(
+                        item.monthPercent
+                    )}%
+                </td>
+
+                <td style="
+                    padding:13px;
+                    border:1px solid #ddd;
+                    text-align:right;
+                    font-weight:700;
+                ">
+                    ${formatINR(
+                        item.monthAmount
+                    )}
+                </td>
+
+            `;
+
+            tbody.appendChild(
+                row
+            );
+        }
+    );
+
+    /* =====================================================
+       TOTAL ROW
+    ===================================================== */
+
+    const totalRow =
+        document.createElement(
+            "tr"
+        );
+
+    totalRow.style.cssText = `
+        background:#eaf4ee;
+        font-weight:800;
+    `;
+
+    totalRow.innerHTML = `
+
+        <td style="
+            padding:14px;
+            border:1px solid #ddd;
+        ">
+            TOTAL OVERALL ROI
+        </td>
+
+        <td style="
+            padding:14px;
+            border:1px solid #ddd;
+            text-align:right;
+        ">
+            ${formatINR(
+                totalDepartmentCapital
+            )}
+        </td>
+
+        <td style="
+            padding:14px;
+            border:1px solid #ddd;
+            text-align:right;
+        ">
+            ${formatNumber(
+                overallWeekPercent
+            )}%
+        </td>
+
+        <td style="
+            padding:14px;
+            border:1px solid #ddd;
+            text-align:right;
+        ">
+            ${formatINR(
+                totalWeekROI
+            )}
+        </td>
+
+        <td style="
+            padding:14px;
+            border:1px solid #ddd;
+            text-align:right;
+        ">
+            ${formatNumber(
+                overallMonthPercent
+            )}%
+        </td>
+
+        <td style="
+            padding:14px;
+            border:1px solid #ddd;
+            text-align:right;
+        ">
+            ${formatINR(
+                totalMonthROI
+            )}
+        </td>
+
+    `;
+
+    tbody.appendChild(
+        totalRow
+    );
+
+    tableWrap.appendChild(
+        table
+    );
+
+    content.appendChild(
+        tableWrap
+    );
+
+    /* =====================================================
+       PIE CHART AREA
+    ===================================================== */
+
+    const pieArea =
+        document.createElement(
+            "div"
+        );
+
+    pieArea.style.cssText = `
+        margin-top:30px;
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        justify-content:center;
+        gap:40px;
+        padding:20px 10px;
+        border-top:1px solid #ddd;
+    `;
+
+    /* PIE */
+
+    const pie =
+        document.createElement(
+            "div"
+        );
+
+    pie.style.cssText = `
+        width:300px;
+        height:300px;
+        border-radius:50%;
+        position:relative;
+        flex-shrink:0;
+        box-shadow:
+            0 5px 15px rgba(0,0,0,.15);
+    `;
+
+    let pieCurrent =
+        0;
+
+    const pieSegments = [];
+
+    results.forEach(
+        item => {
+
+            const value =
+                Math.max(
+                    0,
+                    item.monthAmount
+                );
+
+            if (
+                value <= 0 ||
+                totalMonthROI <= 0
+            ) {
+                return;
+            }
+
+            const start =
+                pieCurrent /
+                totalMonthROI *
+                360;
+
+            pieCurrent += value;
+
+            const end =
+                pieCurrent /
+                totalMonthROI *
+                360;
+
+            pieSegments.push(
+                `${getDepartmentColor(
+                    item.key
+                )} ${start}deg ${end}deg`
+            );
+        }
+    );
+
+    if (
+        pieSegments.length > 0
+    ) {
+
+        pie.style.background =
+            `conic-gradient(
+                ${pieSegments.join(",")}
+            )`;
+
+    } else {
+
+        pie.style.background =
+            "#dddddd";
+    }
+
+    /* PIE CENTER */
+
+    const center =
+        document.createElement(
+            "div"
+        );
+
+    center.style.cssText = `
+        position:absolute;
+        width:135px;
+        height:135px;
+        border-radius:50%;
+        background:#ffffff;
+        left:50%;
+        top:50%;
+        transform:translate(-50%,-50%);
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        text-align:center;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    `;
+
+    center.innerHTML = `
+
+        <div style="
+            font-size:13px;
+            color:#666;
+            font-weight:700;
+        ">
+            LAST MONTH ROI
+        </div>
+
+        <div style="
+            font-size:20px;
+            color:#075c32;
+            font-weight:900;
+            margin-top:5px;
+        ">
+            ${formatINR(
+                totalMonthROI
+            )}
+        </div>
+
+        <div style="
+            font-size:13px;
+            color:#333;
+            font-weight:700;
+        ">
+            ${formatNumber(
+                overallMonthPercent
+            )}%
+        </div>
+    `;
+
+    pie.appendChild(
+        center
+    );
+
+    pieArea.appendChild(
+        pie
+    );
+
+    /* =====================================================
+       PIE LEGEND
+    ===================================================== */
+
+    const pieLegend =
+        document.createElement(
+            "div"
+        );
+
+    pieLegend.style.cssText = `
+        min-width:260px;
+        max-width:400px;
+        width:100%;
+    `;
+
+    const legendTitle =
+        document.createElement(
+            "div"
+        );
+
+    legendTitle.style.cssText = `
+        font-size:17px;
+        font-weight:800;
+        color:#075c32;
+        margin-bottom:15px;
+    `;
+
+    legendTitle.textContent =
+        "Last Month ROI Contribution";
+
+    pieLegend.appendChild(
+        legendTitle
+    );
+
+    results.forEach(
+        item => {
+
+            const share =
+                totalMonthROI > 0
+                    ? item.monthAmount /
+                      totalMonthROI *
+                      100
+                    : 0;
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.style.cssText = `
+                display:flex;
+                align-items:center;
+                gap:10px;
+                padding:9px 0;
+                border-bottom:1px solid #eeeeee;
+            `;
+
+            row.innerHTML = `
+
+                <span style="
+                    width:13px;
+                    height:13px;
+                    border-radius:50%;
+                    background:${getDepartmentColor(
+                        item.key
+                    )};
+                    flex-shrink:0;
+                "></span>
+
+                <span style="
+                    flex:1;
+                    font-weight:700;
+                ">
+                    ${escapeHTML(
+                        item.name
+                    )}
+                </span>
+
+                <span style="
+                    font-weight:800;
+                ">
+                    ${formatINR(
+                        item.monthAmount
+                    )}
+                </span>
+
+                <span style="
+                    width:55px;
+                    text-align:right;
+                    color:#666;
+                ">
+                    ${formatNumber(
+                        share
+                    )}%
+                </span>
+
+            `;
+
+            pieLegend.appendChild(
+                row
+            );
+        }
+    );
+
+    pieArea.appendChild(
+        pieLegend
+    );
+
+    content.appendChild(
+        pieArea
+    );
+
+    section.appendChild(
+        content
+    );
+
+    /*
+       Insert overall ROI before
+       department tables.
+    */
+
+    tablesGrid.parentNode.insertBefore(
+        section,
+        tablesGrid
     );
 }
 
@@ -852,21 +1708,25 @@ function renderDepartmentTables(
     container.innerHTML = "";
 
     const departments = [
+
         {
             key: "trading",
             name: "TRADING",
             className: "trading-box"
         },
+
         {
             key: "investment",
             name: "INVESTMENT",
             className: "investment-box"
         },
+
         {
             key: "reserve",
             name: "RESERVE",
             className: "reserve-box"
         },
+
         {
             key: "rnd",
             name: "RESEARCH & DEVELOPMENT",
@@ -927,12 +1787,25 @@ function renderDepartmentTables(
                 "allocation-table";
 
             table.innerHTML = `
+
                 <thead>
+
                     <tr>
-                        <th>PARTICULAR</th>
-                        <th>ALLOCATION %</th>
-                        <th>CAPITAL</th>
+
+                        <th>
+                            PARTICULAR
+                        </th>
+
+                        <th>
+                            ALLOCATION %
+                        </th>
+
+                        <th>
+                            CAPITAL
+                        </th>
+
                     </tr>
+
                 </thead>
 
                 <tbody></tbody>
@@ -943,7 +1816,8 @@ function renderDepartmentTables(
                     "tbody"
                 );
 
-            let allocationTotal = 0;
+            let allocationTotal =
+                0;
 
             items.forEach(
                 item => {
@@ -967,6 +1841,7 @@ function renderDepartmentTables(
                         );
 
                     row.innerHTML = `
+
                         <td>
                             ${escapeHTML(
                                 x.name
@@ -984,6 +1859,7 @@ function renderDepartmentTables(
                                 capital
                             )}
                         </td>
+
                     `;
 
                     tbody.appendChild(
@@ -1003,6 +1879,7 @@ function renderDepartmentTables(
                 "total-row";
 
             totalRow.innerHTML = `
+
                 <td>
                     TOTAL
                 </td>
@@ -1020,6 +1897,7 @@ function renderDepartmentTables(
                         100
                     )}
                 </td>
+
             `;
 
             tbody.appendChild(
@@ -1033,6 +1911,7 @@ function renderDepartmentTables(
                 allocationTotal;
 
             let statusText;
+
             let statusClass;
 
             if (
@@ -1081,6 +1960,7 @@ function renderDepartmentTables(
                 "department-status-row";
 
             statusRow.innerHTML = `
+
                 <td>
                     <b class="${statusClass}">
                         ${statusText}
@@ -1104,6 +1984,7 @@ function renderDepartmentTables(
                         100
                     )}
                 </td>
+
             `;
 
             tbody.appendChild(
@@ -1114,7 +1995,7 @@ function renderDepartmentTables(
                 table
             );
 
-            /* ITEM GRAPH */
+            /* ITEM CHART */
 
             section.appendChild(
                 createItemChart(
@@ -1123,7 +2004,7 @@ function renderDepartmentTables(
                 )
             );
 
-            /* ROI */
+            /* ROI TABLE */
 
             section.appendChild(
                 createROITable(
@@ -1143,13 +2024,18 @@ function renderDepartmentTables(
                 "purpose";
 
             purpose.innerHTML = `
-                <b>PURPOSE</b>
+
+                <b>
+                    PURPOSE
+                </b>
 
                 <div>
                     ${escapeHTML(
-                        vertical.purpose || ""
+                        vertical.purpose ||
+                        ""
                     )}
                 </div>
+
             `;
 
             section.appendChild(
@@ -1164,7 +2050,7 @@ function renderDepartmentTables(
 }
 
 /* =========================================================
-   ITEM ALLOCATION GRAPH
+   ITEM CHART
 ========================================================= */
 
 function createItemChart(
@@ -1250,14 +2136,14 @@ function createItemChart(
                 "item-bar";
 
             const height =
-                Math.max(
-                    item.percent /
-                    highest *
-                    100,
-                    item.percent > 0
-                        ? 3
-                        : 0
-                );
+                item.percent > 0
+                    ? Math.max(
+                        3,
+                        item.percent /
+                        highest *
+                        100
+                    )
+                    : 0;
 
             bar.style.height =
                 `${height}%`;
@@ -1266,6 +2152,11 @@ function createItemChart(
                 getDepartmentColor(
                     department.key
                 );
+
+            bar.title =
+                `${item.name}: ${formatNumber(
+                    item.percent
+                )}%`;
 
             const label =
                 document.createElement(
@@ -1304,7 +2195,7 @@ function createItemChart(
 }
 
 /* =========================================================
-   ROI TABLE
+   DEPARTMENT ROI TABLE
 ========================================================= */
 
 function createROITable(
@@ -1352,15 +2243,37 @@ function createROITable(
         "roi-table";
 
     table.innerHTML = `
+
         <thead>
+
             <tr>
-                <th>PARTICULAR</th>
-                <th>CAPITAL (₹)</th>
-                <th>LAST WEEK ROI %</th>
-                <th>LAST WEEK ROI (₹)</th>
-                <th>LAST MONTH ROI %</th>
-                <th>LAST MONTH ROI (₹)</th>
+
+                <th>
+                    PARTICULAR
+                </th>
+
+                <th>
+                    CAPITAL (₹)
+                </th>
+
+                <th>
+                    LAST WEEK ROI %
+                </th>
+
+                <th>
+                    LAST WEEK ROI (₹)
+                </th>
+
+                <th>
+                    LAST MONTH ROI %
+                </th>
+
+                <th>
+                    LAST MONTH ROI (₹)
+                </th>
+
             </tr>
+
         </thead>
 
         <tbody></tbody>
@@ -1371,9 +2284,14 @@ function createROITable(
             "tbody"
         );
 
-    let totalCapitalAllocated = 0;
-    let totalWeekROI = 0;
-    let totalMonthROI = 0;
+    let totalCapitalAllocated =
+        0;
+
+    let totalWeekROI =
+        0;
+
+    let totalMonthROI =
+        0;
 
     items.forEach(
         item => {
@@ -1413,6 +2331,7 @@ function createROITable(
                 );
 
             row.innerHTML = `
+
                 <td>
                     ${escapeHTML(
                         x.name
@@ -1448,6 +2367,7 @@ function createROITable(
                         monthROI
                     )}
                 </td>
+
             `;
 
             tbody.appendChild(
@@ -1479,6 +2399,7 @@ function createROITable(
         "roi-total-row";
 
     totalRow.innerHTML = `
+
         <td>
             TOTAL
         </td>
@@ -1512,6 +2433,7 @@ function createROITable(
                 totalMonthROI
             )}
         </td>
+
     `;
 
     tbody.appendChild(
@@ -1530,15 +2452,14 @@ function createROITable(
 }
 
 /* =========================================================
-   START
+   START DASHBOARD
 ========================================================= */
 
 loadDashboard();
 
-/*
-   Automatically refresh every 30 seconds.
-   Admin changes will appear automatically.
-*/
+/* =========================================================
+   AUTO REFRESH
+========================================================= */
 
 setInterval(
     loadDashboard,
