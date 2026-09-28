@@ -55,7 +55,6 @@ function formatLakh(value) {
 }
 
 function escapeHTML(value) {
-
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -72,13 +71,11 @@ function formatDisplayDate(value) {
 
     if (!value) return "";
 
-    const text =
-        String(value).trim();
+    const text = String(value).trim();
 
-    const iso =
-        text.match(
-            /^(\d{4})-(\d{2})-(\d{2})$/
-        );
+    const iso = text.match(
+        /^(\d{4})-(\d{2})-(\d{2})$/
+    );
 
     if (iso) {
         return `${iso[3]}-${iso[2]}-${iso[1]}`;
@@ -111,7 +108,7 @@ function getDepartmentColor(key) {
 }
 
 /* =========================================================
-   DEPARTMENT LIST
+   DEPARTMENTS
 ========================================================= */
 
 const DEPARTMENTS = [
@@ -147,26 +144,18 @@ function normalizeItem(item) {
 
         return {
 
-            name:
-                String(
-                    item[0] ??
-                    "Item"
-                ),
+            name: String(
+                item[0] ?? "Item"
+            ),
 
             percent:
-                Number(
-                    item[1]
-                ) || 0,
+                Number(item[1]) || 0,
 
             weekROI:
-                Number(
-                    item[2]
-                ) || 0,
+                Number(item[2]) || 0,
 
             monthROI:
-                Number(
-                    item[3]
-                ) || 0
+                Number(item[3]) || 0
         };
     }
 
@@ -177,11 +166,9 @@ function normalizeItem(item) {
 
         return {
 
-            name:
-                String(
-                    item.name ??
-                    "Item"
-                ),
+            name: String(
+                item.name ?? "Item"
+            ),
 
             percent:
                 Number(
@@ -235,7 +222,6 @@ async function loadDashboard() {
             );
 
         if (!response.ok) {
-
             throw new Error(
                 "Unable to load dashboard data"
             );
@@ -247,14 +233,12 @@ async function loadDashboard() {
         renderDashboard(data);
 
         if ($("loading")) {
-
             $("loading")
                 .classList
                 .add("hidden");
         }
 
         if ($("dashboard")) {
-
             $("dashboard")
                 .classList
                 .remove("hidden");
@@ -343,17 +327,13 @@ function renderDashboard(data) {
     if ($("totalCapital")) {
 
         $("totalCapital").textContent =
-            formatINR(
-                totalCapital
-            );
+            formatINR(totalCapital);
     }
 
     if ($("allocatedCapital")) {
 
         $("allocatedCapital").textContent =
-            formatINR(
-                allocatedCapital
-            );
+            formatINR(allocatedCapital);
     }
 
     if ($("unallocatedCapital")) {
@@ -379,15 +359,13 @@ function renderDashboard(data) {
     );
 
     /* =====================================================
-       FUND ALLOCATION DONUT
+       DONUT
     ===================================================== */
 
-    renderDonut(
-        data
-    );
+    renderDonut(data);
 
     /* =====================================================
-       CAPITAL BAR CHART
+       CAPITAL BARS
     ===================================================== */
 
     renderCapitalBars(
@@ -397,12 +375,29 @@ function renderDashboard(data) {
 
     /* =====================================================
        OVERALL ROI
+       ADMIN ON/OFF CONTROL
     ===================================================== */
 
-    renderOverallROI(
-        data,
-        totalCapital
-    );
+    if (
+        data?.settings?.overallROIEnabled !== false
+    ) {
+
+        renderOverallROI(
+            data,
+            totalCapital
+        );
+
+    } else {
+
+        const existing =
+            document.getElementById(
+                "overallROISection"
+            );
+
+        if (existing) {
+            existing.remove();
+        }
+    }
 
     /* =====================================================
        DEPARTMENT TABLES
@@ -423,8 +418,7 @@ function renderOverallStatus(
     allocatedCapital
 ) {
 
-    const element =
-        $("status");
+    const element = $("status");
 
     if (!element) return;
 
@@ -433,8 +427,7 @@ function renderOverallStatus(
         allocatedCapital;
 
     if (
-        Math.abs(difference) <
-        0.01
+        Math.abs(difference) < 0.01
     ) {
 
         element.innerHTML = `
@@ -449,9 +442,7 @@ function renderOverallStatus(
 
         element.innerHTML = `
             <span class="status-surplus">
-                SURPLUS ${formatINR(
-                    difference
-                )}
+                SURPLUS ${formatINR(difference)}
             </span>
         `;
 
@@ -460,9 +451,7 @@ function renderOverallStatus(
         element.innerHTML = `
             <span class="status-deficit">
                 DEFICIT ${formatINR(
-                    Math.abs(
-                        difference
-                    )
+                    Math.abs(difference)
                 )}
             </span>
         `;
@@ -515,22 +504,16 @@ function renderAllocationCards(
                 </div>
 
                 <div class="allocation-percent">
-                    ${formatNumber(
-                        percent
-                    )}%
+                    ${formatNumber(percent)}%
                 </div>
 
                 <div class="allocation-capital">
-                    ${formatINR(
-                        capital
-                    )}
+                    ${formatINR(capital)}
                 </div>
 
             `;
 
-            container.appendChild(
-                card
-            );
+            container.appendChild(card);
         }
     );
 }
@@ -541,16 +524,11 @@ function renderAllocationCards(
 
 function renderDonut(data) {
 
-    const donut =
-        $("donut");
+    const donut = $("donut");
 
-    const legend =
-        $("legend");
+    const legend = $("legend");
 
-    if (
-        !donut ||
-        !legend
-    ) return;
+    if (!donut || !legend) return;
 
     const values =
         DEPARTMENTS.map(
@@ -572,8 +550,7 @@ function renderDonut(data) {
             0
         );
 
-    let current =
-        0;
+    let current = 0;
 
     const segments = [];
 
@@ -660,9 +637,7 @@ function renderDonut(data) {
                 </b>
             `;
 
-            legend.appendChild(
-                row
-            );
+            legend.appendChild(row);
         }
     );
 }
@@ -722,8 +697,7 @@ function renderCapitalBars(
     let maxValue;
 
     if (
-        highest <=
-        1000000
+        highest <= 1000000
     ) {
 
         maxValue =
@@ -734,8 +708,7 @@ function renderCapitalBars(
             100000;
 
     } else if (
-        highest <=
-        10000000
+        highest <= 10000000
     ) {
 
         maxValue =
@@ -755,9 +728,7 @@ function renderCapitalBars(
             10000000;
     }
 
-    if (
-        maxValue <= 0
-    ) {
+    if (maxValue <= 0) {
         maxValue = 1;
     }
 
@@ -793,9 +764,7 @@ function renderCapitalBars(
                         5
                     );
 
-                yAxis.appendChild(
-                    label
-                );
+                yAxis.appendChild(label);
             }
         }
     }
@@ -829,8 +798,7 @@ function renderCapitalBars(
                     "div"
                 );
 
-            bar.className =
-                "bar";
+            bar.className = "bar";
 
             let height =
                 item.capital /
@@ -868,27 +836,19 @@ function renderCapitalBars(
             label.textContent =
                 item.name;
 
-            group.appendChild(
-                value
-            );
+            group.appendChild(value);
 
-            group.appendChild(
-                bar
-            );
+            group.appendChild(bar);
 
-            group.appendChild(
-                label
-            );
+            group.appendChild(label);
 
-            container.appendChild(
-                group
-            );
+            container.appendChild(group);
         }
     );
 }
 
 /* =========================================================
-   OVERALL ROI
+   CALCULATE OVERALL ROI
 ========================================================= */
 
 function calculateOverallROI(
@@ -929,9 +889,7 @@ function calculateOverallROI(
                 item => {
 
                     const x =
-                        normalizeItem(
-                            item
-                        );
+                        normalizeItem(item);
 
                     const capital =
                         totalCapital *
@@ -992,7 +950,7 @@ function calculateOverallROI(
 }
 
 /* =========================================================
-   OVERALL ROI SECTION
+   OVERALL ROI PERFORMANCE
 ========================================================= */
 
 function renderOverallROI(
@@ -1000,13 +958,13 @@ function renderOverallROI(
     totalCapital
 ) {
 
-    const existing =
+    const oldSection =
         document.getElementById(
             "overallROISection"
         );
 
-    if (existing) {
-        existing.remove();
+    if (oldSection) {
+        oldSection.remove();
     }
 
     const tablesGrid =
@@ -1020,7 +978,7 @@ function renderOverallROI(
             totalCapital
         );
 
-    const totalDepartmentCapital =
+    const totalCapitalAllocated =
         results.reduce(
             (sum, item) =>
                 sum + item.capital,
@@ -1042,23 +1000,25 @@ function renderOverallROI(
         );
 
     const overallWeekPercent =
-        totalDepartmentCapital > 0
+        totalCapitalAllocated > 0
             ? totalWeekROI /
-              totalDepartmentCapital *
+              totalCapitalAllocated *
               100
             : 0;
 
     const overallMonthPercent =
-        totalDepartmentCapital > 0
+        totalCapitalAllocated > 0
             ? totalMonthROI /
-              totalDepartmentCapital *
+              totalCapitalAllocated *
               100
             : 0;
 
+    /* =====================================================
+       SECTION
+    ===================================================== */
+
     const section =
-        document.createElement(
-            "section"
-        );
+        document.createElement("section");
 
     section.id =
         "overallROISection";
@@ -1078,9 +1038,7 @@ function renderOverallROI(
     ===================================================== */
 
     const header =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     header.style.cssText = `
         background:#075c32;
@@ -1095,31 +1053,21 @@ function renderOverallROI(
     header.textContent =
         "OVERALL ROI PERFORMANCE";
 
-    section.appendChild(
-        header
-    );
-
-    /* =====================================================
-       CONTENT
-    ===================================================== */
+    section.appendChild(header);
 
     const content =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     content.style.cssText = `
         padding:24px;
     `;
 
     /* =====================================================
-       TABLE
+       TABLE TITLE
     ===================================================== */
 
     const tableTitle =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     tableTitle.style.cssText = `
         font-size:17px;
@@ -1131,14 +1079,14 @@ function renderOverallROI(
     tableTitle.textContent =
         "Department Wise ROI";
 
-    content.appendChild(
-        tableTitle
-    );
+    content.appendChild(tableTitle);
+
+    /* =====================================================
+       TABLE
+    ===================================================== */
 
     const tableWrap =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     tableWrap.style.cssText = `
         width:100%;
@@ -1146,9 +1094,7 @@ function renderOverallROI(
     `;
 
     const table =
-        document.createElement(
-            "table"
-        );
+        document.createElement("table");
 
     table.style.cssText = `
         width:100%;
@@ -1221,17 +1167,13 @@ function renderOverallROI(
     `;
 
     const tbody =
-        table.querySelector(
-            "tbody"
-        );
+        table.querySelector("tbody");
 
     results.forEach(
         item => {
 
             const row =
-                document.createElement(
-                    "tr"
-                );
+                document.createElement("tr");
 
             row.innerHTML = `
 
@@ -1252,9 +1194,7 @@ function renderOverallROI(
                         margin-right:7px;
                     "></span>
 
-                    ${escapeHTML(
-                        item.name
-                    )}
+                    ${escapeHTML(item.name)}
 
                 </td>
 
@@ -1263,9 +1203,7 @@ function renderOverallROI(
                     border:1px solid #ddd;
                     text-align:right;
                 ">
-                    ${formatINR(
-                        item.capital
-                    )}
+                    ${formatINR(item.capital)}
                 </td>
 
                 <td style="
@@ -1314,9 +1252,7 @@ function renderOverallROI(
 
             `;
 
-            tbody.appendChild(
-                row
-            );
+            tbody.appendChild(row);
         }
     );
 
@@ -1325,9 +1261,7 @@ function renderOverallROI(
     ===================================================== */
 
     const totalRow =
-        document.createElement(
-            "tr"
-        );
+        document.createElement("tr");
 
     totalRow.style.cssText = `
         background:#eaf4ee;
@@ -1349,7 +1283,7 @@ function renderOverallROI(
             text-align:right;
         ">
             ${formatINR(
-                totalDepartmentCapital
+                totalCapitalAllocated
             )}
         </td>
 
@@ -1368,9 +1302,7 @@ function renderOverallROI(
             border:1px solid #ddd;
             text-align:right;
         ">
-            ${formatINR(
-                totalWeekROI
-            )}
+            ${formatINR(totalWeekROI)}
         </td>
 
         <td style="
@@ -1388,33 +1320,23 @@ function renderOverallROI(
             border:1px solid #ddd;
             text-align:right;
         ">
-            ${formatINR(
-                totalMonthROI
-            )}
+            ${formatINR(totalMonthROI)}
         </td>
 
     `;
 
-    tbody.appendChild(
-        totalRow
-    );
+    tbody.appendChild(totalRow);
 
-    tableWrap.appendChild(
-        table
-    );
+    tableWrap.appendChild(table);
 
-    content.appendChild(
-        tableWrap
-    );
+    content.appendChild(tableWrap);
 
     /* =====================================================
        PIE CHART AREA
     ===================================================== */
 
     const pieArea =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     pieArea.style.cssText = `
         margin-top:30px;
@@ -1427,12 +1349,12 @@ function renderOverallROI(
         border-top:1px solid #ddd;
     `;
 
-    /* PIE */
+    /* =====================================================
+       PIE
+    ===================================================== */
 
     const pie =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     pie.style.cssText = `
         width:300px;
@@ -1444,8 +1366,7 @@ function renderOverallROI(
             0 5px 15px rgba(0,0,0,.15);
     `;
 
-    let pieCurrent =
-        0;
+    let pieCurrent = 0;
 
     const pieSegments = [];
 
@@ -1485,9 +1406,7 @@ function renderOverallROI(
         }
     );
 
-    if (
-        pieSegments.length > 0
-    ) {
+    if (pieSegments.length > 0) {
 
         pie.style.background =
             `conic-gradient(
@@ -1500,12 +1419,12 @@ function renderOverallROI(
             "#dddddd";
     }
 
-    /* PIE CENTER */
+    /* =====================================================
+       PIE CENTER
+    ===================================================== */
 
     const center =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     center.style.cssText = `
         position:absolute;
@@ -1540,9 +1459,7 @@ function renderOverallROI(
             font-weight:900;
             margin-top:5px;
         ">
-            ${formatINR(
-                totalMonthROI
-            )}
+            ${formatINR(totalMonthROI)}
         </div>
 
         <div style="
@@ -1554,24 +1471,19 @@ function renderOverallROI(
                 overallMonthPercent
             )}%
         </div>
+
     `;
 
-    pie.appendChild(
-        center
-    );
+    pie.appendChild(center);
 
-    pieArea.appendChild(
-        pie
-    );
+    pieArea.appendChild(pie);
 
     /* =====================================================
        PIE LEGEND
     ===================================================== */
 
     const pieLegend =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     pieLegend.style.cssText = `
         min-width:260px;
@@ -1580,9 +1492,7 @@ function renderOverallROI(
     `;
 
     const legendTitle =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     legendTitle.style.cssText = `
         font-size:17px;
@@ -1594,9 +1504,7 @@ function renderOverallROI(
     legendTitle.textContent =
         "Last Month ROI Contribution";
 
-    pieLegend.appendChild(
-        legendTitle
-    );
+    pieLegend.appendChild(legendTitle);
 
     results.forEach(
         item => {
@@ -1609,9 +1517,7 @@ function renderOverallROI(
                     : 0;
 
             const row =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             row.style.cssText = `
                 display:flex;
@@ -1637,9 +1543,7 @@ function renderOverallROI(
                     flex:1;
                     font-weight:700;
                 ">
-                    ${escapeHTML(
-                        item.name
-                    )}
+                    ${escapeHTML(item.name)}
                 </span>
 
                 <span style="
@@ -1655,35 +1559,24 @@ function renderOverallROI(
                     text-align:right;
                     color:#666;
                 ">
-                    ${formatNumber(
-                        share
-                    )}%
+                    ${formatNumber(share)}%
                 </span>
 
             `;
 
-            pieLegend.appendChild(
-                row
-            );
+            pieLegend.appendChild(row);
         }
     );
 
-    pieArea.appendChild(
-        pieLegend
-    );
+    pieArea.appendChild(pieLegend);
 
-    content.appendChild(
-        pieArea
-    );
+    content.appendChild(pieArea);
 
-    section.appendChild(
-        content
-    );
+    section.appendChild(content);
 
-    /*
-       Insert overall ROI before
-       department tables.
-    */
+    /* =====================================================
+       INSERT BEFORE DEPARTMENT TABLES
+    ===================================================== */
 
     tablesGrid.parentNode.insertBefore(
         section,
@@ -1755,33 +1648,25 @@ function renderDepartmentTables(
                     : [];
 
             const section =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             section.className =
                 `department ${department.className}`;
 
-            /* TITLE */
-
             const heading =
-                document.createElement(
-                    "h2"
-                );
+                document.createElement("h2");
 
             heading.textContent =
                 department.name;
 
-            section.appendChild(
-                heading
-            );
+            section.appendChild(heading);
 
-            /* ALLOCATION TABLE */
+            /* =================================================
+               ALLOCATION TABLE
+            ================================================= */
 
             const table =
-                document.createElement(
-                    "table"
-                );
+                document.createElement("table");
 
             table.className =
                 "allocation-table";
@@ -1812,20 +1697,15 @@ function renderDepartmentTables(
             `;
 
             const tbody =
-                table.querySelector(
-                    "tbody"
-                );
+                table.querySelector("tbody");
 
-            let allocationTotal =
-                0;
+            let allocationTotal = 0;
 
             items.forEach(
                 item => {
 
                     const x =
-                        normalizeItem(
-                            item
-                        );
+                        normalizeItem(item);
 
                     const capital =
                         totalCapital *
@@ -1836,16 +1716,12 @@ function renderDepartmentTables(
                         x.percent;
 
                     const row =
-                        document.createElement(
-                            "tr"
-                        );
+                        document.createElement("tr");
 
                     row.innerHTML = `
 
                         <td>
-                            ${escapeHTML(
-                                x.name
-                            )}
+                            ${escapeHTML(x.name)}
                         </td>
 
                         <td>
@@ -1855,25 +1731,21 @@ function renderDepartmentTables(
                         </td>
 
                         <td>
-                            ${formatINR(
-                                capital
-                            )}
+                            ${formatINR(capital)}
                         </td>
 
                     `;
 
-                    tbody.appendChild(
-                        row
-                    );
+                    tbody.appendChild(row);
                 }
             );
 
-            /* TOTAL */
+            /* =================================================
+               TOTAL
+            ================================================= */
 
             const totalRow =
-                document.createElement(
-                    "tr"
-                );
+                document.createElement("tr");
 
             totalRow.className =
                 "total-row";
@@ -1900,24 +1772,21 @@ function renderDepartmentTables(
 
             `;
 
-            tbody.appendChild(
-                totalRow
-            );
+            tbody.appendChild(totalRow);
 
-            /* STATUS */
+            /* =================================================
+               STATUS
+            ================================================= */
 
             const difference =
                 departmentPercent -
                 allocationTotal;
 
             let statusText;
-
             let statusClass;
 
             if (
-                Math.abs(
-                    difference
-                ) < 0.01
+                Math.abs(difference) < 0.01
             ) {
 
                 statusText =
@@ -1942,9 +1811,7 @@ function renderDepartmentTables(
 
                 statusText =
                     `DEFICIT ${formatNumber(
-                        Math.abs(
-                            difference
-                        )
+                        Math.abs(difference)
                     )}%`;
 
                 statusClass =
@@ -1952,9 +1819,7 @@ function renderDepartmentTables(
             }
 
             const statusRow =
-                document.createElement(
-                    "tr"
-                );
+                document.createElement("tr");
 
             statusRow.className =
                 "department-status-row";
@@ -1969,33 +1834,27 @@ function renderDepartmentTables(
 
                 <td>
                     ${formatNumber(
-                        Math.abs(
-                            difference
-                        )
+                        Math.abs(difference)
                     )}%
                 </td>
 
                 <td>
                     ${formatINR(
                         totalCapital *
-                        Math.abs(
-                            difference
-                        ) /
+                        Math.abs(difference) /
                         100
                     )}
                 </td>
 
             `;
 
-            tbody.appendChild(
-                statusRow
-            );
+            tbody.appendChild(statusRow);
 
-            section.appendChild(
-                table
-            );
+            section.appendChild(table);
 
-            /* ITEM CHART */
+            /* =================================================
+               ITEM CHART
+            ================================================= */
 
             section.appendChild(
                 createItemChart(
@@ -2004,7 +1863,9 @@ function renderDepartmentTables(
                 )
             );
 
-            /* ROI TABLE */
+            /* =================================================
+               ROI TABLE
+            ================================================= */
 
             section.appendChild(
                 createROITable(
@@ -2013,12 +1874,12 @@ function renderDepartmentTables(
                 )
             );
 
-            /* PURPOSE */
+            /* =================================================
+               PURPOSE
+            ================================================= */
 
             const purpose =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             purpose.className =
                 "purpose";
@@ -2031,26 +1892,21 @@ function renderDepartmentTables(
 
                 <div>
                     ${escapeHTML(
-                        vertical.purpose ||
-                        ""
+                        vertical.purpose || ""
                     )}
                 </div>
 
             `;
 
-            section.appendChild(
-                purpose
-            );
+            section.appendChild(purpose);
 
-            container.appendChild(
-                section
-            );
+            container.appendChild(section);
         }
     );
 }
 
 /* =========================================================
-   ITEM CHART
+   ITEM ALLOCATION CHART
 ========================================================= */
 
 function createItemChart(
@@ -2059,17 +1915,13 @@ function createItemChart(
 ) {
 
     const chart =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     chart.className =
         "item-chart";
 
     const title =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     title.className =
         "item-chart-title";
@@ -2077,22 +1929,16 @@ function createItemChart(
     title.textContent =
         `${department.name} - ALLOCATION`;
 
-    chart.appendChild(
-        title
-    );
+    chart.appendChild(title);
 
     const bars =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     bars.className =
         "item-bars";
 
     const normalized =
-        items.map(
-            normalizeItem
-        );
+        items.map(normalizeItem);
 
     const highest =
         Math.max(
@@ -2107,17 +1953,13 @@ function createItemChart(
         item => {
 
             const group =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             group.className =
                 "item-bar-group";
 
             const value =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             value.className =
                 "item-bar-value";
@@ -2128,9 +1970,7 @@ function createItemChart(
                 )}%`;
 
             const bar =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             bar.className =
                 "item-bar";
@@ -2159,9 +1999,7 @@ function createItemChart(
                 )}%`;
 
             const label =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
             label.className =
                 "item-bar-label";
@@ -2169,27 +2007,17 @@ function createItemChart(
             label.textContent =
                 item.name;
 
-            group.appendChild(
-                value
-            );
+            group.appendChild(value);
 
-            group.appendChild(
-                bar
-            );
+            group.appendChild(bar);
 
-            group.appendChild(
-                label
-            );
+            group.appendChild(label);
 
-            bars.appendChild(
-                group
-            );
+            bars.appendChild(group);
         }
     );
 
-    chart.appendChild(
-        bars
-    );
+    chart.appendChild(bars);
 
     return chart;
 }
@@ -2204,17 +2032,13 @@ function createROITable(
 ) {
 
     const wrapper =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     wrapper.className =
         "roi-section";
 
     const title =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     title.className =
         "roi-title";
@@ -2222,22 +2046,16 @@ function createROITable(
     title.textContent =
         "ROI PERFORMANCE";
 
-    wrapper.appendChild(
-        title
-    );
+    wrapper.appendChild(title);
 
     const tableWrap =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     tableWrap.className =
         "roi-table-wrap";
 
     const table =
-        document.createElement(
-            "table"
-        );
+        document.createElement("table");
 
     table.className =
         "roi-table";
@@ -2280,26 +2098,19 @@ function createROITable(
     `;
 
     const tbody =
-        table.querySelector(
-            "tbody"
-        );
+        table.querySelector("tbody");
 
-    let totalCapitalAllocated =
-        0;
+    let totalCapitalAllocated = 0;
 
-    let totalWeekROI =
-        0;
+    let totalWeekROI = 0;
 
-    let totalMonthROI =
-        0;
+    let totalMonthROI = 0;
 
     items.forEach(
         item => {
 
             const x =
-                normalizeItem(
-                    item
-                );
+                normalizeItem(item);
 
             const capital =
                 totalCapital *
@@ -2326,22 +2137,16 @@ function createROITable(
                 monthROI;
 
             const row =
-                document.createElement(
-                    "tr"
-                );
+                document.createElement("tr");
 
             row.innerHTML = `
 
                 <td>
-                    ${escapeHTML(
-                        x.name
-                    )}
+                    ${escapeHTML(x.name)}
                 </td>
 
                 <td>
-                    ${formatINR(
-                        capital
-                    )}
+                    ${formatINR(capital)}
                 </td>
 
                 <td>
@@ -2351,9 +2156,7 @@ function createROITable(
                 </td>
 
                 <td>
-                    ${formatINR(
-                        weekROI
-                    )}
+                    ${formatINR(weekROI)}
                 </td>
 
                 <td>
@@ -2363,16 +2166,12 @@ function createROITable(
                 </td>
 
                 <td>
-                    ${formatINR(
-                        monthROI
-                    )}
+                    ${formatINR(monthROI)}
                 </td>
 
             `;
 
-            tbody.appendChild(
-                row
-            );
+            tbody.appendChild(row);
         }
     );
 
@@ -2391,9 +2190,7 @@ function createROITable(
             : 0;
 
     const totalRow =
-        document.createElement(
-            "tr"
-        );
+        document.createElement("tr");
 
     totalRow.className =
         "roi-total-row";
@@ -2417,9 +2214,7 @@ function createROITable(
         </td>
 
         <td>
-            ${formatINR(
-                totalWeekROI
-            )}
+            ${formatINR(totalWeekROI)}
         </td>
 
         <td>
@@ -2429,30 +2224,22 @@ function createROITable(
         </td>
 
         <td>
-            ${formatINR(
-                totalMonthROI
-            )}
+            ${formatINR(totalMonthROI)}
         </td>
 
     `;
 
-    tbody.appendChild(
-        totalRow
-    );
+    tbody.appendChild(totalRow);
 
-    tableWrap.appendChild(
-        table
-    );
+    tableWrap.appendChild(table);
 
-    wrapper.appendChild(
-        tableWrap
-    );
+    wrapper.appendChild(tableWrap);
 
     return wrapper;
 }
 
 /* =========================================================
-   START DASHBOARD
+   START
 ========================================================= */
 
 loadDashboard();
