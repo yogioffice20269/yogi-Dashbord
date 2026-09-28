@@ -1,468 +1,142 @@
-const loginScreen = document.getElementById("loginScreen");
-const adminApp = document.getElementById("adminApp");
+let data = null;
 
-const loginForm = document.getElementById("loginForm");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-const loginError = document.getElementById("loginError");
+const $ = s => document.querySelector(s);
 
-const editSections = document.getElementById("editSections");
-const saveBtn = document.getElementById("saveBtn");
-const saveMessage = document.getElementById("saveMessage");
-const logoutBtn = document.getElementById("logoutBtn");
+const keys = ["trading", "investment", "reserve", "rnd"];
 
-let dashboardData = null;
+const labels = {
+    trading: "Trading",
+    investment: "Investment",
+    reserve: "Reserve",
+    rnd: "Research & Development"
+};
 
+const esc = s =>
+    String(s ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[c]));
 
-/* =========================================================
-   API
-========================================================= */
-
-async function api(url, options = {}) {
-
-    const response = await fetch(
-        url,
-        {
-            credentials: "same-origin",
-            ...options,
-            headers: {
-                "Content-Type": "application/json",
-                ...(options.headers || {})
-            }
-        }
-    );
-
-
-    let result = {};
-
-    try {
-        result = await response.json();
-    } catch (e) {
-        result = {};
-    }
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            result.error ||
-            "Request failed"
-        );
-    }
-
-
-    return result;
+function get(o, p) {
+    return p.split(".").reduce((a, k) => a?.[k], o);
 }
 
-
-/* =========================================================
-   CHECK LOGIN
-========================================================= */
-
-async function checkLogin() {
-
-    try {
-
-        const result =
-            await api("/api/me");
-
-
-        if (result.authenticated) {
-
-            showAdmin();
-
-            await loadData();
-
-        } else {
-
-            showLogin();
-        }
-
-    } catch (error) {
-
-        showLogin();
-    }
+function set(o, p, v) {
+    let a = p.split(".");
+    let l = a.pop();
+    let t = a.reduce((x, k) => x[k], o);
+    t[l] = v;
 }
 
-
 /* =========================================================
-   SHOW LOGIN
-========================================================= */
-
-function showLogin() {
-
-    loginScreen.classList.remove("hidden");
-    adminApp.classList.add("hidden");
-
-    usernameInput.focus();
-}
-
-
-/* =========================================================
-   SHOW ADMIN
-========================================================= */
-
-function showAdmin() {
-
-    loginScreen.classList.add("hidden");
-    adminApp.classList.remove("hidden");
-}
-
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-loginForm.addEventListener(
-    "submit",
-
-    async function (event) {
-
-        event.preventDefault();
-
-        loginError.textContent = "";
-
-        const username =
-            usernameInput.value.trim();
-
-        const password =
-            passwordInput.value;
-
-
-        try {
-
-            await api(
-                "/api/login",
-                {
-                    method: "POST",
-
-                    body: JSON.stringify({
-                        username,
-                        password
-                    })
-                }
-            );
-
-
-            passwordInput.value = "";
-
-            showAdmin();
-
-            await loadData();
-
-
-        } catch (error) {
-
-            loginError.textContent =
-                error.message ||
-                "Login failed";
-        }
-    }
-);
-
-
-/* =========================================================
-   LOAD DATA
-========================================================= */
-
-async function loadData() {
-
-    try {
-
-        const result =
-            await api("/api/data");
-
-        dashboardData =
-            normalizeData(result);
-
-        bindBasicFields();
-
-        buildEditors();
-
-    } catch (error) {
-
-        showMessage(
-            error.message ||
-            "Unable to load dashboard data",
-            true
-        );
-    }
-}
-
-
-/* =========================================================
-   NORMALIZE DATA
-========================================================= */
-
-function normalizeItem(item) {
-
-    if (!Array.isArray(item)) {
-
-        return [
-            "New Item",
-            0,
-            0,
-            0
-        ];
-    }
-
-
-    return [
-        String(item[0] ?? ""),
-        Number(item[1]) || 0,
-        Number(item[2]) || 0,
-        Number(item[3]) || 0
-    ];
-}
-
-
-function normalizeData(data) {
-
-    const result =
-        data || {};
-
-
-    if (!result.meta) {
-        result.meta = {};
-    }
-
-
-    if (!result.capital) {
-        result.capital = {};
-    }
-
-
-    if (!result.verticals) {
-        result.verticals = {};
-    }
-
-
-    for (const key of [
-        "trading",
-        "investment",
-        "reserve",
-        "rnd"
-    ]) {
-
-        if (!result.verticals[key]) {
-
-            result.verticals[key] = {
-                percent: 0,
-                purpose: "",
-                items: []
-            };
-        }
-
-
-        const vertical =
-            result.verticals[key];
-
-
-        if (!Array.isArray(vertical.items)) {
-            vertical.items = [];
-        }
-
-
-        vertical.items =
-            vertical.items.map(
-                normalizeItem
-            );
-    }
-
-
-    return result;
-}
-
-
-/* =========================================================
-   BASIC FIELDS
-========================================================= */
-
-function bindBasicFields() {
-
-    if (!dashboardData) {
-        return;
-    }
-
-
-    document
-        .querySelectorAll("[data-path]")
-        .forEach(input => {
-
-            const value =
-                getPathValue(
-                    dashboardData,
-                    input.dataset.path
-                );
-
-
-            if (
-                value !== undefined &&
-                value !== null
-            ) {
-
-                input.value = value;
-            }
-        });
-}
-
-
-/* =========================================================
-   GET PATH
-========================================================= */
-
-function getPathValue(
-    object,
-    path
-) {
-
-    return path
-        .split(".")
-        .reduce(
-            (current, key) =>
-                current == null
-                    ? undefined
-                    : current[key],
-            object
-        );
-}
-
-
-/* =========================================================
-   SET PATH
-========================================================= */
-
-function setPathValue(
-    object,
-    path,
-    value
-) {
-
-    const parts =
-        path.split(".");
-
-    let current =
-        object;
-
-
-    for (
-        let i = 0;
-        i < parts.length - 1;
-        i++
-    ) {
-
-        if (
-            !current[parts[i]] ||
-            typeof current[parts[i]] !== "object"
-        ) {
-
-            current[parts[i]] = {};
-        }
-
-
-        current =
-            current[parts[i]];
-    }
-
-
-    current[
-        parts[parts.length - 1]
-    ] = value;
-}
-
-
-/* =========================================================
-   BUILD DEPARTMENT EDITORS
+   BUILD ADMIN EDITOR
 ========================================================= */
 
 function buildEditors() {
 
-    editSections.innerHTML = "";
+    /* Default ON */
+    if (!data.settings) {
+        data.settings = {};
+    }
 
+    if (
+        typeof data.settings.overallROIEnabled !== "boolean"
+    ) {
+        data.settings.overallROIEnabled = true;
+    }
 
-    const departments = [
-        {
-            key: "trading",
-            title: "Trading",
-            className: "trading-box"
-        },
+    $("#editSections").innerHTML = `
 
-        {
-            key: "investment",
-            title: "Investment",
-            className: "investment-box"
-        },
+        <!-- OVERALL ROI CONTROL -->
 
-        {
-            key: "reserve",
-            title: "Reserve",
-            className: "reserve-box"
-        },
+        <section class="overall-roi-control">
 
-        {
-            key: "rnd",
-            title: "Research & Development",
-            className: "rnd-box"
-        }
-    ];
+            <h3>Dashboard Controls</h3>
 
+            <div style="
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                gap:20px;
+                padding:16px;
+                background:#f5f7f6;
+                border:1px solid #ddd;
+                border-radius:10px;
+                margin-bottom:20px;
+            ">
 
-    departments.forEach(
-        department => {
+                <div>
 
-            const vertical =
-                dashboardData.verticals[
-                    department.key
-                ];
+                    <div style="
+                        font-size:17px;
+                        font-weight:800;
+                        color:#075c32;
+                    ">
+                        OVERALL ROI PERFORMANCE
+                    </div>
 
+                    <div style="
+                        margin-top:5px;
+                        color:#666;
+                        font-size:13px;
+                    ">
+                        Show or hide the overall ROI table and pie chart
+                        on the public dashboard.
+                    </div>
 
-            const section =
-                document.createElement(
-                    "section"
-                );
-
-            section.className =
-                department.className;
-
-
-            section.innerHTML = `
-                <h3>
-                    ${escapeHTML(department.title)}
-                    Items
-                </h3>
-
-                <div
-                    class="admin-item-header"
-                    style="
-                        display:grid;
-                        grid-template-columns:
-                            minmax(120px,1fr)
-                            75px
-                            75px
-                            75px
-                            30px;
-                        gap:5px;
-                        font-size:10px;
-                        font-weight:bold;
-                        margin-bottom:5px;
-                    "
-                >
-                    <div>Particular</div>
-                    <div>Allocation %</div>
-                    <div>Last Week ROI %</div>
-                    <div>Last Month ROI %</div>
-                    <div></div>
                 </div>
 
-                <div
-                    class="items-editor"
-                    data-department="${department.key}"
-                ></div>
+                <label style="
+                    position:relative;
+                    display:inline-block;
+                    width:58px;
+                    height:32px;
+                    flex-shrink:0;
+                ">
+
+                    <input
+                        type="checkbox"
+                        id="overallROIEnabled"
+                        style="
+                            opacity:0;
+                            width:0;
+                            height:0;
+                        "
+                    >
+
+                    <span
+                        id="overallROISlider"
+                        style="
+                            position:absolute;
+                            cursor:pointer;
+                            inset:0;
+                            background:#999;
+                            border-radius:32px;
+                            transition:.25s;
+                        "
+                    ></span>
+
+                </label>
+
+            </div>
+
+        </section>
+
+        ${keys.map(k => `
+
+            <section>
+
+                <h3>${labels[k]}</h3>
+
+                <div id="${k}Rows"></div>
 
                 <button
                     type="button"
                     class="add-row"
-                    data-add="${department.key}"
+                    data-add="${k}"
                 >
                     + Add Item
                 </button>
@@ -470,508 +144,516 @@ function buildEditors() {
                 <label>
                     Purpose
                     <textarea
-                        rows="3"
-                        data-purpose="${department.key}"
-                    >${escapeHTML(vertical.purpose || "")}</textarea>
+                        data-path="verticals.${k}.purpose"
+                    ></textarea>
                 </label>
-            `;
 
+            </section>
 
-            editSections.appendChild(
-                section
-            );
+        `).join("")}
+    `;
 
+    /* =====================================================
+       OVERALL ROI TOGGLE
+    ===================================================== */
 
-            renderItems(
-                department.key
-            );
+    const toggle =
+        $("#overallROIEnabled");
 
+    const slider =
+        $("#overallROISlider");
 
-            const purpose =
-                section.querySelector(
-                    `[data-purpose="${department.key}"]`
-                );
+    function updateToggleUI() {
 
+        const enabled =
+            !!data.settings.overallROIEnabled;
 
-            purpose.addEventListener(
-                "input",
-                function () {
+        toggle.checked = enabled;
 
-                    dashboardData
-                        .verticals[
-                            department.key
-                        ]
-                        .purpose =
-                        purpose.value;
-                }
-            );
-        }
-    );
+        slider.style.background =
+            enabled
+                ? "#075c32"
+                : "#999";
 
+        slider.innerHTML = `
+            <span style="
+                position:absolute;
+                height:24px;
+                width:24px;
+                left:${enabled ? "30px" : "4px"};
+                top:4px;
+                background:white;
+                border-radius:50%;
+                transition:.25s;
+                box-shadow:0 1px 4px rgba(0,0,0,.25);
+            "></span>
+        `;
+    }
+
+    toggle.onchange = () => {
+
+        data.settings.overallROIEnabled =
+            toggle.checked;
+
+        updateToggleUI();
+    };
+
+    updateToggleUI();
+
+    /* =====================================================
+       ADD ITEM BUTTONS
+    ===================================================== */
 
     document
         .querySelectorAll("[data-add]")
         .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                function () {
+            button.onclick = () => {
 
-                    const key =
-                        button.dataset.add;
+                data.verticals[
+                    button.dataset.add
+                ].items.push([
+                    "New Item",
+                    0,
+                    0,
+                    0
+                ]);
 
-
-                    dashboardData
-                        .verticals[key]
-                        .items
-                        .push([
-                            "New Item",
-                            0,
-                            0,
-                            0
-                        ]);
-
-
-                    renderItems(key);
-                }
-            );
+                renderEditors();
+            };
         });
-}
 
+    renderEditors();
+}
 
 /* =========================================================
    RENDER ITEMS
 ========================================================= */
 
-function renderItems(key) {
+function renderEditors() {
 
-    const container =
-        document.querySelector(
-            `.items-editor[data-department="${key}"]`
-        );
+    keys.forEach(k => {
 
+        let box = $("#" + k + "Rows");
 
-    if (!container) {
+        box.innerHTML =
+            data.verticals[k].items
+                .map((x, i) => {
+
+                    /* Support old 2-value items */
+                    const name =
+                        Array.isArray(x)
+                            ? x[0]
+                            : x.name || "Item";
+
+                    const percent =
+                        Array.isArray(x)
+                            ? Number(x[1]) || 0
+                            : Number(
+                                x.percent ??
+                                x.allocation ??
+                                0
+                            ) || 0;
+
+                    const weekROI =
+                        Array.isArray(x)
+                            ? Number(x[2]) || 0
+                            : Number(
+                                x.weekROI ??
+                                x.lastWeekROI ??
+                                0
+                            ) || 0;
+
+                    const monthROI =
+                        Array.isArray(x)
+                            ? Number(x[3]) || 0
+                            : Number(
+                                x.monthROI ??
+                                x.lastMonthROI ??
+                                0
+                            ) || 0;
+
+                    return `
+
+                        <div
+                            class="item-row"
+                            style="
+                                display:grid;
+                                grid-template-columns:
+                                1.5fr
+                                .7fr
+                                .7fr
+                                .7fr
+                                auto;
+                                gap:8px;
+                                align-items:center;
+                                margin-bottom:8px;
+                            "
+                        >
+
+                            <input
+                                value="${esc(name)}"
+                                data-name="${k}"
+                                data-i="${i}"
+                                placeholder="Particular"
+                            >
+
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step=".1"
+                                value="${percent}"
+                                data-pct="${k}"
+                                data-i="${i}"
+                                placeholder="Allocation %"
+                            >
+
+                            <input
+                                type="number"
+                                step=".01"
+                                value="${weekROI}"
+                                data-week-roi="${k}"
+                                data-i="${i}"
+                                placeholder="Week ROI %"
+                            >
+
+                            <input
+                                type="number"
+                                step=".01"
+                                value="${monthROI}"
+                                data-month-roi="${k}"
+                                data-i="${i}"
+                                placeholder="Month ROI %"
+                            >
+
+                            <button
+                                type="button"
+                                data-del="${k}"
+                                data-i="${i}"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+                    `;
+
+                })
+                .join("");
+    });
+
+    /* =====================================================
+       NORMAL INPUT BINDING
+    ===================================================== */
+
+    document
+        .querySelectorAll("[data-path]")
+        .forEach(el => {
+
+            el.value =
+                get(
+                    data,
+                    el.dataset.path
+                ) ?? "";
+
+            el.oninput = () => {
+
+                set(
+                    data,
+                    el.dataset.path,
+                    el.type === "number"
+                        ? Number(el.value)
+                        : el.value
+                );
+            };
+        });
+
+    /* =====================================================
+       ITEM NAME
+    ===================================================== */
+
+    document
+        .querySelectorAll("[data-name]")
+        .forEach(e => {
+
+            e.oninput = () => {
+
+                const item =
+                    data.verticals[
+                        e.dataset.name
+                    ].items[
+                        e.dataset.i
+                    ];
+
+                if (Array.isArray(item)) {
+
+                    item[0] =
+                        e.value;
+
+                } else {
+
+                    item.name =
+                        e.value;
+                }
+            };
+        });
+
+    /* =====================================================
+       ALLOCATION %
+    ===================================================== */
+
+    document
+        .querySelectorAll("[data-pct]")
+        .forEach(e => {
+
+            e.oninput = () => {
+
+                const item =
+                    data.verticals[
+                        e.dataset.pct
+                    ].items[
+                        e.dataset.i
+                    ];
+
+                if (Array.isArray(item)) {
+
+                    item[1] =
+                        Number(e.value);
+
+                } else {
+
+                    item.percent =
+                        Number(e.value);
+                }
+            };
+        });
+
+    /* =====================================================
+       LAST WEEK ROI %
+    ===================================================== */
+
+    document
+        .querySelectorAll("[data-week-roi]")
+        .forEach(e => {
+
+            e.oninput = () => {
+
+                const item =
+                    data.verticals[
+                        e.dataset.weekRoi
+                    ].items[
+                        e.dataset.i
+                    ];
+
+                if (Array.isArray(item)) {
+
+                    item[2] =
+                        Number(e.value);
+
+                } else {
+
+                    item.weekROI =
+                        Number(e.value);
+                }
+            };
+        });
+
+    /* =====================================================
+       LAST MONTH ROI %
+    ===================================================== */
+
+    document
+        .querySelectorAll("[data-month-roi]")
+        .forEach(e => {
+
+            e.oninput = () => {
+
+                const item =
+                    data.verticals[
+                        e.dataset.monthRoi
+                    ].items[
+                        e.dataset.i
+                    ];
+
+                if (Array.isArray(item)) {
+
+                    item[3] =
+                        Number(e.value);
+
+                } else {
+
+                    item.monthROI =
+                        Number(e.value);
+                }
+            };
+        });
+
+    /* =====================================================
+       DELETE ITEM
+    ===================================================== */
+
+    document
+        .querySelectorAll("[data-del]")
+        .forEach(e => {
+
+            e.onclick = () => {
+
+                data.verticals[
+                    e.dataset.del
+                ].items.splice(
+                    Number(e.dataset.i),
+                    1
+                );
+
+                renderEditors();
+            };
+        });
+}
+
+/* =========================================================
+   LOGIN / LOAD
+========================================================= */
+
+async function load() {
+
+    let r =
+        await fetch("/api/me");
+
+    let me =
+        await r.json();
+
+    if (!me.authenticated) {
+
+        $("#loginScreen")
+            .classList
+            .remove("hidden");
+
         return;
     }
 
+    r =
+        await fetch(
+            "/api/data",
+            {
+                cache: "no-store"
+            }
+        );
 
-    container.innerHTML = "";
+    data =
+        await r.json();
 
+    $("#loginScreen")
+        .classList
+        .add("hidden");
 
-    const items =
-        dashboardData
-            .verticals[key]
-            .items;
+    $("#adminApp")
+        .classList
+        .remove("hidden");
 
-
-    items.forEach(
-        (item, index) => {
-
-            const row =
-                document.createElement(
-                    "div"
-                );
-
-
-            row.className =
-                "item-row";
-
-
-            row.innerHTML = `
-
-                <input
-                    type="text"
-                    placeholder="Particular"
-                    value="${escapeAttribute(item[0])}"
-                    data-name
-                >
-
-                <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value="${item[1]}"
-                    data-allocation
-                >
-
-                <input
-                    type="number"
-                    step="0.01"
-                    value="${item[2]}"
-                    data-week-roi
-                >
-
-                <input
-                    type="number"
-                    step="0.01"
-                    value="${item[3]}"
-                    data-month-roi
-                >
-
-                <button
-                    type="button"
-                    title="Delete item"
-                    data-delete
-                >
-                    ×
-                </button>
-            `;
-
-
-            const nameInput =
-                row.querySelector(
-                    "[data-name]"
-                );
-
-            const allocationInput =
-                row.querySelector(
-                    "[data-allocation]"
-                );
-
-            const weekROIInput =
-                row.querySelector(
-                    "[data-week-roi]"
-                );
-
-            const monthROIInput =
-                row.querySelector(
-                    "[data-month-roi]"
-                );
-
-            const deleteButton =
-                row.querySelector(
-                    "[data-delete]"
-                );
-
-
-            /* ---------------------------------------------
-               NAME
-            --------------------------------------------- */
-
-            nameInput.addEventListener(
-                "input",
-                function () {
-
-                    items[index][0] =
-                        nameInput.value;
-                }
-            );
-
-
-            /* ---------------------------------------------
-               ALLOCATION
-            --------------------------------------------- */
-
-            allocationInput.addEventListener(
-                "input",
-                function () {
-
-                    items[index][1] =
-                        numberValue(
-                            allocationInput.value
-                        );
-                }
-            );
-
-
-            /* ---------------------------------------------
-               LAST WEEK ROI
-            --------------------------------------------- */
-
-            weekROIInput.addEventListener(
-                "input",
-                function () {
-
-                    items[index][2] =
-                        numberValue(
-                            weekROIInput.value
-                        );
-                }
-            );
-
-
-            /* ---------------------------------------------
-               LAST MONTH ROI
-            --------------------------------------------- */
-
-            monthROIInput.addEventListener(
-                "input",
-                function () {
-
-                    items[index][3] =
-                        numberValue(
-                            monthROIInput.value
-                        );
-                }
-            );
-
-
-            /* ---------------------------------------------
-               DELETE
-            --------------------------------------------- */
-
-            deleteButton.addEventListener(
-                "click",
-                function () {
-
-                    items.splice(
-                        index,
-                        1
-                    );
-
-
-                    renderItems(key);
-                }
-            );
-
-
-            container.appendChild(row);
-        }
-    );
+    buildEditors();
 }
 
+/* =========================================================
+   LOGIN
+========================================================= */
+
+$("#loginForm").onsubmit =
+    async e => {
+
+        e.preventDefault();
+
+        let r =
+            await fetch(
+                "/api/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:
+                        JSON.stringify({
+                            username:
+                                $("#username")
+                                    .value,
+
+                            password:
+                                $("#password")
+                                    .value
+                        })
+                }
+            );
+
+        if (r.ok) {
+
+            load();
+
+        } else {
+
+            $("#loginError")
+                .textContent =
+                "Invalid username or password.";
+        }
+    };
 
 /* =========================================================
    SAVE
 ========================================================= */
 
-saveBtn.addEventListener(
-    "click",
+$("#saveBtn").onclick =
+    async () => {
 
-    async function () {
-
-        saveBtn.disabled = true;
-
-        saveBtn.textContent =
-            "Saving...";
-
-        saveMessage.textContent = "";
-
-
-        try {
-
-            collectBasicFields();
-
-
-            dashboardData =
-                normalizeData(
-                    dashboardData
-                );
-
-
-            await api(
+        let r =
+            await fetch(
                 "/api/data",
                 {
                     method: "PUT",
-
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
                     body:
-                        JSON.stringify(
-                            dashboardData
-                        )
+                        JSON.stringify(data)
                 }
             );
 
+        $("#saveMessage")
+            .textContent =
+            r.ok
+                ? "Saved successfully"
+                : "Save failed";
 
-            showMessage(
-                "✓ Changes saved successfully"
-            );
-
-
-            /*
-               Refresh the preview iframe
-               after successful save.
-            */
+        if (r.ok) {
 
             const iframe =
                 document.querySelector(
                     ".preview iframe"
                 );
 
-
             if (iframe) {
 
-                iframe.src =
-                    iframe.src;
+                iframe.contentWindow
+                    .location
+                    .reload();
             }
-
-
-        } catch (error) {
-
-            showMessage(
-                error.message ||
-                "Save failed",
-                true
-            );
-
-        } finally {
-
-            saveBtn.disabled = false;
-
-            saveBtn.textContent =
-                "Save All Changes";
         }
-    }
-);
-
-
-/* =========================================================
-   COLLECT BASIC FIELDS
-========================================================= */
-
-function collectBasicFields() {
-
-    document
-        .querySelectorAll("[data-path]")
-        .forEach(input => {
-
-            let value =
-                input.value;
-
-
-            if (
-                input.type === "number"
-            ) {
-
-                value =
-                    numberValue(value);
-            }
-
-
-            setPathValue(
-                dashboardData,
-                input.dataset.path,
-                value
-            );
-        });
-}
-
+    };
 
 /* =========================================================
    LOGOUT
 ========================================================= */
 
-logoutBtn.addEventListener(
-    "click",
+$("#logoutBtn").onclick =
+    async () => {
 
-    async function () {
-
-        try {
-
-            await api(
-                "/api/logout",
-                {
-                    method: "POST"
-                }
-            );
-
-        } catch (error) {
-            // Continue to login screen.
-        }
-
-
-        dashboardData = null;
-
-        showLogin();
-
-        usernameInput.value = "";
-        passwordInput.value = "";
-
-        loginError.textContent = "";
-    }
-);
-
-
-/* =========================================================
-   NUMBER
-========================================================= */
-
-function numberValue(value) {
-
-    const number =
-        Number(value);
-
-    return Number.isFinite(number)
-        ? number
-        : 0;
-}
-
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-function showMessage(
-    message,
-    isError = false
-) {
-
-    saveMessage.textContent =
-        message;
-
-    saveMessage.style.color =
-        isError
-            ? "#ff9d9d"
-            : "#a8f0b8";
-
-
-    clearTimeout(
-        showMessage.timer
-    );
-
-
-    showMessage.timer =
-        setTimeout(
-            () => {
-
-                saveMessage.textContent =
-                    "";
-
-            },
-            5000
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
         );
-}
 
+        location.reload();
+    };
 
-/* =========================================================
-   HTML ESCAPE
-========================================================= */
-
-function escapeHTML(value) {
-
-    return String(value ?? "")
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-}
-
-
-function escapeAttribute(value) {
-
-    return escapeHTML(value);
-}
-
-
-/* =========================================================
-   START
-========================================================= */
-
-checkLogin();
+load();
