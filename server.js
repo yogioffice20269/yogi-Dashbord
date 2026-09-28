@@ -5,10 +5,12 @@ const path = require("path");
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+    process.env.PORT || 3000;
 
 const DATA_DIR =
-    process.env.DATA_DIR || path.join(__dirname, "data");
+    process.env.DATA_DIR ||
+    path.join(__dirname, "data");
 
 const DATA_FILE =
     path.join(DATA_DIR, "dashboard.json");
@@ -16,14 +18,18 @@ const DATA_FILE =
 const SESSION_TTL =
     8 * 60 * 60 * 1000;
 
-const sessions = new Map();
+const sessions =
+    new Map();
 
 /* =========================================================
    CREATE DATA DIRECTORY
 ========================================================= */
 
 if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.mkdirSync(
+        DATA_DIR,
+        { recursive: true }
+    );
 }
 
 /* =========================================================
@@ -31,66 +37,106 @@ if (!fs.existsSync(DATA_DIR)) {
 ========================================================= */
 
 const defaultData = {
+
+    settings: {
+
+        overallROIEnabled: true
+
+    },
+
     meta: {
-        organization: "YOGI GROWING TOGETHER LLP",
-        date: "24-Sep-2024",
-        version: "V1.0",
-        preparedBy: "Team Yogi"
+
+        organization:
+            "YOGI GROWING TOGETHER LLP",
+
+        date:
+            "24-Sep-2024",
+
+        version:
+            "V1.0",
+
+        preparedBy:
+            "Team Yogi"
     },
 
     capital: {
-        total: 10000000
+
+        total:
+            10000000
     },
 
     verticals: {
 
         trading: {
+
             percent: 40,
+
             purpose:
                 "Short to Medium Term Trading Opportunities",
 
             items: [
+
                 ["Index", 5, 0, 0],
+
                 ["Equity F&O", 15, 0, 0],
+
                 ["Equity (Intraday)", 10, 0, 0],
+
                 ["Commodity", 5, 0, 0],
+
                 ["Forex", 5, 0, 0]
             ]
         },
 
         investment: {
+
             percent: 40,
+
             purpose:
                 "Long Term Wealth Creation & Diversification",
 
             items: [
+
                 ["Equity (CNC)", 20, 0, 0],
+
                 ["Mutual Fund", 10, 0, 0],
+
                 ["Gold, Silver", 10, 0, 0]
             ]
         },
 
         reserve: {
+
             percent: 10,
+
             purpose:
                 "Maintain Liquidity & Handle Unplanned Expenses",
 
             items: [
+
                 ["Liquidity Buffer", 5, 0, 0],
+
                 ["Fixed Expenses", 5, 0, 0]
             ]
         },
 
         rnd: {
+
             percent: 10,
+
             purpose:
                 "Research, Innovation & Trading Edge Development",
 
             items: [
+
                 ["Algo Development", 2, 0, 0],
+
                 ["Strategy Testing", 2, 0, 0],
+
                 ["Model Development", 2, 0, 0],
+
                 ["Data/Software", 2, 0, 0],
+
                 ["Backtesting", 2, 0, 0]
             ]
         }
@@ -98,7 +144,7 @@ const defaultData = {
 };
 
 /* =========================================================
-   READ / WRITE DATA
+   READ DATA
 ========================================================= */
 
 function readData() {
@@ -106,43 +152,59 @@ function readData() {
     try {
 
         const raw =
-            fs.readFileSync(DATA_FILE, "utf8");
+            fs.readFileSync(
+                DATA_FILE,
+                "utf8"
+            );
 
         const parsed =
             JSON.parse(raw);
 
-        return normalizeData(parsed);
+        return normalizeData(
+            parsed
+        );
 
     } catch (error) {
 
-        return normalizeData(defaultData);
+        return normalizeData(
+            defaultData
+        );
     }
 }
 
+/* =========================================================
+   WRITE DATA
+========================================================= */
 
 function writeData(data) {
 
     fs.writeFileSync(
+
         DATA_FILE,
-        JSON.stringify(data, null, 2),
+
+        JSON.stringify(
+            data,
+            null,
+            2
+        ),
+
         "utf8"
     );
 }
 
-
 /* =========================================================
-   NORMALIZE OLD + NEW DATA
+   NORMALIZE ITEM
 ========================================================= */
 
 function normalizeItem(item) {
 
     /*
-       Old format:
+       Supports:
 
+       Old:
        ["Index", 5]
 
-       New format:
-
+       New:
        ["Index", 5, 2.5, 5]
     */
 
@@ -157,96 +219,156 @@ function normalizeItem(item) {
     }
 
     return [
-        String(item[0] ?? ""),
-        Number(item[1]) || 0,
-        Number(item[2]) || 0,
-        Number(item[3]) || 0
+
+        String(
+            item[0] ?? ""
+        ),
+
+        Number(
+            item[1]
+        ) || 0,
+
+        Number(
+            item[2]
+        ) || 0,
+
+        Number(
+            item[3]
+        ) || 0
     ];
 }
 
+/* =========================================================
+   NORMALIZE DATA
+========================================================= */
 
 function normalizeData(data) {
 
     const source =
-        data && typeof data === "object"
+        data &&
+        typeof data === "object"
             ? data
             : defaultData;
 
     const result = {
-         settings: {
-        overallROIEnabled:
-            source.settings?.overallROIEnabled !== false
-    },
+
+        /* =====================================================
+           SETTINGS
+        ===================================================== */
+
+        settings: {
+
+            /*
+               IMPORTANT:
+               Only false means OFF.
+               Missing value means ON.
+            */
+
+            overallROIEnabled:
+                source.settings
+                    ?.overallROIEnabled !== false
+        },
+
+        /* =====================================================
+           META
+        ===================================================== */
 
         meta: {
+
             organization:
+
                 String(
                     source.meta?.organization ??
                     defaultData.meta.organization
                 ),
 
             date:
+
                 String(
                     source.meta?.date ??
                     defaultData.meta.date
                 ),
 
             version:
+
                 String(
                     source.meta?.version ??
                     defaultData.meta.version
                 ),
 
             preparedBy:
+
                 String(
                     source.meta?.preparedBy ??
                     defaultData.meta.preparedBy
                 )
         },
 
+        /* =====================================================
+           CAPITAL
+        ===================================================== */
+
         capital: {
+
             total:
-                Number(source.capital?.total) || 0
+
+                Number(
+                    source.capital?.total
+                ) || 0
         },
+
+        /* =====================================================
+           VERTICALS
+        ===================================================== */
 
         verticals: {}
     };
 
-/* -----------------------------------------------------
-   DASHBOARD SETTINGS
------------------------------------------------------ */
 
-allowed.settings.overallROIEnabled =
-    data.settings?.overallROIEnabled !== false;
-
-    for (const key of [
-        "trading",
-        "investment",
-        "reserve",
-        "rnd"
-    ]) {
+    for (
+        const key of [
+            "trading",
+            "investment",
+            "reserve",
+            "rnd"
+        ]
+    ) {
 
         const vertical =
-            source.verticals?.[key] || {};
+            source.verticals?.[key] ||
+            {};
 
         result.verticals[key] = {
 
             percent:
-                Number(vertical.percent) || 0,
+
+                Number(
+                    vertical.percent
+                ) || 0,
 
             purpose:
-                String(vertical.purpose ?? ""),
+
+                String(
+                    vertical.purpose ?? ""
+                ),
 
             items:
-                Array.isArray(vertical.items)
-                    ? vertical.items.map(normalizeItem)
+
+                Array.isArray(
+                    vertical.items
+                )
+
+                    ? vertical.items.map(
+                        normalizeItem
+                    )
+
                     : []
         };
     }
 
+
     return result;
 }
-
 
 /* =========================================================
    CLEAN + VALIDATE DATA
@@ -258,219 +380,376 @@ function cleanData(data) {
         !data ||
         typeof data !== "object"
     ) {
-        throw new Error("Invalid data");
+
+        throw new Error(
+            "Invalid data"
+        );
     }
 
 
     const allowed = {
 
+        /* =====================================================
+           SETTINGS
+        ===================================================== */
+
+        settings: {},
+
+        /* =====================================================
+           META
+        ===================================================== */
+
         meta: {},
 
+        /* =====================================================
+           CAPITAL
+        ===================================================== */
+
         capital: {},
+
+        /* =====================================================
+           VERTICALS
+        ===================================================== */
 
         verticals: {}
     };
 
 
-    /* -----------------------------------------------------
+    /* =========================================================
+       SETTINGS
+    ========================================================= */
+
+    allowed.settings
+        .overallROIEnabled =
+            data.settings
+                ?.overallROIEnabled !== false;
+
+
+    /* =========================================================
        META
-    ----------------------------------------------------- */
+    ========================================================= */
 
     allowed.meta.organization =
+
         String(
-            data.meta?.organization ?? ""
-        ).slice(0, 200);
+            data.meta?.organization ??
+            ""
+        ).slice(
+            0,
+            200
+        );
 
 
     allowed.meta.date =
+
         String(
-            data.meta?.date ?? ""
-        ).slice(0, 100);
+            data.meta?.date ??
+            ""
+        ).slice(
+            0,
+            100
+        );
 
 
     allowed.meta.version =
+
         String(
-            data.meta?.version ?? ""
-        ).slice(0, 100);
+            data.meta?.version ??
+            ""
+        ).slice(
+            0,
+            100
+        );
 
 
     allowed.meta.preparedBy =
+
         String(
-            data.meta?.preparedBy ?? ""
-        ).slice(0, 200);
+            data.meta?.preparedBy ??
+            ""
+        ).slice(
+            0,
+            200
+        );
 
 
-    /* -----------------------------------------------------
+    /* =========================================================
        CAPITAL
-    ----------------------------------------------------- */
+    ========================================================= */
 
     let totalCapital =
-        Number(data.capital?.total);
 
-    if (!Number.isFinite(totalCapital)) {
+        Number(
+            data.capital?.total
+        );
+
+
+    if (
+        !Number.isFinite(
+            totalCapital
+        )
+    ) {
+
         totalCapital = 0;
     }
 
+
     totalCapital =
+
         Math.max(
+
             0,
+
             Math.min(
+
                 1000000000000,
+
                 totalCapital
             )
         );
+
 
     allowed.capital.total =
         totalCapital;
 
 
-    /* -----------------------------------------------------
+    /* =========================================================
        VERTICALS
-    ----------------------------------------------------- */
+    ========================================================= */
 
-    for (const key of [
-        "trading",
-        "investment",
-        "reserve",
-        "rnd"
-    ]) {
+    for (
+        const key of [
+            "trading",
+            "investment",
+            "reserve",
+            "rnd"
+        ]
+    ) {
 
         const vertical =
-            data.verticals?.[key] || {};
+            data.verticals?.[key] ||
+            {};
 
+
+        /* =====================================================
+           DEPARTMENT PERCENT
+        ===================================================== */
 
         let percent =
-            Number(vertical.percent);
 
-        if (!Number.isFinite(percent)) {
-            percent = 0;
-        }
-
-        percent =
-            Math.max(
-                0,
-                Math.min(100, percent)
+            Number(
+                vertical.percent
             );
 
 
+        if (
+            !Number.isFinite(
+                percent
+            )
+        ) {
+
+            percent = 0;
+        }
+
+
+        percent =
+
+            Math.max(
+
+                0,
+
+                Math.min(
+                    100,
+                    percent
+                )
+            );
+
+
+        /* =====================================================
+           PURPOSE
+        ===================================================== */
+
         const purpose =
+
             String(
                 vertical.purpose ?? ""
-            ).slice(0, 500);
+            ).slice(
+                0,
+                500
+            );
 
+
+        /* =====================================================
+           ITEMS
+        ===================================================== */
 
         let items = [];
 
 
-        if (Array.isArray(vertical.items)) {
+        if (
+            Array.isArray(
+                vertical.items
+            )
+        ) {
 
             items =
+
                 vertical.items
-                    .slice(0, 50)
-                    .map(item => {
 
-                        const name =
-                            String(
-                                item?.[0] ?? ""
-                            )
-                            .slice(0, 100);
+                    .slice(
+                        0,
+                        50
+                    )
 
+                    .map(
+                        item => {
 
-                        let allocation =
-                            Number(item?.[1]);
+                            const name =
 
-                        let weekROI =
-                            Number(item?.[2]);
-
-                        let monthROI =
-                            Number(item?.[3]);
-
-
-                        if (
-                            !Number.isFinite(
-                                allocation
-                            )
-                        ) {
-                            allocation = 0;
-                        }
+                                String(
+                                    item?.[0] ??
+                                    ""
+                                ).slice(
+                                    0,
+                                    100
+                                );
 
 
-                        if (
-                            !Number.isFinite(
-                                weekROI
-                            )
-                        ) {
-                            weekROI = 0;
-                        }
+                            let allocation =
+
+                                Number(
+                                    item?.[1]
+                                );
 
 
-                        if (
-                            !Number.isFinite(
-                                monthROI
-                            )
-                        ) {
-                            monthROI = 0;
-                        }
+                            let weekROI =
+
+                                Number(
+                                    item?.[2]
+                                );
 
 
-                        allocation =
-                            Math.max(
-                                0,
-                                Math.min(
-                                    100,
+                            let monthROI =
+
+                                Number(
+                                    item?.[3]
+                                );
+
+
+                            /* =================================
+                               VALIDATE ALLOCATION
+                            ================================= */
+
+                            if (
+                                !Number.isFinite(
                                     allocation
                                 )
-                            );
+                            ) {
+
+                                allocation = 0;
+                            }
 
 
-                        /*
-                           ROI can be positive
-                           or negative.
+                            /* =================================
+                               VALIDATE WEEK ROI
+                            ================================= */
 
-                           Example:
-
-                           5
-                           -2.5
-                           10
-                        */
-
-                        weekROI =
-                            Math.max(
-                                -100000,
-                                Math.min(
-                                    100000,
+                            if (
+                                !Number.isFinite(
                                     weekROI
                                 )
-                            );
+                            ) {
+
+                                weekROI = 0;
+                            }
 
 
-                        monthROI =
-                            Math.max(
-                                -100000,
-                                Math.min(
-                                    100000,
+                            /* =================================
+                               VALIDATE MONTH ROI
+                            ================================= */
+
+                            if (
+                                !Number.isFinite(
                                     monthROI
                                 )
-                            );
+                            ) {
+
+                                monthROI = 0;
+                            }
 
 
-                        return [
-                            name,
-                            allocation,
-                            weekROI,
-                            monthROI
-                        ];
-                    });
+                            allocation =
+
+                                Math.max(
+
+                                    0,
+
+                                    Math.min(
+                                        100,
+                                        allocation
+                                    )
+                                );
+
+
+                            /*
+                               ROI may be positive
+                               or negative.
+                            */
+
+                            weekROI =
+
+                                Math.max(
+
+                                    -100000,
+
+                                    Math.min(
+                                        100000,
+                                        weekROI
+                                    )
+                                );
+
+
+                            monthROI =
+
+                                Math.max(
+
+                                    -100000,
+
+                                    Math.min(
+                                        100000,
+                                        monthROI
+                                    )
+                                );
+
+
+                            return [
+
+                                name,
+
+                                allocation,
+
+                                weekROI,
+
+                                monthROI
+                            ];
+                        }
+                    );
         }
 
 
         allowed.verticals[key] = {
 
-            percent,
+            percent:
 
-            purpose,
+                percent,
 
-            items
+            purpose:
+
+                purpose,
+
+            items:
+
+                items
         };
     }
 
@@ -478,12 +757,13 @@ function cleanData(data) {
     return allowed;
 }
 
-
 /* =========================================================
    SECURITY
 ========================================================= */
 
-app.disable("x-powered-by");
+app.disable(
+    "x-powered-by"
+);
 
 app.use(
     express.json({
@@ -491,15 +771,18 @@ app.use(
     })
 );
 
-
 /* =========================================================
    ADMIN CREDENTIALS
 ========================================================= */
 
 const adminUser =
-    process.env.ADMIN_USERNAME || "admin";
+
+    process.env.ADMIN_USERNAME ||
+    "admin";
+
 
 const adminPassword =
+
     process.env.ADMIN_PASSWORD;
 
 
@@ -510,15 +793,15 @@ if (!adminPassword) {
     );
 }
 
-
 /* =========================================================
-   AUTHENTICATION
+   GET SESSION TOKEN
 ========================================================= */
 
 function getSessionToken(req) {
 
     const cookie =
-        req.headers.cookie || "";
+        req.headers.cookie ||
+        "";
 
     const match =
         cookie.match(
@@ -530,8 +813,15 @@ function getSessionToken(req) {
         : null;
 }
 
+/* =========================================================
+   AUTH
+========================================================= */
 
-function auth(req, res, next) {
+function auth(
+    req,
+    res,
+    next
+) {
 
     const token =
         getSessionToken(req);
@@ -544,17 +834,24 @@ function auth(req, res, next) {
 
     if (
         !session ||
-        session.expires < Date.now()
+        session.expires <
+            Date.now()
     ) {
 
         if (token) {
-            sessions.delete(token);
+
+            sessions.delete(
+                token
+            );
         }
+
 
         return res
             .status(401)
             .json({
-                error: "Unauthorized"
+
+                error:
+                    "Unauthorized"
             });
     }
 
@@ -563,7 +860,6 @@ function auth(req, res, next) {
 
     next();
 }
-
 
 /* =========================================================
    COOKIE
@@ -575,6 +871,7 @@ function setCookie(
 ) {
 
     res.setHeader(
+
         "Set-Cookie",
 
         `yogi_admin=${token}; ` +
@@ -586,15 +883,18 @@ function setCookie(
     );
 }
 
-
 /* =========================================================
    LOGIN
 ========================================================= */
 
 app.post(
+
     "/api/login",
 
-    async (req, res) => {
+    async (
+        req,
+        res
+    ) => {
 
         const {
             username,
@@ -603,15 +903,25 @@ app.post(
 
 
         if (
+
             !adminPassword ||
-            username !== adminUser ||
+
+            username !==
+                adminUser ||
+
             !password ||
-            password !== adminPassword
+
+            password !==
+                adminPassword
+
         ) {
 
             return res
+
                 .status(401)
+
                 .json({
+
                     error:
                         "Invalid credentials"
                 });
@@ -619,14 +929,26 @@ app.post(
 
 
         const token =
-            crypto.randomBytes(32)
-                .toString("hex");
+
+            crypto
+
+                .randomBytes(
+                    32
+                )
+
+                .toString(
+                    "hex"
+                );
 
 
         sessions.set(
+
             token,
+
             {
+
                 expires:
+
                     Date.now() +
                     SESSION_TTL
             }
@@ -640,33 +962,41 @@ app.post(
 
 
         res.json({
+
             ok: true
         });
     }
 );
-
 
 /* =========================================================
    LOGOUT
 ========================================================= */
 
 app.post(
+
     "/api/logout",
 
     auth,
 
-    (req, res) => {
+    (
+        req,
+        res
+    ) => {
 
         const token =
             getSessionToken(req);
 
 
         if (token) {
-            sessions.delete(token);
+
+            sessions.delete(
+                token
+            );
         }
 
 
         res.setHeader(
+
             "Set-Cookie",
 
             "yogi_admin=; " +
@@ -679,20 +1009,24 @@ app.post(
 
 
         res.json({
+
             ok: true
         });
     }
 );
-
 
 /* =========================================================
    CHECK LOGIN
 ========================================================= */
 
 app.get(
+
     "/api/me",
 
-    (req, res) => {
+    (
+        req,
+        res
+    ) => {
 
         const token =
             getSessionToken(req);
@@ -706,32 +1040,38 @@ app.get(
         res.json({
 
             authenticated:
+
                 !!(
                     session &&
                     session.expires >
-                    Date.now()
+                        Date.now()
                 )
         });
     }
 );
-
 
 /* =========================================================
    PUBLIC DATA
 ========================================================= */
 
 app.get(
+
     "/api/data",
 
-    (req, res) => {
+    (
+        req,
+        res
+    ) => {
 
         const data =
             readData();
 
-        res.json(data);
+
+        res.json(
+            data
+        );
     }
 );
-
 
 /* =========================================================
    SAVE DASHBOARD DATA
@@ -739,38 +1079,55 @@ app.get(
 ========================================================= */
 
 app.put(
+
     "/api/data",
 
     auth,
 
-    (req, res) => {
+    (
+        req,
+        res
+    ) => {
 
         try {
 
             const cleaned =
-                cleanData(req.body);
+                cleanData(
+                    req.body
+                );
 
 
-            writeData(cleaned);
+            writeData(
+                cleaned
+            );
 
 
             res.json({
+
                 ok: true,
-                data: cleaned
+
+                data:
+                    cleaned
             });
 
         } catch (error) {
 
             console.error(
+
                 "Save error:",
+
                 error
             );
 
 
             res
+
                 .status(400)
+
                 .json({
+
                     error:
+
                         error.message ||
                         "Unable to save data"
                 });
@@ -778,69 +1135,84 @@ app.put(
     }
 );
 
-
 /* =========================================================
    PUBLIC DASHBOARD
 ========================================================= */
 
 app.get(
+
     "/",
 
-    (req, res) => {
+    (
+        req,
+        res
+    ) => {
 
         res.sendFile(
+
             path.join(
+
                 __dirname,
+
                 "public.html"
             )
         );
     }
 );
 
-
 /* =========================================================
    ADMIN PANEL
 ========================================================= */
 
 app.get(
+
     "/admin",
 
-    (req, res) => {
+    (
+        req,
+        res
+    ) => {
 
         res.sendFile(
+
             path.join(
+
                 __dirname,
+
                 "admin.html"
             )
         );
     }
 );
 
-
 /* =========================================================
    STATIC FILES
 ========================================================= */
 
 app.use(
+
     express.static(
+
         __dirname,
+
         {
             index: false
         }
     )
 );
 
-
 /* =========================================================
    START SERVER
 ========================================================= */
 
 app.listen(
+
     PORT,
 
     () => {
 
         console.log(
+
             `Fund Allocation System running on port ${PORT}`
         );
     }
