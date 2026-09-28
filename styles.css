@@ -1,10 +1,1220 @@
-*{box-sizing:border-box}body{margin:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#111}.page{max-width:1450px;margin:12px auto;padding:0 10px}.header{height:72px;background:linear-gradient(#0d4f2c,#0b4526);color:#fff;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #ffe900}.logo-wrap{width:175px;height:64px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:3px;overflow:hidden}.logo-wrap img{max-width:100%;max-height:100%;object-fit:contain}.brand{text-align:center;flex:1}.brand h1{font-size:21px;margin:0 0 6px;font-weight:800;letter-spacing:.4px}.title{display:inline-block;background:#fff000;color:#111;padding:5px 90px;font-weight:800;font-size:17px}.meta{width:245px;background:#eee;color:#111;font-size:11px;border:1px solid #aaa}.meta div{display:grid;grid-template-columns:85px 1fr;border-bottom:1px solid #bbb}.meta div:last-child{border-bottom:0}.meta span,.meta b{padding:4px 7px}.meta span{font-weight:700;background:#ddd}.meta b{text-align:center;font-weight:500}.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}.summary-card{height:82px;background:#fff;border:1px solid #aaa;text-align:center;box-shadow:0 1px 3px #bbb}.summary-card .label{font-size:13px;font-weight:700;padding:7px;border-bottom:1px solid #aaa}.big{font-size:22px;font-weight:800;padding:10px}.status{font-size:20px;font-weight:800;padding:9px;color:#238c43}.status span{display:inline-flex;border-radius:50%;background:#29a54c;color:#fff;width:24px;height:24px;align-items:center;justify-content:center;margin-right:7px}.allocation-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.allocation-card{border:1px solid #aaa;text-align:center;min-height:100px}.card-head{font-weight:800;padding:10px;font-size:14px}.percent{font-size:20px;font-weight:800;padding-top:8px}.amount{font-size:17px;font-weight:800;padding:7px}.trading .card-head{background:#2582d8;color:#fff}.trading{background:#dcecfb}.investment .card-head{background:#31a553;color:#fff}.investment{background:#e2f3e6}.reserve .card-head{background:#f4d76c}.reserve{background:#fff4c9}.rnd .card-head{background:#8c73c9;color:#fff}.rnd{background:#eee9fb}.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.chart-panel{background:#fff;border:1px solid #bbb;min-height:205px;padding:10px}.chart-panel h3{text-align:center;font-size:13px;margin:0 0 8px;background:#fafafa;padding:4px}.donut-wrap{display:flex;align-items:center;justify-content:center;gap:35px}.donut{width:145px;height:145px;border-radius:50%;background:conic-gradient(#438ddd 0 40%,#67bd72 40% 80%,#f1d65d 80% 90%,#a184d6 90% 100%);position:relative}.donut:after{content:"";position:absolute;width:70px;height:70px;border-radius:50%;background:#fff;left:37px;top:37px}.legend{font-size:12px;line-height:2}.legend div{display:flex;gap:7px;align-items:center;min-width:150px}.legend b{margin-left:auto}.dot{width:10px;height:10px;border-radius:50%;display:inline-block}.blue{background:#438ddd}.green{background:#67bd72}.yellow{background:#f1d65d}.purple{background:#a184d6}.bar-chart{height:160px;display:flex;padding:0 20px 0 15px}.y-axis{width:35px;display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#555}.bars{flex:1;display:flex;align-items:end;justify-content:space-around;border-left:1px solid #aaa;border-bottom:1px solid #aaa;background:repeating-linear-gradient(to top,transparent 0,transparent 31px,#ddd 32px)}.bar-group{height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:4px}.bar{width:45px;min-height:2px;position:relative}.bar span{position:absolute;top:-18px;width:100%;font-size:10px;text-align:center;font-weight:700}.bar-group small{font-size:10px;white-space:nowrap}.b-blue{background:#438ddd}.b-green{background:#67bd72}.b-yellow{background:#f1d65d}.b-purple{background:#a184d6}.tables-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}.department{background:#fff;border:1px solid #aaa}.department h2{margin:0;text-align:center;padding:8px;font-size:13px}.department h2 span{font-weight:700}.trading-box h2{background:#bddbf6}.investment-box h2{background:#b8e3bf}.reserve-box h2{background:#f6df84}.rnd-box h2{background:#d8cef0}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #aaa;padding:5px;text-align:center}thead th{background:#eee;font-weight:800}tfoot th{font-weight:800}.trading-box tfoot{background:#d9ebfa}.investment-box tfoot{background:#d5efd9}.reserve-box tfoot{background:#fff0aa}.rnd-box tfoot{background:#e8e0f5}.purpose{margin-top:8px;border:1px solid #aaa;text-align:center;min-height:58px}.purpose b{display:block;padding:5px;font-size:12px}.trading-box .purpose b{background:#b9daf7}.investment-box .purpose b{background:#bfe6c5}.reserve-box .purpose b{background:#f5dc76}.rnd-box .purpose b{background:#d8cdee}.purpose p{font-size:10px;margin:10px 5px}footer{text-align:center;font-size:10px;color:#777;padding:12px}@media(max-width:1000px){.tables-grid{grid-template-columns:1fr 1fr}.header{height:auto}.title{padding:5px 30px}.meta{width:210px}}@media(max-width:650px){.logo-wrap{width:150px;height:55px}.summary-grid,.allocation-row,.charts-row,.tables-grid{grid-template-columns:1fr}.header{flex-direction:column;gap:8px;padding:10px}.brand{width:100%}.meta{width:100%}.title{padding:5px 20px}.donut-wrap{gap:15px}.bar{width:30px}}
+/* =========================================================
+   YOGI GROWING TOGETHER LLP
+   FUND ALLOCATION DASHBOARD
+   COMPLETE STYLES
+========================================================= */
 
-.hidden{display:none!important}.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f6f8}.login-card{width:390px;background:#fff;border:1px solid #bbb;border-radius:8px;box-shadow:0 5px 22px #bbb;padding:30px;text-align:center}.login-logo{width:240px;max-height:130px;object-fit:contain}.login-card h1{margin:12px 0 3px}.login-card p{margin:0 0 22px;color:#666}.login-card label,.editor label{display:block;text-align:left;font-weight:700;font-size:12px;margin:10px 0}.login-card input,.editor input,.editor textarea{width:100%;padding:9px;border:1px solid #aaa;border-radius:4px;font:inherit;margin-top:5px}.login-card button,.admin-bar button,.add-row{border:0;border-radius:4px;padding:9px 14px;background:#0d7a3d;color:#fff;font-weight:700;cursor:pointer}.login-error{color:#c62828;min-height:20px;font-size:12px;margin-top:8px}.login-card small{display:block;color:#777;margin-top:15px}.admin-bar{position:sticky;top:0;z-index:10;background:#0d4f2c;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:15px}.admin-bar #saveMessage{flex:1;color:#a8f0b8;font-size:12px}.admin-bar .secondary{background:#777}.admin-bar .danger{background:#a92828}.admin-layout{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 45px)}.editor{background:#fff;border-right:1px solid #bbb;padding:18px;overflow:auto}.editor h2{margin:0}.editor section{border-top:1px solid #ddd;margin-top:16px;padding-top:10px}.editor h3{font-size:14px;margin:0 0 8px}.muted{font-size:11px;color:#777}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}.item-row{display:grid;grid-template-columns:1fr 75px 30px;gap:5px;margin-bottom:6px}.item-row input{margin:0}.item-row button{border:0;background:#d33;color:#fff;border-radius:4px;cursor:pointer}.add-row{background:#286ea8;margin:3px 0 5px;font-size:11px}.preview{padding:12px;background:#f4f6f8;overflow:auto}.warning{background:#d88900!important}.preview .header{min-width:900px}.preview .summary-grid,.preview .allocation-row,.preview .charts-row,.preview .tables-grid{min-width:900px}
-@media(max-width:900px){.admin-layout{grid-template-columns:1fr}.editor{border-right:0;border-bottom:1px solid #bbb}.admin-bar{position:relative}}
+* {
+    box-sizing: border-box;
+}
 
-body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10px}.loading{text-align:center;padding:80px;font-size:18px}.view-link{color:#fff;text-decoration:none;margin-right:12px;font-size:12px}.save-btn{width:100%;padding:12px;border:0;border-radius:4px;background:#0d7a3d;color:#fff;font-weight:800;cursor:pointer;margin-top:12px}.preview{padding:12px;background:#f4f6f8;overflow:auto}.preview iframe{width:100%;height:calc(100vh - 70px);min-height:900px;border:0;background:#f4f6f8}.public-wrap .header{min-width:900px}.public-wrap .summary-grid,.public-wrap .allocation-row,.public-wrap .charts-row,.public-wrap .tables-grid{min-width:900px}.login-card button{width:100%;margin-top:8px}.admin-bar{min-height:45px}
-/* ===== FINAL RESPONSIVE FIX ===== */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+body {
+    min-width: 320px;
+    background: #f4f6f8;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111;
+    overflow-x: hidden;
+}
+
+/* =========================================================
+   MAIN PAGE
+========================================================= */
+
+.page,
+.public-wrap {
+    width: 100%;
+    max-width: 1450px;
+    margin: 12px auto;
+    padding: 0 10px;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+    min-height: 72px;
+    background: linear-gradient(#0d4f2c, #0b4526);
+    color: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 4px solid #ffe900;
+}
+
+.logo-wrap {
+    width: 175px;
+    height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #fff;
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.logo-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.brand {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+}
+
+.brand h1 {
+    font-size: 21px;
+    margin: 0 0 6px;
+    font-weight: 800;
+    letter-spacing: .4px;
+}
+
+.title {
+    display: inline-block;
+    background: #fff000;
+    color: #111;
+    padding: 5px 90px;
+    font-weight: 800;
+    font-size: 17px;
+}
+
+.meta {
+    width: 245px;
+    background: #eee;
+    color: #111;
+    font-size: 11px;
+    border: 1px solid #aaa;
+    flex-shrink: 0;
+}
+
+.meta div {
+    display: grid;
+    grid-template-columns: 85px 1fr;
+    border-bottom: 1px solid #bbb;
+}
+
+.meta div:last-child {
+    border-bottom: 0;
+}
+
+.meta span,
+.meta b {
+    padding: 4px 7px;
+}
+
+.meta span {
+    font-weight: 700;
+    background: #ddd;
+}
+
+.meta b {
+    text-align: center;
+    font-weight: 500;
+}
+
+/* =========================================================
+   SUMMARY CARDS
+========================================================= */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.summary-card {
+    min-height: 82px;
+    background: #fff;
+    border: 1px solid #aaa;
+    text-align: center;
+    box-shadow: 0 1px 3px #bbb;
+}
+
+.summary-card .label {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px;
+    border-bottom: 1px solid #aaa;
+}
+
+.big {
+    font-size: 22px;
+    font-weight: 800;
+    padding: 10px;
+}
+
+.status {
+    font-size: 20px;
+    font-weight: 800;
+    padding: 9px;
+    color: #238c43;
+}
+
+.status span {
+    display: inline-flex;
+    border-radius: 50%;
+    background: #29a54c;
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 7px;
+}
+
+/* =========================================================
+   VERTICAL ALLOCATION CARDS
+========================================================= */
+
+.allocation-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.allocation-card {
+    border: 1px solid #aaa;
+    text-align: center;
+    min-height: 100px;
+}
+
+.card-head {
+    font-weight: 800;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.percent {
+    font-size: 20px;
+    font-weight: 800;
+    padding-top: 8px;
+}
+
+.amount {
+    font-size: 17px;
+    font-weight: 800;
+    padding: 7px;
+}
+
+.trading .card-head {
+    background: #2582d8;
+    color: #fff;
+}
+
+.trading {
+    background: #dcecfb;
+}
+
+.investment .card-head {
+    background: #31a553;
+    color: #fff;
+}
+
+.investment {
+    background: #e2f3e6;
+}
+
+.reserve .card-head {
+    background: #f4d76c;
+}
+
+.reserve {
+    background: #fff4c9;
+}
+
+.rnd .card-head {
+    background: #8c73c9;
+    color: #fff;
+}
+
+.rnd {
+    background: #eee9fb;
+}
+
+/* =========================================================
+   MAIN CHARTS
+========================================================= */
+
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin: 12px 0;
+}
+
+.chart-panel {
+    width: 100%;
+    min-width: 0;
+    height: 330px;
+    min-height: 330px;
+
+    background: #fff;
+    border: 1px solid #bbb;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-panel h3 {
+    flex: 0 0 auto;
+    text-align: center;
+    font-size: 13px;
+    margin: 0 0 8px;
+    background: #fafafa;
+    padding: 7px;
+}
+
+/* =========================================================
+   DONUT
+========================================================= */
+
+.donut-wrap {
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 55px;
+}
+
+.donut {
+    width: 190px;
+    height: 190px;
+
+    border-radius: 50%;
+
+    background:
+        conic-gradient(
+            #438ddd 0 40%,
+            #67bd72 40% 80%,
+            #f1d65d 80% 90%,
+            #a184d6 90% 100%
+        );
+
+    position: relative;
+    flex: 0 0 190px;
+}
+
+.donut:after {
+    content: "";
+
+    position: absolute;
+
+    width: 90px;
+    height: 90px;
+
+    border-radius: 50%;
+    background: #fff;
+
+    left: 50px;
+    top: 50px;
+}
+
+.legend {
+    font-size: 14px;
+    line-height: 2.1;
+}
+
+.legend div {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    min-width: 190px;
+}
+
+.legend b {
+    margin-left: auto;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.blue {
+    background: #438ddd;
+}
+
+.green {
+    background: #67bd72;
+}
+
+.yellow {
+    background: #f1d65d;
+}
+
+.purple {
+    background: #a184d6;
+}
+
+/* =========================================================
+   CAPITAL BAR CHART
+========================================================= */
+
+.bar-chart {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+
+    display: flex;
+    padding: 0 20px 0 15px;
+}
+
+.y-axis {
+    width: 35px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    font-size: 10px;
+    color: #555;
+}
+
+.bars {
+    flex: 1;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+
+    border-left: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+
+    background:
+        repeating-linear-gradient(
+            to top,
+            transparent 0,
+            transparent 41px,
+            #ddd 42px
+        );
+}
+
+.bar-group {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 4px;
+}
+
+.bar {
+    width: 45px;
+    min-height: 2px;
+    position: relative;
+}
+
+.bar span {
+    position: absolute;
+    top: -18px;
+
+    width: 100%;
+
+    font-size: 10px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.bar-group small {
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.b-blue {
+    background: #438ddd;
+}
+
+.b-green {
+    background: #67bd72;
+}
+
+.b-yellow {
+    background: #f1d65d;
+}
+
+.b-purple {
+    background: #a184d6;
+}
+
+/* =========================================================
+   DEPARTMENT GRID
+========================================================= */
+
+.tables-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    column-gap: 12px;
+    row-gap: 0;
+
+    width: 100%;
+    align-items: stretch;
+}
+
+/* =========================================================
+   DEPARTMENT CARD
+========================================================= */
+
+.department {
+    background: #fff;
+    border: 1px solid #aaa;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.department h2 {
+    margin: 0;
+    text-align: center;
+    padding: 8px;
+    font-size: 13px;
+}
+
+.department h2 span {
+    font-weight: 700;
+}
+
+.trading-box h2 {
+    background: #bddbf6;
+}
+
+.investment-box h2 {
+    background: #b8e3bf;
+}
+
+.reserve-box h2 {
+    background: #f6df84;
+}
+
+.rnd-box h2 {
+    background: #d8cef0;
+}
+
+/* =========================================================
+   STANDARD DEPARTMENT TABLE
+========================================================= */
+
+.department table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    table-layout: fixed;
+}
+
+.department th,
+.department td {
+    border: 1px solid #aaa;
+    padding: 5px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.department thead th {
+    background: #eee;
+    font-weight: 800;
+}
+
+.department tfoot th {
+    font-weight: 800;
+}
+
+.trading-box tfoot {
+    background: #d9ebfa;
+}
+
+.investment-box tfoot {
+    background: #d5efd9;
+}
+
+.reserve-box tfoot {
+    background: #fff0aa;
+}
+
+.rnd-box tfoot {
+    background: #e8e0f5;
+}
+
+/* =========================================================
+   ROI TABLE
+========================================================= */
+
+.roi-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 8px;
+    border: 1px solid #aaa;
+    background: #fff;
+}
+
+.roi-table {
+    width: 100%;
+    min-width: 650px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 10px;
+}
+
+.roi-table th,
+.roi-table td {
+    border: 1px solid #aaa;
+    padding: 5px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.roi-table thead th {
+    background: #eeeeee;
+    font-weight: 800;
+}
+
+.roi-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.roi-table .roi-positive {
+    font-weight: 700;
+}
+
+.roi-table .roi-negative {
+    font-weight: 700;
+}
+
+.roi-table .roi-total {
+    font-weight: 800;
+}
+
+.trading-box .roi-table thead th {
+    background: #d8e9f8;
+}
+
+.investment-box .roi-table thead th {
+    background: #d9f0dc;
+}
+
+.reserve-box .roi-table thead th {
+    background: #fff0b8;
+}
+
+.rnd-box .roi-table thead th {
+    background: #e2d8f3;
+}
+
+/* =========================================================
+   STATUS ROW
+========================================================= */
+
+.department tfoot .surplus,
+.department tfoot .deficit,
+.department tfoot .fully-allocated {
+    color: #000 !important;
+}
+
+.department.trading-box tfoot .surplus,
+.department.trading-box tfoot .deficit,
+.department.trading-box tfoot .fully-allocated {
+    background: #d8e9f8;
+}
+
+.department.investment-box tfoot .surplus,
+.department.investment-box tfoot .deficit,
+.department.investment-box tfoot .fully-allocated {
+    background: #d9f0dc;
+}
+
+.department.reserve-box tfoot .surplus,
+.department.reserve-box tfoot .deficit,
+.department.reserve-box tfoot .fully-allocated {
+    background: #fff0b8;
+}
+
+.department.rnd-box tfoot .surplus,
+.department.rnd-box tfoot .deficit,
+.department.rnd-box tfoot .fully-allocated {
+    background: #e2d8f3;
+}
+
+.department tfoot .surplus th,
+.department tfoot .surplus td,
+.department tfoot .deficit th,
+.department tfoot .deficit td,
+.department tfoot .fully-allocated th,
+.department tfoot .fully-allocated td {
+    color: #000 !important;
+    font-weight: 800;
+}
+
+/* =========================================================
+   ITEM ALLOCATION BREAKDOWN CHART
+========================================================= */
+
+.item-chart {
+    width: 100%;
+
+    margin-top: 10px;
+    padding: 8px;
+
+    border: 1px solid #bbb;
+    background: #fff;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.item-chart-title {
+    width: 100%;
+
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 16px;
+
+    padding: 5px;
+    margin-bottom: 5px;
+
+    background: #f5f5f5;
+}
+
+.trading-box .item-chart-title {
+    background: #d8e9f8;
+}
+
+.investment-box .item-chart-title {
+    background: #d9f0dc;
+}
+
+.reserve-box .item-chart-title {
+    background: #fff0b8;
+}
+
+.rnd-box .item-chart-title {
+    background: #e2d8f3;
+}
+
+/* =========================================================
+   ITEM BARS
+========================================================= */
+
+.item-bars {
+    width: 100%;
+    height: 300px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+
+    gap: 5px;
+
+    padding: 10px 5px 0;
+
+    border-bottom: 1px solid #999;
+
+    overflow-x: auto;
+}
+
+.item-bar-group {
+    height: 275px;
+    min-width: 55px;
+
+    flex: 1 1 0;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: flex-end;
+    align-items: center;
+
+    min-width: 0;
+}
+
+.item-bar-value {
+    height: 22px;
+    min-height: 22px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    margin-bottom: 3px;
+
+    font-size: 11px;
+    font-weight: bold;
+
+    white-space: nowrap;
+}
+
+.item-bar {
+    width: 32px;
+    min-height: 8px;
+
+    flex-shrink: 0;
+
+    border-radius: 2px 2px 0 0;
+
+    transition: height .3s ease;
+}
+
+.item-bar-label {
+    width: 100%;
+
+    height: 42px;
+    min-height: 42px;
+
+    margin-top: 5px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    text-align: center;
+
+    font-size: 10px;
+    line-height: 12px;
+
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+/* =========================================================
+   PURPOSE
+========================================================= */
+
+.purpose {
+    width: 100%;
+
+    margin-top: 10px;
+
+    border: 1px solid #aaa;
+    text-align: center;
+
+    min-height: 72px;
+}
+
+.purpose b {
+    display: block;
+    padding: 5px;
+    font-size: 12px;
+}
+
+.purpose p {
+    font-size: 10px;
+    margin: 0;
+    padding: 8px 5px;
+    line-height: 15px;
+}
+
+.trading-box .purpose b {
+    background: #b9daf7;
+}
+
+.investment-box .purpose b {
+    background: #bfe6c5;
+}
+
+.reserve-box .purpose b {
+    background: #f5dc76;
+}
+
+.rnd-box .purpose b {
+    background: #d8cdee;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+footer {
+    text-align: center;
+    font-size: 10px;
+    color: #777;
+    padding: 12px;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+    text-align: center;
+    padding: 80px;
+    font-size: 18px;
+}
+
+/* =========================================================
+   ADMIN LOGIN
+========================================================= */
+
+.hidden {
+    display: none !important;
+}
+
+.login-screen {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f4f6f8;
+}
+
+.login-card {
+    width: 390px;
+
+    background: #fff;
+
+    border: 1px solid #bbb;
+    border-radius: 8px;
+
+    box-shadow: 0 5px 22px #bbb;
+
+    padding: 30px;
+
+    text-align: center;
+}
+
+.login-logo {
+    width: 240px;
+    max-height: 130px;
+    object-fit: contain;
+}
+
+.login-card h1 {
+    margin: 12px 0 3px;
+}
+
+.login-card p {
+    margin: 0 0 22px;
+    color: #666;
+}
+
+.login-card label,
+.editor label {
+    display: block;
+    text-align: left;
+
+    font-weight: 700;
+    font-size: 12px;
+
+    margin: 10px 0;
+}
+
+.login-card input,
+.editor input,
+.editor textarea {
+    width: 100%;
+
+    padding: 9px;
+
+    border: 1px solid #aaa;
+    border-radius: 4px;
+
+    font: inherit;
+
+    margin-top: 5px;
+}
+
+.login-card button,
+.admin-bar button,
+.add-row {
+    border: 0;
+    border-radius: 4px;
+
+    padding: 9px 14px;
+
+    background: #0d7a3d;
+    color: #fff;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.login-card button {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.login-error {
+    color: #c62828;
+    min-height: 20px;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+/* =========================================================
+   ADMIN BAR
+========================================================= */
+
+.admin-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    min-height: 45px;
+
+    background: #0d4f2c;
+    color: #fff;
+
+    padding: 10px 16px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+}
+
+.admin-bar #saveMessage {
+    flex: 1;
+    color: #a8f0b8;
+    font-size: 12px;
+}
+
+.admin-bar .secondary {
+    background: #777;
+}
+
+.admin-bar .danger {
+    background: #a92828;
+}
+
+.view-link {
+    color: #fff;
+    text-decoration: none;
+
+    margin-right: 12px;
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   ADMIN LAYOUT
+========================================================= */
+
+.admin-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+
+    min-height: calc(100vh - 45px);
+}
+
+.editor {
+    background: #fff;
+
+    border-right: 1px solid #bbb;
+
+    padding: 18px;
+
+    overflow: auto;
+}
+
+.editor h2 {
+    margin: 0;
+}
+
+.editor section {
+    border-top: 1px solid #ddd;
+
+    margin-top: 16px;
+    padding-top: 10px;
+}
+
+.editor h3 {
+    font-size: 14px;
+    margin: 0 0 8px;
+}
+
+.muted {
+    font-size: 11px;
+    color: #777;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+/* =========================================================
+   ADMIN ITEM EDITOR
+========================================================= */
+
+.item-row {
+    display: grid;
+
+    grid-template-columns:
+        minmax(120px, 1fr)
+        75px
+        75px
+        75px
+        30px;
+
+    gap: 5px;
+
+    margin-bottom: 6px;
+}
+
+.item-row input {
+    margin: 0;
+}
+
+.item-row button {
+    border: 0;
+    background: #d33;
+    color: #fff;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.add-row {
+    background: #286ea8;
+    margin: 3px 0 5px;
+    font-size: 11px;
+}
+
+.save-btn {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 0;
+    border-radius: 4px;
+
+    background: #0d7a3d;
+    color: #fff;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    margin-top: 12px;
+}
+
+/* =========================================================
+   ADMIN PREVIEW
+========================================================= */
+
+.preview {
+    padding: 12px;
+    background: #f4f6f8;
+    overflow: auto;
+}
+
+.preview iframe {
+    width: 100%;
+    height: calc(100vh - 70px);
+    min-height: 900px;
+
+    border: 0;
+
+    background: #f4f6f8;
+}
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 1000px) {
+
+    .summary-grid,
+    .allocation-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tables-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        row-gap: 12px;
+    }
+
+    .header {
+        min-height: auto;
+    }
+
+    .title {
+        padding: 5px 30px;
+    }
+
+    .meta {
+        width: 210px;
+    }
+
+    .charts-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .charts-row .chart-panel {
+        height: 310px;
+        min-height: 310px;
+    }
+
+    .donut {
+        width: 150px;
+        height: 150px;
+        flex-basis: 150px;
+    }
+
+    .donut:after {
+        width: 70px;
+        height: 70px;
+        left: 40px;
+        top: 40px;
+    }
+
+    .donut-wrap {
+        gap: 20px;
+    }
+
+    .admin-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .editor {
+        border-right: 0;
+        border-bottom: 1px solid #bbb;
+    }
+
+    .admin-bar {
+        position: relative;
+    }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 650px) {
 
@@ -14,6 +1224,7 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         overflow-x: hidden;
     }
 
+    .page,
     .public-wrap {
         width: 100%;
         max-width: 100%;
@@ -21,19 +1232,17 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         padding: 5px;
     }
 
-    .public-wrap .header,
-    .public-wrap .summary-grid,
-    .public-wrap .allocation-row,
-    .public-wrap .charts-row,
-    .public-wrap .tables-grid {
-        min-width: 0 !important;
-        width: 100%;
-    }
+    /* HEADER */
 
     .header {
+        width: 100%;
+
         flex-direction: column;
+
         height: auto;
+
         padding: 8px;
+
         gap: 8px;
     }
 
@@ -60,25 +1269,55 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         width: 100%;
     }
 
+    /* SUMMARY */
+
     .summary-grid,
-    .allocation-row,
-    .charts-row,
-    .tables-grid {
+    .allocation-row {
         grid-template-columns: 1fr !important;
     }
 
-    .summary-card {
+    .summary-card,
+    .allocation-card {
         width: 100%;
     }
 
-    .chart-panel {
+    /* MAIN CHARTS */
+
+    .charts-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .charts-row .chart-panel {
         width: 100%;
-        overflow: hidden;
+        height: 300px;
+        min-height: 300px;
     }
 
     .donut-wrap {
+        flex-direction: column;
         gap: 15px;
-        flex-wrap: wrap;
+    }
+
+    .donut {
+        width: 160px;
+        height: 160px;
+        flex-basis: 160px;
+    }
+
+    .donut:after {
+        width: 75px;
+        height: 75px;
+        left: 42.5px;
+        top: 42.5px;
+    }
+
+    .legend {
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .legend div {
+        min-width: 170px;
     }
 
     .bar-chart {
@@ -90,448 +1329,27 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         width: 25px;
     }
 
+    /* DEPARTMENTS */
+
+    .tables-grid {
+        grid-template-columns: 1fr !important;
+        row-gap: 12px;
+    }
+
     .department {
         width: 100%;
-        overflow-x: auto;
+        overflow: hidden;
     }
 
     .department table {
         min-width: 520px;
     }
 
-    footer {
-        font-size: 9px;
-    }
-}
-/* ===== TABLE ALLOCATION STATUS ===== */
+    /* ITEM CHART */
 
-.department tfoot .surplus {
-    background: #d9f2d9;
-    color: #16803c;
-}
-
-.department tfoot .deficit {
-    background: #ffdede;
-    color: #c62828;
-}
-
-.department tfoot .fully-allocated {
-    background: #d9f2d9;
-    color: #16803c;
-}
-
-.department tfoot .surplus th,
-.department tfoot .deficit th,
-.department tfoot .fully-allocated th {
-    font-weight: 800;
-}
-/* =========================================
-   DEPARTMENT STATUS ROW COLORS
-   ========================================= */
-
-/* TRADING - BLUE */
-.department.trading-box tfoot .surplus,
-.department.trading-box tfoot .deficit,
-.department.trading-box tfoot .fully-allocated {
-    background: #d8e9f8;
-}
-
-.department.trading-box tfoot .surplus th,
-.department.trading-box tfoot .deficit th,
-.department.trading-box tfoot .fully-allocated th {
-    color: #16803c;
-}
-
-
-/* INVESTMENT - GREEN */
-.department.investment-box tfoot .surplus,
-.department.investment-box tfoot .deficit,
-.department.investment-box tfoot .fully-allocated {
-    background: #d9f0dc;
-}
-
-.department.investment-box tfoot .surplus th,
-.department.investment-box tfoot .deficit th,
-.department.investment-box tfoot .fully-allocated th {
-    color: #16803c;
-}
-
-
-/* RESERVE - YELLOW */
-.department.reserve-box tfoot .surplus,
-.department.reserve-box tfoot .deficit,
-.department.reserve-box tfoot .fully-allocated {
-    background: #fff0b8;
-}
-
-.department.reserve-box tfoot .surplus th,
-.department.reserve-box tfoot .deficit th,
-.department.reserve-box tfoot .fully-allocated th {
-    color: #16803c;
-}
-
-
-/* RESEARCH & DEVELOPMENT - PURPLE */
-.department.rnd-box tfoot .surplus,
-.department.rnd-box tfoot .deficit,
-.department.rnd-box tfoot .fully-allocated {
-    background: #e2d8f3;
-}
-
-.department.rnd-box tfoot .surplus th,
-.department.rnd-box tfoot .deficit th,
-.department.rnd-box tfoot .fully-allocated th {
-    color: #16803c;
-}
-/* ===== STATUS ROW - BLACK FONT ===== */
-
-.department.trading-box tfoot .surplus,
-.department.trading-box tfoot .deficit,
-.department.trading-box tfoot .fully-allocated {
-    background: #d8e9f8;
-    color: #000;
-}
-
-.department.investment-box tfoot .surplus,
-.department.investment-box tfoot .deficit,
-.department.investment-box tfoot .fully-allocated {
-    background: #d9f0dc;
-    color: #000;
-}
-
-.department.reserve-box tfoot .surplus,
-.department.reserve-box tfoot .deficit,
-.department.reserve-box tfoot .fully-allocated {
-    background: #fff0b8;
-    color: #000;
-}
-
-.department.rnd-box tfoot .surplus,
-.department.rnd-box tfoot .deficit,
-.department.rnd-box tfoot .fully-allocated {
-    background: #e2d8f3;
-    color: #000;
-}
-
-
-/* Force all status text to BLACK */
-.department tfoot .surplus th,
-.department tfoot .surplus td,
-.department tfoot .deficit th,
-.department tfoot .deficit td,
-.department tfoot .fully-allocated th,
-.department tfoot .fully-allocated td {
-    color: #000 !important;
-}
-/* ===== LARGE DONUT CHART ===== */
-
-.charts-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin: 10px 0;
-}
-
-.donut-panel {
-    width: 100%;
-    min-height: 280px;
-}
-
-.donut-panel .donut-wrap {
-    min-height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 70px;
-}
-
-.donut-panel .donut {
-    width: 190px;
-    height: 190px;
-    flex-shrink: 0;
-}
-
-.donut-panel .donut:after {
-    width: 90px;
-    height: 90px;
-    left: 50px;
-    top: 50px;
-}
-
-.donut-panel .legend {
-    font-size: 14px;
-    line-height: 2.2;
-}
-
-.donut-panel .legend div {
-    min-width: 190px;
-}
-
-.donut-panel .dot {
-    width: 12px;
-    height: 12px;
-}
-
-
-/* ===== MOBILE ===== */
-
-@media (max-width: 650px) {
-
-    .donut-panel .donut-wrap {
-        gap: 25px;
-        flex-direction: column;
-    }
-
-    .donut-panel .donut {
-        width: 170px;
-        height: 170px;
-    }
-
-    .donut-panel .donut:after {
-        width: 80px;
-        height: 80px;
-        left: 45px;
-        top: 45px;
-    }
-
-    .donut-panel .legend {
+    .item-chart {
         width: 100%;
-        max-width: 220px;
     }
-
-}
-/* =====================================================
-   FINAL CHART LAYOUT
-   ROUND CHART + BAR CHART SIDE BY SIDE
-===================================================== */
-
-.charts-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-    width: 100% !important;
-    margin: 10px 0 !important;
-}
-
-.charts-row .chart-panel {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 280px !important;
-    box-sizing: border-box !important;
-}
-
-
-/* =========================
-   ROUND CHART
-========================= */
-
-.charts-row .donut-wrap {
-    min-height: 220px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 45px !important;
-}
-
-.charts-row .donut {
-    width: 180px !important;
-    height: 180px !important;
-    flex-shrink: 0 !important;
-}
-
-.charts-row .donut:after {
-    width: 85px !important;
-    height: 85px !important;
-    left: 47.5px !important;
-    top: 47.5px !important;
-}
-
-.charts-row .legend {
-    font-size: 13px !important;
-    line-height: 2 !important;
-}
-
-
-/* =========================
-   BAR CHART
-========================= */
-
-.charts-row .bar-chart {
-    width: 100% !important;
-    height: 220px !important;
-    box-sizing: border-box !important;
-}
-
-.charts-row .bars {
-    width: 100% !important;
-    height: 180px !important;
-}
-
-
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 900px) {
-
-    .charts-row {
-        grid-template-columns: 1fr 1fr !important;
-    }
-
-    .charts-row .donut-wrap {
-        gap: 20px !important;
-    }
-
-    .charts-row .donut {
-        width: 150px !important;
-        height: 150px !important;
-    }
-
-    .charts-row .donut:after {
-        width: 70px !important;
-        height: 70px !important;
-        left: 40px !important;
-        top: 40px !important;
-    }
-
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 650px) {
-
-    .charts-row {
-        grid-template-columns: 1fr !important;
-    }
-
-    .charts-row .chart-panel {
-        min-height: 260px !important;
-    }
-
-    .charts-row .donut {
-        width: 170px !important;
-        height: 170px !important;
-    }
-
-    .charts-row .donut:after {
-        width: 80px !important;
-        height: 80px !important;
-        left: 45px !important;
-        top: 45px !important;
-    }
-
-}
-/* =====================================================
-   AUTOMATIC DEPARTMENT ITEM BAR CHARTS
-===================================================== */
-
-.item-chart {
-    margin-top: 10px;
-    border: 1px solid #bbb;
-    background: #fff;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-.item-chart-title {
-    text-align: center;
-    font-weight: bold;
-    font-size: 13px;
-    padding: 6px;
-    margin-bottom: 5px;
-    background: #f5f5f5;
-}
-
-.item-bars {
-    height: 205px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    gap: 8px;
-    padding: 10px 5px 0 5px;
-    border-bottom: 1px solid #999;
-    overflow-x: auto;
-}
-
-.item-bar-group {
-    height: 195px;
-    min-width: 55px;
-    flex: 1 1 55px;
-    max-width: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.item-bar-value {
-    font-size: 11px;
-    font-weight: bold;
-    margin-bottom: 3px;
-    white-space: nowrap;
-}
-
-.item-bar {
-    width: 32px;
-    min-height: 8px;
-    border-radius: 2px 2px 0 0;
-    transition: height 0.3s ease;
-}
-
-.item-bar-label {
-    width: 100%;
-    margin-top: 5px;
-    font-size: 10px;
-    text-align: center;
-    line-height: 12px;
-    word-break: break-word;
-}
-
-
-/* =========================
-   TRADING BLUE FAMILY
-========================= */
-
-.trading-box .item-chart-title {
-    background: #d8e9f8;
-}
-
-
-/* =========================
-   INVESTMENT GREEN FAMILY
-========================= */
-
-.investment-box .item-chart-title {
-    background: #d9f0dc;
-}
-
-
-/* =========================
-   RESERVE YELLOW FAMILY
-========================= */
-
-.reserve-box .item-chart-title {
-    background: #fff0b8;
-}
-
-
-/* =========================
-   R&D PURPLE FAMILY
-========================= */
-
-.rnd-box .item-chart-title {
-    background: #e2d8f3;
-}
-
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media (max-width: 650px) {
 
     .item-bars {
         justify-content: flex-start;
@@ -551,1358 +1369,96 @@ body{min-width:320px}.public-wrap{max-width:1450px;margin:12px auto;padding:0 10
         font-size: 9px;
     }
 
-}
-/* =========================================================
-   FINAL DASHBOARD ALIGNMENT
-========================================================= */
+    /* ROI */
 
-
-/* =========================================================
-   1. FOUR DEPARTMENT CARDS
-   ALL SAME HEIGHT / SAME BOTTOM
-========================================================= */
-
-.tables-grid {
-    display: grid !important;
-
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr)) !important;
-
-    gap: 12px !important;
-
-    align-items: stretch !important;
-
-    width: 100% !important;
-
-    box-sizing: border-box !important;
-}
-
-
-.tables-grid .department {
-    width: 100% !important;
-
-    min-width: 0 !important;
-
-    height: 100% !important;
-
-    box-sizing: border-box !important;
-
-    display: flex !important;
-
-    flex-direction: column !important;
-}
-
-
-/* Make the purpose section stay at bottom */
-
-.tables-grid .department .purpose {
-    margin-top: auto !important;
-}
-
-
-/* =========================================================
-   2. ITEM BREAKDOWN CHART
-========================================================= */
-
-.tables-grid .item-chart {
-    width: 100% !important;
-
-    box-sizing: border-box !important;
-
-    margin-top: 10px !important;
-}
-
-
-/* =========================================================
-   3. MAIN CHARTS
-   ROUND + BAR SIDE BY SIDE
-========================================================= */
-
-.charts-row {
-
-    display: grid !important;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr)) !important;
-
-    gap: 12px !important;
-
-    width: 100% !important;
-
-    margin: 12px 0 !important;
-
-    align-items: stretch !important;
-
-    box-sizing: border-box !important;
-}
-
-
-/* Both main chart boxes EXACTLY same height */
-
-.charts-row .chart-panel {
-
-    width: 100% !important;
-
-    min-width: 0 !important;
-
-    height: 330px !important;
-
-    min-height: 330px !important;
-
-    box-sizing: border-box !important;
-
-    display: flex !important;
-
-    flex-direction: column !important;
-
-}
-
-
-/* =========================================================
-   4. CHART HEADINGS
-========================================================= */
-
-.charts-row .chart-panel h3 {
-
-    flex: 0 0 auto !important;
-
-    margin: 0 !important;
-
-    padding: 7px !important;
-
-    text-align: center !important;
-
-}
-
-
-/* =========================================================
-   5. ROUND CHART AREA
-========================================================= */
-
-.charts-row .donut-wrap {
-
-    flex: 1 !important;
-
-    min-height: 0 !important;
-
-    display: flex !important;
-
-    align-items: center !important;
-
-    justify-content: center !important;
-
-    gap: 55px !important;
-
-    box-sizing: border-box !important;
-
-}
-
-
-/* Round chart */
-
-.charts-row .donut {
-
-    width: 190px !important;
-
-    height: 190px !important;
-
-    flex: 0 0 190px !important;
-
-}
-
-
-/* Donut hole */
-
-.charts-row .donut:after {
-
-    width: 90px !important;
-
-    height: 90px !important;
-
-    left: 50px !important;
-
-    top: 50px !important;
-
-}
-
-
-/* Legend */
-
-.charts-row .legend {
-
-    font-size: 14px !important;
-
-    line-height: 2.1 !important;
-
-}
-
-
-/* =========================================================
-   6. CAPITAL BAR CHART
-========================================================= */
-
-.charts-row .bar-chart {
-
-    flex: 1 !important;
-
-    width: 100% !important;
-
-    height: auto !important;
-
-    min-height: 0 !important;
-
-    box-sizing: border-box !important;
-
-}
-
-
-/* Bars area */
-
-.charts-row .bars {
-
-    width: 100% !important;
-
-    height: 210px !important;
-
-}
-
-
-/* =========================================================
-   7. KEEP CHARTS SAME BOTTOM
-========================================================= */
-
-.charts-row .chart-panel > * {
-
-    box-sizing: border-box !important;
-
-}
-
-
-/* =========================================================
-   8. DESKTOP SPACING
-========================================================= */
-
-@media (min-width: 1101px) {
-
-    .tables-grid {
-
-        gap: 12px !important;
-
+    .roi-table-wrap {
+        overflow-x: auto;
     }
 
-    .charts-row {
-
-        gap: 12px !important;
-
+    .roi-table {
+        min-width: 650px;
     }
 
+    /* ADMIN */
+
+    .admin-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .admin-bar #saveMessage {
+        order: 3;
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+    .editor {
+        padding: 12px;
+    }
+
+    .two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .item-row {
+        grid-template-columns: 1fr 70px 70px;
+    }
+
+    .item-row input:nth-child(4) {
+        grid-column: 1 / 3;
+    }
+
+    .item-row button {
+        grid-column: 3;
+        grid-row: 1 / 3;
+    }
+
+    .login-card {
+        width: calc(100% - 30px);
+        padding: 22px;
+    }
+
+    footer {
+        font-size: 9px;
+    }
 }
 
-
 /* =========================================================
-   9. TABLET
+   VERY SMALL MOBILE
 ========================================================= */
 
-@media (max-width: 1000px) {
+@media (max-width: 420px) {
 
-    .tables-grid {
-
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr)) !important;
-
+    .brand h1 {
+        font-size: 16px;
     }
 
-    .charts-row {
+    .title {
+        font-size: 13px;
+    }
 
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr)) !important;
+    .big {
+        font-size: 19px;
+    }
 
+    .status {
+        font-size: 17px;
+    }
+
+    .allocation-card .percent {
+        font-size: 18px;
+    }
+
+    .allocation-card .amount {
+        font-size: 15px;
+    }
+
+    .chart-panel {
+        padding: 6px;
     }
 
     .charts-row .chart-panel {
-
-        height: 310px !important;
-
-        min-height: 310px !important;
-
-    }
-
-}
-
-
-/* =========================================================
-   10. MOBILE
-========================================================= */
-
-@media (max-width: 650px) {
-
-    .tables-grid {
-
-        grid-template-columns: 1fr !important;
-
-    }
-
-    .charts-row {
-
-        grid-template-columns: 1fr !important;
-
-    }
-
-    .charts-row .chart-panel {
-
-        height: 300px !important;
-
-        min-height: 300px !important;
-
-    }
-
-    .charts-row .donut-wrap {
-
-        flex-direction: column !important;
-
-        gap: 15px !important;
-
-    }
-
-    .charts-row .donut {
-
-        width: 160px !important;
-
-        height: 160px !important;
-
-        flex-basis: 160px !important;
-
-    }
-
-    .charts-row .donut:after {
-
-        width: 75px !important;
-
-        height: 75px !important;
-
-        left: 42.5px !important;
-
-        top: 42.5px !important;
-
-    }
-
-}
-/* =========================================================
-   FINAL DEPARTMENT ALIGNMENT
-   Equal cards + equal chart bottoms + managed text
-   ========================================================= */
-
-/* 4 department cards - exactly equal height */
-.tables-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 12px !important;
-    align-items: stretch !important;
-    width: 100% !important;
-}
-
-/* Every department card stretches equally */
-.tables-grid .department {
-    width: 100% !important;
-    min-width: 0 !important;
-    height: 100% !important;
-    min-height: 700px !important;
-    box-sizing: border-box !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* =========================================================
-   ALLOCATION BREAKDOWN BOX
-   ========================================================= */
-
-.tables-grid .item-chart {
-    height: 335px !important;
-    min-height: 335px !important;
-    max-height: 335px !important;
-
-    margin-top: 10px !important;
-    padding: 8px !important;
-
-    box-sizing: border-box !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* Title stays same height */
-.tables-grid .item-chart-title {
-    flex: 0 0 40px !important;
-
-    height: 40px !important;
-    min-height: 40px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-    line-height: 16px !important;
-
-    margin: 0 0 5px 0 !important;
-    padding: 5px !important;
-
-    box-sizing: border-box !important;
-}
-
-/* =========================================================
-   BAR AREA
-   ========================================================= */
-
-.tables-grid .item-bars {
-    flex: 1 1 auto !important;
-
-    height: 250px !important;
-    min-height: 250px !important;
-    max-height: 250px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: space-around !important;
-
-    gap: 5px !important;
-
-    padding: 10px 5px 0 5px !important;
-
-    box-sizing: border-box !important;
-
-    border-bottom: 1px solid #999 !important;
-
-    overflow: hidden !important;
-}
-
-/* =========================================================
-   EACH BAR
-   ========================================================= */
-
-.tables-grid .item-bar-group {
-    height: 235px !important;
-    min-height: 235px !important;
-
-    flex: 1 1 0 !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    justify-content: flex-end !important;
-    align-items: center !important;
-
-    min-width: 0 !important;
-}
-
-/* Percentage above bar */
-.tables-grid .item-bar-value {
-    height: 20px !important;
-    min-height: 20px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: center !important;
-
-    font-size: 11px !important;
-    font-weight: bold !important;
-
-    white-space: nowrap !important;
-
-    margin-bottom: 3px !important;
-}
-
-/* Bar itself */
-.tables-grid .item-bar {
-    width: 32px !important;
-    min-height: 8px !important;
-
-    flex: 0 0 auto !important;
-
-    border-radius: 2px 2px 0 0 !important;
-}
-
-/* =========================================================
-   IMPORTANT:
-   ALL LABELS GET SAME HEIGHT
-   So bottom line stays exactly aligned
-   ========================================================= */
-
-.tables-grid .item-bar-label {
-    width: 100% !important;
-
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-
-    margin-top: 5px !important;
-
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-
-    font-size: 10px !important;
-    line-height: 12px !important;
-
-    overflow-wrap: anywhere !important;
-    word-break: normal !important;
-
-    box-sizing: border-box !important;
-}
-
-/* =========================================================
-   PURPOSE ALWAYS AT SAME BOTTOM
-   ========================================================= */
-
-.tables-grid .department .purpose {
-    margin-top: auto !important;
-
-    width: 100% !important;
-
-    min-height: 72px !important;
-    height: 72px !important;
-
-    box-sizing: border-box !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* Purpose heading */
-.tables-grid .department .purpose h3 {
-    flex: 0 0 30px !important;
-
-    height: 30px !important;
-    min-height: 30px !important;
-
-    margin: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* Purpose text */
-.tables-grid .department .purpose p {
-    flex: 1 !important;
-
-    margin: 0 !important;
-    padding: 8px 5px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-
-    line-height: 15px !important;
-}
-
-/* =========================================================
-   TABLE TEXT MANAGEMENT
-   ========================================================= */
-
-.tables-grid table {
-    width: 100% !important;
-    table-layout: fixed !important;
-}
-
-.tables-grid th,
-.tables-grid td {
-    vertical-align: middle !important;
-    text-align: center !important;
-}
-
-/* Particular column */
-.tables-grid th:nth-child(2),
-.tables-grid td:nth-child(2) {
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
-}
-
-/* =========================================================
-   DESKTOP - KEEP 4 COLUMNS
-   ========================================================= */
-
-@media (min-width: 1001px) {
-
-    .tables-grid .department {
-        min-height: 700px !important;
-    }
-
-    .tables-grid .item-chart {
-        height: 335px !important;
-        min-height: 335px !important;
-        max-height: 335px !important;
-    }
-}
-
-/* =========================================================
-   TABLET
-   ========================================================= */
-
-@media (max-width: 1000px) {
-
-    .tables-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-
-    .tables-grid .department {
-        min-height: 700px !important;
-    }
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 650px) {
-
-    .tables-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .tables-grid .department {
-        min-height: auto !important;
-    }
-
-    .tables-grid .item-chart {
-        height: 335px !important;
-        min-height: 335px !important;
-        max-height: 335px !important;
-    }
-
-    .tables-grid .item-bars {
-        overflow-x: auto !important;
-    }
-
-    .tables-grid .item-bar-group {
-        min-width: 60px !important;
-        flex: 0 0 60px !important;
-    }
-
-    .tables-grid .item-bar-label {
-        font-size: 9px !important;
-    }
-}
-/* =========================================================
-   FINAL FIX - ALL DEPARTMENT CHARTS SAME BOTTOM LEVEL
-   ========================================================= */
-
-/* All 4 department cards equal */
-.tables-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 12px !important;
-    align-items: stretch !important;
-}
-
-/* Department card */
-.tables-grid .department {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 700px !important;
-    min-height: 700px !important;
-    box-sizing: border-box !important;
-}
-
-/* =========================================================
-   ALLOCATION CHART
-   ========================================================= */
-
-.tables-grid .item-chart {
-    height: 360px !important;
-    min-height: 360px !important;
-    max-height: 360px !important;
-
-    margin-top: 10px !important;
-    padding: 8px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    box-sizing: border-box !important;
-}
-
-/* Chart title */
-.tables-grid .item-chart-title {
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-    line-height: 16px !important;
-
-    margin: 0 0 5px 0 !important;
-    padding: 5px !important;
-
-    box-sizing: border-box !important;
-}
-
-/* =========================================================
-   USE THE WHOLE BLANK AREA FOR THE DATA/BARS
-   ========================================================= */
-
-.tables-grid .item-bars {
-    flex: 1 !important;
-
-    height: auto !important;
-    min-height: 275px !important;
-    max-height: 275px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: space-around !important;
-
-    gap: 5px !important;
-
-    padding: 10px 5px 0 5px !important;
-
-    border-bottom: 1px solid #999 !important;
-
-    box-sizing: border-box !important;
-
-    overflow: hidden !important;
-}
-
-/* Each bar group */
-.tables-grid .item-bar-group {
-    height: 260px !important;
-    min-height: 260px !important;
-
-    flex: 1 1 0 !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    justify-content: flex-end !important;
-    align-items: center !important;
-
-    min-width: 0 !important;
-}
-
-/* Percentage */
-.tables-grid .item-bar-value {
-    height: 22px !important;
-    min-height: 22px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: center !important;
-
-    margin-bottom: 3px !important;
-
-    font-size: 11px !important;
-    font-weight: bold !important;
-}
-
-/* Bars */
-.tables-grid .item-bar {
-    width: 32px !important;
-    min-height: 8px !important;
-
-    flex-shrink: 0 !important;
-
-    border-radius: 2px 2px 0 0 !important;
-}
-
-/* =========================================================
-   SAME LABEL AREA FOR EVERY CHART
-   ========================================================= */
-
-.tables-grid .item-bar-label {
-    width: 100% !important;
-
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-
-    margin-top: 5px !important;
-
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-
-    font-size: 10px !important;
-    line-height: 12px !important;
-
-    overflow-wrap: anywhere !important;
-    word-break: normal !important;
-
-    box-sizing: border-box !important;
-}
-
-/* =========================================================
-   PURPOSE ALWAYS AT EXACT SAME BOTTOM
-   ========================================================= */
-
-.tables-grid .department .purpose {
-    margin-top: auto !important;
-
-    height: 72px !important;
-    min-height: 72px !important;
-    max-height: 72px !important;
-
-    width: 100% !important;
-
-    box-sizing: border-box !important;
-
-    flex-shrink: 0 !important;
-}
-
-.tables-grid .department .purpose h3 {
-    height: 30px !important;
-    min-height: 30px !important;
-
-    margin: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-.tables-grid .department .purpose p {
-    height: 42px !important;
-    min-height: 42px !important;
-
-    margin: 0 !important;
-    padding: 5px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-    line-height: 15px !important;
-}
-
-/* =========================================================
-   REMOVE OLD EXTRA SPACE / BLUE LINE AREA
-   ========================================================= */
-
-/* Prevent an extra chart/canvas area from creating uneven space */
-.tables-grid .item-chart canvas {
-    max-height: 0 !important;
-    overflow: hidden !important;
-}
-
-/* =========================================================
-   TABLET
-   ========================================================= */
-
-@media (max-width: 1000px) {
-
-    .tables-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-
-    .tables-grid .department {
-        height: 700px !important;
-        min-height: 700px !important;
-    }
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 650px) {
-
-    .tables-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .tables-grid .department {
-        height: auto !important;
-        min-height: 0 !important;
-    }
-
-    .tables-grid .item-chart {
-        height: 360px !important;
-        min-height: 360px !important;
-    }
-
-    .tables-grid .item-bars {
-        overflow-x: auto !important;
-    }
-
-    .tables-grid .item-bar-group {
-        min-width: 60px !important;
-        flex: 0 0 60px !important;
-    }
-}
-/* =========================================================
-   REMOVE EMPTY SPACE ABOVE PURPOSE
-   ========================================================= */
-
-/* Do not force a fixed height on department cards */
-.tables-grid .department {
-    height: auto !important;
-    min-height: 0 !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* Allocation chart uses only its real content */
-.tables-grid .item-chart {
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-
-    margin-top: 10px !important;
-    padding: 8px !important;
-
-    box-sizing: border-box !important;
-}
-
-/* Chart title */
-.tables-grid .item-chart-title {
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-
-    box-sizing: border-box !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-}
-
-/* Actual bar area */
-.tables-grid .item-bars {
-    height: 300px !important;
-    min-height: 300px !important;
-    max-height: 300px !important;
-
-    flex: none !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: space-around !important;
-
-    box-sizing: border-box !important;
-
-    padding: 10px 5px 0 !important;
-
-    border-bottom: 1px solid #999 !important;
-
-    overflow: hidden !important;
-}
-
-/* Bar groups */
-.tables-grid .item-bar-group {
-    height: 275px !important;
-    min-height: 275px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
-
-    flex: 1 1 0 !important;
-}
-
-/* Percentage */
-.tables-grid .item-bar-value {
-    height: 22px !important;
-    min-height: 22px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: center !important;
-
-    margin-bottom: 3px !important;
-}
-
-/* Bar */
-.tables-grid .item-bar {
-    width: 32px !important;
-    min-height: 8px !important;
-    flex-shrink: 0 !important;
-}
-
-/* Labels - same height */
-.tables-grid .item-bar-label {
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-
-    margin-top: 5px !important;
-
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-
-    font-size: 10px !important;
-    line-height: 12px !important;
-
-    overflow-wrap: anywhere !important;
-    box-sizing: border-box !important;
-}
-
-/* =========================================================
-   PURPOSE DIRECTLY AFTER CHART
-   ========================================================= */
-
-.tables-grid .department .purpose {
-    margin-top: 10px !important;
-
-    width: 100% !important;
-
-    height: 72px !important;
-    min-height: 72px !important;
-    max-height: 72px !important;
-
-    flex-shrink: 0 !important;
-
-    box-sizing: border-box !important;
-}
-
-/* Purpose heading */
-.tables-grid .department .purpose h3 {
-    height: 30px !important;
-    min-height: 30px !important;
-
-    margin: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* Purpose text */
-.tables-grid .department .purpose p {
-    height: 42px !important;
-    min-height: 42px !important;
-
-    margin: 0 !important;
-    padding: 5px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-}
-
-/* =========================================================
-   KEEP ALL 4 DEPARTMENT CARDS SAME BOTTOM
-   WITHOUT EMPTY SPACE
-   ========================================================= */
-
-.tables-grid {
-    align-items: stretch !important;
-}
-
-.tables-grid .department {
-    align-self: stretch !important;
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 650px) {
-
-    .tables-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .tables-grid .item-bars {
-        overflow-x: auto !important;
-    }
-
-    .tables-grid .item-bar-group {
-        min-width: 60px !important;
-        flex: 0 0 60px !important;
-    }
-}
-/* =========================================================
-   FINAL DEPARTMENT LAYOUT
-   SAME CHART START + NO SPACE BELOW CHART
-   ========================================================= */
-
-/* 4 equal department columns */
-.tables-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 12px !important;
-    align-items: stretch !important;
-}
-
-/* Each department is a vertical flex card */
-.tables-grid .department {
-    display: flex !important;
-    flex-direction: column !important;
-
-    height: auto !important;
-    min-height: 0 !important;
-
-    box-sizing: border-box !important;
-}
-
-
-/* =========================================================
-   TABLE AREA
-   ========================================================= */
-
-/*
-   This is the important part.
-
-   The chart will NOT start immediately after a short table.
-   The browser will use the extra available space here.
-
-   This creates the "PINK AREA" above the chart.
-*/
-
-.tables-grid .department > table {
-    flex: 0 0 auto !important;
-}
-
-
-/* =========================================================
-   ALLOCATION CHART
-   ALL FOUR START AT SAME LEVEL
-   ========================================================= */
-
-.tables-grid .item-chart {
-    margin-top: auto !important;
-
-    height: 390px !important;
-    min-height: 390px !important;
-    max-height: 390px !important;
-
-    width: 100% !important;
-
-    padding: 8px !important;
-
-    box-sizing: border-box !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-
-/* Chart title */
-.tables-grid .item-chart-title {
-    flex: 0 0 42px !important;
-
-    height: 42px !important;
-    min-height: 42px !important;
-
-    margin: 0 0 5px 0 !important;
-    padding: 5px !important;
-
-    box-sizing: border-box !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-    line-height: 16px !important;
-}
-
-
-/* =========================================================
-   BAR AREA
-   ========================================================= */
-
-.tables-grid .item-bars {
-    flex: 1 1 auto !important;
-
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: space-around !important;
-
-    gap: 5px !important;
-
-    padding: 10px 5px 0 5px !important;
-
-    box-sizing: border-box !important;
-
-    border-bottom: 1px solid #999 !important;
-
-    overflow: hidden !important;
-}
-
-
-/* =========================================================
-   BAR GROUP
-   ========================================================= */
-
-.tables-grid .item-bar-group {
-    height: 100% !important;
-    min-height: 0 !important;
-
-    flex: 1 1 0 !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    justify-content: flex-end !important;
-    align-items: center !important;
-
-    min-width: 0 !important;
-}
-
-
-/* Percentage above bar */
-.tables-grid .item-bar-value {
-    height: 22px !important;
-    min-height: 22px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: center !important;
-
-    margin-bottom: 3px !important;
-
-    font-size: 11px !important;
-    font-weight: bold !important;
-
-    white-space: nowrap !important;
-}
-
-
-/* Bars */
-.tables-grid .item-bar {
-    width: 32px !important;
-    min-height: 8px !important;
-
-    flex-shrink: 0 !important;
-
-    border-radius: 2px 2px 0 0 !important;
-}
-
-
-/* =========================================================
-   LABEL AREA
-   SAME HEIGHT FOR ALL LABELS
-   ========================================================= */
-
-.tables-grid .item-bar-label {
-    width: 100% !important;
-
-    height: 42px !important;
-    min-height: 42px !important;
-    max-height: 42px !important;
-
-    margin-top: 5px !important;
-
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-
-    font-size: 10px !important;
-    line-height: 12px !important;
-
-    overflow-wrap: anywhere !important;
-
-    box-sizing: border-box !important;
-}
-
-
-/* =========================================================
-   PURPOSE
-   DIRECTLY AFTER CHART
-   ========================================================= */
-
-.tables-grid .department .purpose {
-    margin-top: 10px !important;
-
-    width: 100% !important;
-
-    height: 72px !important;
-    min-height: 72px !important;
-    max-height: 72px !important;
-
-    flex-shrink: 0 !important;
-
-    box-sizing: border-box !important;
-}
-
-
-.tables-grid .department .purpose h3 {
-    height: 30px !important;
-    min-height: 30px !important;
-
-    margin: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-
-.tables-grid .department .purpose p {
-    height: 42px !important;
-    min-height: 42px !important;
-
-    margin: 0 !important;
-    padding: 5px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    text-align: center !important;
-}
-
-
-/* =========================================================
-   TABLET
-   ========================================================= */
-
-@media (max-width: 1000px) {
-
-    .tables-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 650px) {
-
-    .tables-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .tables-grid .item-chart {
-        height: 390px !important;
-        min-height: 390px !important;
-    }
-
-    .tables-grid .item-bars {
-        overflow-x: auto !important;
-    }
-
-    .tables-grid .item-bar-group {
-        min-width: 60px !important;
-        flex: 0 0 60px !important;
+        height: 285px;
+        min-height: 285px;
     }
 }
