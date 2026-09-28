@@ -2,12 +2,7 @@ let data = null;
 
 const $ = (selector) => document.querySelector(selector);
 
-const keys = [
-    "trading",
-    "investment",
-    "reserve",
-    "rnd"
-];
+const keys = ["trading", "investment", "reserve", "rnd"];
 
 const labels = {
     trading: "Trading",
@@ -15,11 +10,6 @@ const labels = {
     reserve: "Reserve",
     rnd: "Research & Development"
 };
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
 
 function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -31,13 +21,12 @@ function esc(value) {
     }[char]));
 }
 
-
 function get(obj, path) {
-    return path
-        .split(".")
-        .reduce((current, key) => current?.[key], obj);
+    return path.split(".").reduce(
+        (current, key) => current?.[key],
+        obj
+    );
 }
-
 
 function set(obj, path, value) {
     const parts = path.split(".");
@@ -53,7 +42,7 @@ function set(obj, path, value) {
 
 
 /* =========================================================
-   NORMALIZE DATA FOR ADMIN
+   PREPARE DATA
 ========================================================= */
 
 function prepareData() {
@@ -62,24 +51,17 @@ function prepareData() {
         data = {};
     }
 
-
     if (!data.settings) {
         data.settings = {};
     }
 
-
-    if (
-        typeof data.settings.overallROIEnabled !==
-        "boolean"
-    ) {
+    if (typeof data.settings.overallROIEnabled !== "boolean") {
         data.settings.overallROIEnabled = true;
     }
-
 
     if (!data.meta) {
         data.meta = {};
     }
-
 
     if (!data.capital) {
         data.capital = {
@@ -87,11 +69,9 @@ function prepareData() {
         };
     }
 
-
     if (!data.verticals) {
         data.verticals = {};
     }
-
 
     keys.forEach((key) => {
 
@@ -103,20 +83,15 @@ function prepareData() {
             };
         }
 
-
-        if (
-            !Array.isArray(
-                data.verticals[key].items
-            )
-        ) {
+        if (!Array.isArray(data.verticals[key].items)) {
             data.verticals[key].items = [];
         }
-
 
         data.verticals[key].items =
             data.verticals[key].items.map((item) => {
 
                 if (!Array.isArray(item)) {
+
                     return [
                         item?.name || "New Item",
                         Number(
@@ -137,7 +112,6 @@ function prepareData() {
                     ];
                 }
 
-
                 return [
                     item[0] ?? "",
                     Number(item[1]) || 0,
@@ -145,9 +119,7 @@ function prepareData() {
                     Number(item[3]) || 0
                 ];
             });
-
     });
-
 }
 
 
@@ -159,21 +131,14 @@ function buildEditors() {
 
     prepareData();
 
-
-    const editSections =
-        $("#editSections");
-
+    const editSections = $("#editSections");
 
     if (!editSections) {
+        console.error("editSections not found");
         return;
     }
 
-
     editSections.innerHTML = `
-
-        <!-- =========================================
-             DASHBOARD CONTROLS
-        ========================================== -->
 
         <section>
 
@@ -207,12 +172,10 @@ function buildEditors() {
                         font-size:13px;
                     ">
                         Show or hide the overall ROI
-                        table and pie chart on the
-                        public dashboard.
+                        table and pie chart.
                     </div>
 
                 </div>
-
 
                 <label style="
                     position:relative;
@@ -251,25 +214,18 @@ function buildEditors() {
         </section>
 
 
-        <!-- =========================================
-             DEPARTMENT EDITORS
-        ========================================== -->
-
         ${keys.map((key) => `
 
             <section>
 
-                <h3>
-                    ${labels[key]}
-                </h3>
-
+                <h3>${labels[key]}</h3>
 
                 <div style="
                     overflow-x:auto;
                 ">
 
                     <div style="
-                        min-width:650px;
+                        min-width:700px;
                     ">
 
                         <div style="
@@ -277,9 +233,9 @@ function buildEditors() {
                             grid-template-columns:
                                 1.5fr
                                 .7fr
-                                .7fr
-                                .7fr
-                                40px;
+                                .8fr
+                                .8fr
+                                45px;
                             gap:8px;
                             margin-bottom:8px;
                             font-size:12px;
@@ -287,31 +243,15 @@ function buildEditors() {
                             color:#555;
                         ">
 
-                            <div>
-                                PARTICULAR
-                            </div>
-
-                            <div>
-                                ALLOCATION %
-                            </div>
-
-                            <div>
-                                WEEK ROI %
-                            </div>
-
-                            <div>
-                                MONTH ROI %
-                            </div>
-
+                            <div>PARTICULAR</div>
+                            <div>ALLOCATION %</div>
+                            <div>WEEK ROI %</div>
+                            <div>MONTH ROI %</div>
                             <div></div>
 
                         </div>
 
-
-                        <div
-                            id="${key}Rows"
-                        ></div>
-
+                        <div id="${key}Rows"></div>
 
                         <button
                             type="button"
@@ -327,7 +267,6 @@ function buildEditors() {
                     </div>
 
                 </div>
-
 
                 <label style="
                     display:block;
@@ -346,54 +285,38 @@ function buildEditors() {
             </section>
 
         `).join("")}
-
     `;
 
-
-    setupOverallROIToggle();
-
+    setupOverallToggle();
     setupAddButtons();
-
     renderEditors();
-
 }
 
 
 /* =========================================================
-   OVERALL ROI TOGGLE
+   OVERALL ROI SWITCH
 ========================================================= */
 
-function setupOverallROIToggle() {
+function setupOverallToggle() {
 
-    const toggle =
-        $("#overallROIEnabled");
-
-    const slider =
-        $("#overallROISlider");
-
+    const toggle = $("#overallROIEnabled");
+    const slider = $("#overallROISlider");
 
     if (!toggle || !slider) {
         return;
     }
-
 
     function updateToggle() {
 
         const enabled =
             data.settings.overallROIEnabled === true;
 
-
         toggle.checked = enabled;
 
-
         slider.style.background =
-            enabled
-                ? "#075c32"
-                : "#999";
-
+            enabled ? "#075c32" : "#999";
 
         slider.innerHTML = `
-
             <span style="
                 position:absolute;
                 width:24px;
@@ -403,34 +326,25 @@ function setupOverallROIToggle() {
                 background:white;
                 border-radius:50%;
                 transition:.25s;
-                box-shadow:
-                    0 1px 4px rgba(0,0,0,.25);
+                box-shadow:0 1px 4px rgba(0,0,0,.25);
             "></span>
-
         `;
     }
 
+    toggle.onchange = () => {
 
-    toggle.addEventListener(
-        "change",
-        () => {
+        data.settings.overallROIEnabled =
+            toggle.checked;
 
-            data.settings.overallROIEnabled =
-                toggle.checked;
-
-            updateToggle();
-
-        }
-    );
-
+        updateToggle();
+    };
 
     updateToggle();
-
 }
 
 
 /* =========================================================
-   ADD ITEM BUTTONS
+   ADD ITEM
 ========================================================= */
 
 function setupAddButtons() {
@@ -444,32 +358,22 @@ function setupAddButtons() {
                 const department =
                     button.dataset.add;
 
-
-                if (
-                    !data.verticals[
-                        department
-                    ]
-                ) {
+                if (!data.verticals[department]) {
                     return;
                 }
 
-
-                data.verticals[
-                    department
-                ].items.push([
-                    "New Item",
-                    0,
-                    0,
-                    0
-                ]);
-
+                data.verticals[department]
+                    .items
+                    .push([
+                        "New Item",
+                        0,
+                        0,
+                        0
+                    ]);
 
                 renderEditors();
-
             };
-
         });
-
 }
 
 
@@ -481,18 +385,14 @@ function renderEditors() {
 
     keys.forEach((key) => {
 
-        const box =
-            $("#" + key + "Rows");
-
+        const box = $("#" + key + "Rows");
 
         if (!box) {
             return;
         }
 
-
         const items =
             data.verticals[key].items || [];
-
 
         box.innerHTML =
             items.map((item, index) => {
@@ -500,50 +400,39 @@ function renderEditors() {
                 const name =
                     item[0] ?? "";
 
-
                 const allocation =
                     Number(item[1]) || 0;
-
 
                 const weekROI =
                     Number(item[2]) || 0;
 
-
                 const monthROI =
                     Number(item[3]) || 0;
 
-
                 return `
-
                     <div
-                        class="item-row"
                         style="
                             display:grid;
                             grid-template-columns:
                                 1.5fr
                                 .7fr
-                                .7fr
-                                .7fr
-                                40px;
+                                .8fr
+                                .8fr
+                                45px;
                             gap:8px;
                             align-items:center;
                             margin-bottom:8px;
-                            min-width:650px;
+                            min-width:700px;
                         "
                     >
-
-                        <!-- PARTICULAR -->
 
                         <input
                             type="text"
                             value="${esc(name)}"
                             data-name="${key}"
-                            data-i="${index}"
+                            data-index="${index}"
                             placeholder="Particular"
                         >
-
-
-                        <!-- ALLOCATION -->
 
                         <input
                             type="number"
@@ -551,47 +440,37 @@ function renderEditors() {
                             max="100"
                             step="0.01"
                             value="${allocation}"
-                            data-pct="${key}"
-                            data-i="${index}"
+                            data-allocation="${key}"
+                            data-index="${index}"
                             placeholder="Allocation %"
                         >
-
-
-                        <!-- WEEK ROI -->
 
                         <input
                             type="number"
                             step="0.01"
                             value="${weekROI}"
-                            data-week-roi="${key}"
-                            data-i="${index}"
+                            data-week="${key}"
+                            data-index="${index}"
                             placeholder="Week ROI %"
                         >
-
-
-                        <!-- MONTH ROI -->
 
                         <input
                             type="number"
                             step="0.01"
                             value="${monthROI}"
-                            data-month-roi="${key}"
-                            data-i="${index}"
+                            data-month="${key}"
+                            data-index="${index}"
                             placeholder="Month ROI %"
                         >
-
-
-                        <!-- DELETE -->
 
                         <button
                             type="button"
                             data-delete="${key}"
-                            data-i="${index}"
-                            title="Delete item"
+                            data-index="${index}"
                             style="
                                 background:#d32f2f;
                                 color:white;
-                                border:0;
+                                border:none;
                                 border-radius:6px;
                                 cursor:pointer;
                                 font-size:18px;
@@ -602,21 +481,19 @@ function renderEditors() {
                         </button>
 
                     </div>
-
                 `;
 
             }).join("");
 
+    });
 
     setupNormalInputs();
-
     setupItemInputs();
-
 }
 
 
 /* =========================================================
-   NORMAL DATA INPUTS
+   NORMAL INPUTS
 ========================================================= */
 
 function setupNormalInputs() {
@@ -628,124 +505,29 @@ function setupNormalInputs() {
             const path =
                 element.dataset.path;
 
-
             const value =
                 get(data, path);
 
-
-            if (
-                element.type === "date"
-            ) {
-
-                let dateValue =
-                    String(value ?? "");
-
-
-                if (
-                    dateValue.includes("-")
-                ) {
-
-                    const match =
-                        dateValue.match(
-                            /^(\d{1,2})[-\/](\w+)[-\/](\d{4})$/
-                        );
-
-
-                    if (match) {
-
-                        const day =
-                            match[1].padStart(
-                                2,
-                                "0"
-                            );
-
-
-                        const monthNames = {
-                            Jan: "01",
-                            Feb: "02",
-                            Mar: "03",
-                            Apr: "04",
-                            May: "05",
-                            Jun: "06",
-                            Jul: "07",
-                            Aug: "08",
-                            Sep: "09",
-                            Oct: "10",
-                            Nov: "11",
-                            Dec: "12"
-                        };
-
-
-                        const month =
-                            monthNames[
-                                match[2]
-                            ];
-
-
-                        if (month) {
-
-                            dateValue =
-                                `${match[3]}-${month}-${day}`;
-
-                        }
-
-                    }
-
-                }
-
-
-                element.value =
-                    /^\d{4}-\d{2}-\d{2}$/.test(
-                        dateValue
-                    )
-                        ? dateValue
-                        : "";
-
-            } else {
-
-                element.value =
-                    value ?? "";
-
-            }
-
+            element.value =
+                value ?? "";
 
             element.oninput = () => {
 
                 let newValue =
                     element.value;
 
-
-                if (
-                    element.type === "number"
-                ) {
+                if (element.type === "number") {
                     newValue =
-                        Number(
-                            element.value
-                        ) || 0;
+                        Number(element.value) || 0;
                 }
 
-
-                if (
-                    element.type === "date"
-                ) {
-
-                    data.meta.date =
-                        newValue;
-
-                } else {
-
-                    set(
-                        data,
-                        path,
-                        newValue
-                    );
-
-                }
-
+                set(
+                    data,
+                    path,
+                    newValue
+                );
             };
-
         });
-
 }
 
 
@@ -754,11 +536,6 @@ function setupNormalInputs() {
 ========================================================= */
 
 function setupItemInputs() {
-
-
-    /* -----------------------------------------
-       NAME
-    ----------------------------------------- */
 
     document
         .querySelectorAll("[data-name]")
@@ -770,129 +547,71 @@ function setupItemInputs() {
                     element.dataset.name;
 
                 const index =
-                    Number(
-                        element.dataset.i
-                    );
+                    Number(element.dataset.index);
 
-
-                const item =
-                    data.verticals[key]
-                        .items[index];
-
-
-                item[0] =
+                data.verticals[key]
+                    .items[index][0] =
                     element.value;
-
             };
-
         });
 
 
-    /* -----------------------------------------
-       ALLOCATION
-    ----------------------------------------- */
-
     document
-        .querySelectorAll("[data-pct]")
+        .querySelectorAll("[data-allocation]")
         .forEach((element) => {
 
             element.oninput = () => {
 
                 const key =
-                    element.dataset.pct;
+                    element.dataset.allocation;
 
                 const index =
-                    Number(
-                        element.dataset.i
-                    );
+                    Number(element.dataset.index);
 
-
-                const item =
-                    data.verticals[key]
-                        .items[index];
-
-
-                item[1] =
-                    Number(
-                        element.value
-                    ) || 0;
-
+                data.verticals[key]
+                    .items[index][1] =
+                    Number(element.value) || 0;
             };
-
         });
 
 
-    /* -----------------------------------------
-       WEEK ROI
-    ----------------------------------------- */
-
     document
-        .querySelectorAll("[data-week-roi]")
+        .querySelectorAll("[data-week]")
         .forEach((element) => {
 
             element.oninput = () => {
 
                 const key =
-                    element.dataset.weekRoi;
+                    element.dataset.week;
 
                 const index =
-                    Number(
-                        element.dataset.i
-                    );
+                    Number(element.dataset.index);
 
-
-                const item =
-                    data.verticals[key]
-                        .items[index];
-
-
-                item[2] =
-                    Number(
-                        element.value
-                    ) || 0;
-
+                data.verticals[key]
+                    .items[index][2] =
+                    Number(element.value) || 0;
             };
-
         });
 
 
-    /* -----------------------------------------
-       MONTH ROI
-    ----------------------------------------- */
-
     document
-        .querySelectorAll("[data-month-roi]")
+        .querySelectorAll("[data-month]")
         .forEach((element) => {
 
             element.oninput = () => {
 
                 const key =
-                    element.dataset.monthRoi;
+                    element.dataset.month;
 
                 const index =
-                    Number(
-                        element.dataset.i
-                    );
+                    Number(element.dataset.index);
 
-
-                const item =
-                    data.verticals[key]
-                        .items[index];
-
-
-                item[3] =
-                    Number(
-                        element.value
-                    ) || 0;
-
+                data.verticals[key]
+                    .items[index][3] =
+                    Number(element.value) || 0;
             };
-
         });
 
-
-    /* -----------------------------------------
-       DELETE
-    ----------------------------------------- */
 
     document
         .querySelectorAll("[data-delete]")
@@ -903,114 +622,21 @@ function setupItemInputs() {
                 const key =
                     button.dataset.delete;
 
-
                 const index =
-                    Number(
-                        button.dataset.i
-                    );
-
-
-                if (
-                    !data.verticals[key]
-                ) {
-                    return;
-                }
-
+                    Number(button.dataset.index);
 
                 data.verticals[key]
                     .items
                     .splice(index, 1);
 
-
                 renderEditors();
-
             };
-
         });
-
 }
 
 
 /* =========================================================
-   LOAD ADMIN
-========================================================= */
-
-async function loadAdmin() {
-
-    const loginScreen =
-        $("#loginScreen");
-
-    const adminApp =
-        $("#adminApp");
-
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/me",
-                {
-                    method: "GET",
-                    credentials: "same-origin",
-                    cache: "no-store"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Session check failed"
-            );
-
-        }
-
-
-        const me =
-            await response.json();
-
-
-        if (!me.authenticated) {
-
-            loginScreen
-                .classList
-                .remove("hidden");
-
-            adminApp
-                .classList
-                .add("hidden");
-
-            return;
-
-        }
-
-
-        await loadDashboardData();
-
-
-    } catch (error) {
-
-        console.error(
-            "Admin load error:",
-            error
-        );
-
-
-        loginScreen
-            .classList
-            .remove("hidden");
-
-        adminApp
-            .classList
-            .add("hidden");
-
-    }
-
-}
-
-
-/* =========================================================
-   LOAD DASHBOARD DATA
+   LOAD DATA
 ========================================================= */
 
 async function loadDashboardData() {
@@ -1025,35 +651,98 @@ async function loadDashboardData() {
             }
         );
 
-
     if (!response.ok) {
-
         throw new Error(
             "Unable to load dashboard data."
         );
-
     }
-
 
     data =
         await response.json();
 
-
     prepareData();
 
+    const loginScreen =
+        $("#loginScreen");
 
-    $("#loginScreen")
-        .classList
-        .add("hidden");
+    const adminApp =
+        $("#adminApp");
 
+    if (loginScreen) {
+        loginScreen.classList.add("hidden");
+    }
 
-    $("#adminApp")
-        .classList
-        .remove("hidden");
-
+    if (adminApp) {
+        adminApp.classList.remove("hidden");
+    }
 
     buildEditors();
+}
 
+
+/* =========================================================
+   CHECK LOGIN
+========================================================= */
+
+async function checkLogin() {
+
+    const loginScreen =
+        $("#loginScreen");
+
+    const adminApp =
+        $("#adminApp");
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/me",
+                {
+                    method: "GET",
+                    credentials: "same-origin",
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Session check failed"
+            );
+        }
+
+        const result =
+            await response.json();
+
+        if (result.authenticated) {
+
+            await loadDashboardData();
+
+        } else {
+
+            if (loginScreen) {
+                loginScreen.classList.remove("hidden");
+            }
+
+            if (adminApp) {
+                adminApp.classList.add("hidden");
+            }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Session error:",
+            error
+        );
+
+        if (loginScreen) {
+            loginScreen.classList.remove("hidden");
+        }
+
+        if (adminApp) {
+            adminApp.classList.add("hidden");
+        }
+    }
 }
 
 
@@ -1064,7 +753,6 @@ async function loadDashboardData() {
 const loginForm =
     $("#loginForm");
 
-
 if (loginForm) {
 
     loginForm.addEventListener(
@@ -1073,22 +761,19 @@ if (loginForm) {
 
             event.preventDefault();
 
-
             const loginError =
                 $("#loginError");
-
 
             const username =
                 $("#username").value.trim();
 
-
             const password =
                 $("#password").value;
 
-
-            loginError.textContent =
-                "Logging in...";
-
+            if (loginError) {
+                loginError.textContent =
+                    "Logging in...";
+            }
 
             try {
 
@@ -1097,15 +782,12 @@ if (loginForm) {
                         "/api/login",
                         {
                             method: "POST",
-
                             credentials:
                                 "same-origin",
-
                             headers: {
                                 "Content-Type":
                                     "application/json"
                             },
-
                             body:
                                 JSON.stringify({
                                     username,
@@ -1113,7 +795,6 @@ if (loginForm) {
                                 })
                         }
                     );
-
 
                 let result = {};
 
@@ -1124,24 +805,23 @@ if (loginForm) {
                     result = {};
                 }
 
-
                 if (!response.ok) {
 
-                    loginError.textContent =
-                        result.error ||
-                        "Invalid username or password.";
+                    if (loginError) {
+                        loginError.textContent =
+                            result.error ||
+                            "Invalid username or password.";
+                    }
 
                     return;
-
                 }
 
-
-                loginError.textContent =
-                    "Login successful. Loading...";
-
+                if (loginError) {
+                    loginError.textContent =
+                        "Login successful...";
+                }
 
                 await loadDashboardData();
-
 
             } catch (error) {
 
@@ -1150,15 +830,13 @@ if (loginForm) {
                     error
                 );
 
-
-                loginError.textContent =
-                    "Login failed. Please refresh and try again.";
-
+                if (loginError) {
+                    loginError.textContent =
+                        "Login failed. Please try again.";
+                }
             }
-
         }
     );
-
 }
 
 
@@ -1169,7 +847,6 @@ if (loginForm) {
 const saveButton =
     $("#saveBtn");
 
-
 if (saveButton) {
 
     saveButton.addEventListener(
@@ -1179,7 +856,6 @@ if (saveButton) {
             const saveMessage =
                 $("#saveMessage");
 
-
             try {
 
                 saveButton.disabled =
@@ -1188,40 +864,30 @@ if (saveButton) {
                 saveButton.textContent =
                     "Saving...";
 
-
                 const response =
                     await fetch(
                         "/api/data",
                         {
                             method: "PUT",
-
                             credentials:
                                 "same-origin",
-
                             headers: {
                                 "Content-Type":
                                     "application/json"
                             },
-
                             body:
                                 JSON.stringify(data)
                         }
                     );
 
-
                 let result = {};
 
                 try {
-
                     result =
                         await response.json();
-
                 } catch {
-
                     result = {};
-
                 }
-
 
                 if (!response.ok) {
 
@@ -1229,9 +895,7 @@ if (saveButton) {
                         result.error ||
                         "Save failed."
                     );
-
                 }
-
 
                 if (result.data) {
 
@@ -1239,38 +903,21 @@ if (saveButton) {
                         result.data;
 
                     prepareData();
-
                 }
 
-
-                saveMessage.textContent =
-                    "✓ Saved successfully";
-
-
-                const iframe =
-                    document.querySelector(
-                        ".preview iframe"
-                    );
-
-
-                if (iframe) {
-
-                    iframe.src =
-                        iframe.src;
-
+                if (saveMessage) {
+                    saveMessage.textContent =
+                        "✓ Saved successfully";
                 }
 
+                setTimeout(() => {
 
-                setTimeout(
-                    () => {
-
+                    if (saveMessage) {
                         saveMessage.textContent =
                             "";
+                    }
 
-                    },
-                    4000
-                );
-
+                }, 4000);
 
             } catch (error) {
 
@@ -1279,14 +926,14 @@ if (saveButton) {
                     error
                 );
 
-
-                saveMessage.textContent =
-                    "✕ " +
-                    (
-                        error.message ||
-                        "Save failed."
-                    );
-
+                if (saveMessage) {
+                    saveMessage.textContent =
+                        "✕ " +
+                        (
+                            error.message ||
+                            "Save failed."
+                        );
+                }
 
             } finally {
 
@@ -1295,12 +942,9 @@ if (saveButton) {
 
                 saveButton.textContent =
                     "Save All Changes";
-
             }
-
         }
     );
-
 }
 
 
@@ -1310,7 +954,6 @@ if (saveButton) {
 
 const logoutButton =
     $("#logoutBtn");
-
 
 if (logoutButton) {
 
@@ -1335,15 +978,11 @@ if (logoutButton) {
                     "Logout error:",
                     error
                 );
-
             }
 
-
             window.location.reload();
-
         }
     );
-
 }
 
 
@@ -1351,4 +990,4 @@ if (logoutButton) {
    START
 ========================================================= */
 
-loadAdmin();
+checkLogin();
