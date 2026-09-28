@@ -1,85 +1,24 @@
-let dashboardData = null;
+const $ = (id) => document.getElementById(id);
 
-const VERTICALS = [
-    {
-        key: "trading",
-        name: "Trading",
-        color: "#438ddd",
-        barClass: "b-blue",
-        boxClass: "trading-box"
-    },
-    {
-        key: "investment",
-        name: "Investment",
-        color: "#67bd72",
-        barClass: "b-green",
-        boxClass: "investment-box"
-    },
-    {
-        key: "reserve",
-        name: "Reserve",
-        color: "#f1d65d",
-        barClass: "b-yellow",
-        boxClass: "reserve-box"
-    },
-    {
-        key: "rnd",
-        name: "Research & Development",
-        color: "#a184d6",
-        barClass: "b-purple",
-        boxClass: "rnd-box"
-    }
-];
+const formatINR = (value) =>
+    new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+    }).format(Number(value) || 0);
 
+const formatNumber = (value) =>
+    new Intl.NumberFormat("en-IN", {
+        maximumFractionDigits: 2
+    }).format(Number(value) || 0);
 
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function money(value) {
-
-    const number = Number(value) || 0;
-
-    return "₹" + number.toLocaleString(
-        "en-IN",
-        {
-            maximumFractionDigits: 2
-        }
-    );
-}
-
-
-function number(value) {
-
-    const n = Number(value);
-
-    return Number.isFinite(n)
-        ? n
-        : 0;
-}
-
-
-function percent(value) {
-
-    return number(value)
-        .toLocaleString(
-            "en-IN",
-            {
-                maximumFractionDigits: 2
-            }
-        ) + "%";
-}
-
-
-function escapeHTML(value) {
-
-    return String(value ?? "")
+const escapeHTML = (value) =>
+    String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-}
 
 
 /* =========================================================
@@ -87,41 +26,27 @@ function escapeHTML(value) {
 ========================================================= */
 
 async function loadDashboard() {
-
     try {
-
-        const response =
-            await fetch("/api/data", {
-                cache: "no-store"
-            });
-
+        const response = await fetch("/api/data", {
+            cache: "no-store"
+        });
 
         if (!response.ok) {
-            throw new Error(
-                "Unable to load dashboard data"
-            );
+            throw new Error("Unable to load dashboard data");
         }
 
+        const data = await response.json();
 
-        dashboardData =
-            await response.json();
+        renderDashboard(data);
 
-
-        renderDashboard();
-
+        $("loading").classList.add("hidden");
+        $("dashboard").classList.remove("hidden");
 
     } catch (error) {
-
         console.error(error);
 
-        const loading =
-            document.getElementById("loading");
-
-        if (loading) {
-
-            loading.textContent =
-                "Unable to load dashboard.";
-        }
+        $("loading").textContent =
+            "Unable to load dashboard. Please refresh the page.";
     }
 }
 
@@ -130,151 +55,154 @@ async function loadDashboard() {
    MAIN RENDER
 ========================================================= */
 
-function renderDashboard() {
-
-    if (!dashboardData) {
-        return;
-    }
-
-
-    document
-        .getElementById("loading")
-        ?.classList
-        .add("hidden");
-
-
-    document
-        .getElementById("dashboard")
-        ?.classList
-        .remove("hidden");
-
-
-    renderMeta();
-
-    renderSummary();
-
-    renderAllocationCards();
-
-    renderMainCharts();
-
-    renderDepartmentTables();
-}
-
-
-/* =========================================================
-   META
-========================================================= */
-
-function renderMeta() {
-
-    setText(
-        "orgName",
-        dashboardData.meta?.organization
-    );
-
-    setText(
-        "metaDate",
-        dashboardData.meta?.date
-    );
-
-    setText(
-        "metaVersion",
-        dashboardData.meta?.version
-    );
-
-    setText(
-        "metaPrepared",
-        dashboardData.meta?.preparedBy
-    );
-}
-
-
-/* =========================================================
-   SUMMARY
-========================================================= */
-
-function renderSummary() {
+function renderDashboard(data) {
 
     const totalCapital =
-        number(
-            dashboardData.capital?.total
-        );
+        Number(data?.capital?.total) || 0;
 
+    const verticals =
+        data?.verticals || {};
+
+    const verticalKeys = [
+        "trading",
+        "investment",
+        "reserve",
+        "rnd"
+    ];
+
+    /* -------------------------
+       HEADER
+    ------------------------- */
+
+    $("orgName").textContent =
+        data?.meta?.organization || "";
+
+    $("metaDate").textContent =
+        data?.meta?.date || "";
+
+    $("metaVersion").textContent =
+        data?.meta?.version || "";
+
+    $("metaPrepared").textContent =
+        data?.meta?.preparedBy || "";
+
+
+    /* -------------------------
+       CAPITAL CALCULATION
+    ------------------------- */
 
     let allocatedCapital = 0;
 
+    verticalKeys.forEach((key) => {
 
-    VERTICALS.forEach(vertical => {
-
-        const data =
-            dashboardData.verticals?.[
-                vertical.key
-            ] || {};
+        const percent =
+            Number(verticals?.[key]?.percent) || 0;
 
         allocatedCapital +=
-            totalCapital *
-            number(data.percent) /
-            100;
+            totalCapital * percent / 100;
     });
 
+    const difference =
+        totalCapital - allocatedCapital;
 
-    const unallocated =
-        totalCapital -
-        allocatedCapital;
+    $("totalCapital").textContent =
+        formatINR(totalCapital);
+
+    $("allocatedCapital").textContent =
+        formatINR(allocatedCapital);
+
+    $("unallocatedCapital").textContent =
+        formatINR(Math.abs(difference));
 
 
-    setText(
-        "totalCapital",
-        money(totalCapital)
+    /* -------------------------
+       OVERALL STATUS
+    ------------------------- */
+
+    renderOverallStatus(
+        totalCapital,
+        allocatedCapital
     );
 
 
-    setText(
-        "allocatedCapital",
-        money(allocatedCapital)
+    /* -------------------------
+       ALLOCATION CARDS
+    ------------------------- */
+
+    renderAllocationCards(
+        data,
+        totalCapital
     );
 
 
-    setText(
-        "unallocatedCapital",
-        money(
-            Math.abs(unallocated)
-        )
+    /* -------------------------
+       DONUT
+    ------------------------- */
+
+    renderDonut(
+        data,
+        totalCapital
     );
 
 
-    const status =
-        document.getElementById("status");
+    /* -------------------------
+       CAPITAL BAR CHART
+    ------------------------- */
+
+    renderCapitalBars(
+        data,
+        totalCapital
+    );
 
 
-    if (!status) {
-        return;
-    }
+    /* -------------------------
+       DEPARTMENT TABLES
+    ------------------------- */
+
+    renderDepartmentTables(
+        data,
+        totalCapital
+    );
+}
 
 
-    if (Math.abs(unallocated) < 0.01) {
+/* =========================================================
+   OVERALL STATUS
+========================================================= */
 
-        status.innerHTML =
-            `<span>✓</span> Fully Allocated`;
+function renderOverallStatus(
+    totalCapital,
+    allocatedCapital
+) {
 
-        status.style.color =
-            "#238c43";
+    const statusElement = $("status");
 
-    } else if (unallocated > 0) {
+    const difference =
+        totalCapital - allocatedCapital;
 
-        status.innerHTML =
-            `<span>+</span> Surplus ${money(unallocated)}`;
+    if (Math.abs(difference) < 0.01) {
 
-        status.style.color =
-            "#238c43";
+        statusElement.innerHTML = `
+            <span class="status-full">
+                FULLY ALLOCATED
+            </span>
+        `;
+
+    } else if (difference > 0) {
+
+        statusElement.innerHTML = `
+            <span class="status-surplus">
+                SURPLUS ${formatINR(difference)}
+            </span>
+        `;
 
     } else {
 
-        status.innerHTML =
-            `<span>!</span> Deficit ${money(Math.abs(unallocated))}`;
-
-        status.style.color =
-            "#c62828";
+        statusElement.innerHTML = `
+            <span class="status-deficit">
+                DEFICIT ${formatINR(Math.abs(difference))}
+            </span>
+        `;
     }
 }
 
@@ -283,69 +211,69 @@ function renderSummary() {
    ALLOCATION CARDS
 ========================================================= */
 
-function renderAllocationCards() {
+function renderAllocationCards(
+    data,
+    totalCapital
+) {
 
     const container =
-        document.getElementById(
-            "allocationCards"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
+        $("allocationCards");
 
     container.innerHTML = "";
 
+    const departments = [
+        {
+            key: "trading",
+            name: "TRADING",
+            className: "trading"
+        },
+        {
+            key: "investment",
+            name: "INVESTMENT",
+            className: "investment"
+        },
+        {
+            key: "reserve",
+            name: "RESERVE",
+            className: "reserve"
+        },
+        {
+            key: "rnd",
+            name: "R&D",
+            className: "rnd"
+        }
+    ];
 
-    const totalCapital =
-        number(
-            dashboardData.capital?.total
-        );
+    departments.forEach((department) => {
 
+        const vertical =
+            data?.verticals?.[department.key] || {};
 
-    VERTICALS.forEach(vertical => {
-
-        const data =
-            dashboardData.verticals?.[
-                vertical.key
-            ] || {};
-
-
-        const allocationPercent =
-            number(data.percent);
-
+        const percent =
+            Number(vertical.percent) || 0;
 
         const capital =
-            totalCapital *
-            allocationPercent /
-            100;
-
+            totalCapital * percent / 100;
 
         const card =
             document.createElement("div");
 
-
         card.className =
-            `allocation-card ${vertical.key}`;
-
+            `allocation-card ${department.className}`;
 
         card.innerHTML = `
-
-            <div class="card-head">
-                ${escapeHTML(vertical.name)}
+            <div class="allocation-title">
+                ${escapeHTML(department.name)}
             </div>
 
-            <div class="percent">
-                ${percent(allocationPercent)}
+            <div class="allocation-percent">
+                ${formatNumber(percent)}%
             </div>
 
-            <div class="amount">
-                ${money(capital)}
+            <div class="allocation-capital">
+                ${formatINR(capital)}
             </div>
         `;
-
 
         container.appendChild(card);
     });
@@ -353,200 +281,218 @@ function renderAllocationCards() {
 
 
 /* =========================================================
-   MAIN CHARTS
+   DONUT CHART
 ========================================================= */
 
-function renderMainCharts() {
-
-    renderDonut();
-
-    renderCapitalBars();
-}
-
-
-/* =========================================================
-   DONUT
-========================================================= */
-
-function renderDonut() {
+function renderDonut(
+    data,
+    totalCapital
+) {
 
     const donut =
-        document.getElementById("donut");
+        $("donut");
 
     const legend =
-        document.getElementById("legend");
+        $("legend");
 
+    const departments = [
+        {
+            key: "trading",
+            name: "Trading",
+            className: "trading"
+        },
+        {
+            key: "investment",
+            name: "Investment",
+            className: "investment"
+        },
+        {
+            key: "reserve",
+            name: "Reserve",
+            className: "reserve"
+        },
+        {
+            key: "rnd",
+            name: "R&D",
+            className: "rnd"
+        }
+    ];
 
-    if (!donut || !legend) {
-        return;
+    let currentAngle = 0;
+
+    const colors = [
+        "#2f75b5",
+        "#70ad47",
+        "#ffc000",
+        "#7030a0"
+    ];
+
+    const segments = [];
+
+    departments.forEach(
+        (department, index) => {
+
+            const percent =
+                Number(
+                    data?.verticals?.[department.key]?.percent
+                ) || 0;
+
+            const start =
+                currentAngle;
+
+            const end =
+                currentAngle + percent * 3.6;
+
+            if (percent > 0) {
+
+                segments.push(
+                    `${colors[index]} ${start}deg ${end}deg`
+                );
+            }
+
+            currentAngle = end;
+        }
+    );
+
+    if (segments.length > 0) {
+
+        donut.style.background =
+            `conic-gradient(${segments.join(",")})`;
+
+    } else {
+
+        donut.style.background =
+            "#e5e5e5";
     }
-
-
-    let start = 0;
-
-    const parts = [];
-
-
-    VERTICALS.forEach(vertical => {
-
-        const value =
-            number(
-                dashboardData
-                    .verticals?.[
-                        vertical.key
-                    ]?.percent
-            );
-
-
-        const end =
-            start + value;
-
-
-        parts.push(
-            `${vertical.color} ${start}% ${end}%`
-        );
-
-
-        start = end;
-    });
-
-
-    donut.style.background =
-        parts.length
-            ? `conic-gradient(${parts.join(",")})`
-            : "#ddd";
 
 
     legend.innerHTML = "";
 
+    departments.forEach(
+        (department, index) => {
 
-    VERTICALS.forEach(vertical => {
+            const percent =
+                Number(
+                    data?.verticals?.[department.key]?.percent
+                ) || 0;
 
-        const data =
-            dashboardData
-                .verticals?.[
-                    vertical.key
-                ] || {};
+            const capital =
+                totalCapital * percent / 100;
 
+            const row =
+                document.createElement("div");
 
-        const row =
-            document.createElement("div");
+            row.className =
+                "legend-item";
 
+            row.innerHTML = `
+                <span
+                    class="legend-dot"
+                    style="background:${colors[index]}"
+                ></span>
 
-        row.innerHTML = `
+                <span>
+                    ${escapeHTML(department.name)}
+                </span>
 
-            <span
-                class="dot"
-                style="background:${vertical.color}"
-            ></span>
+                <b>
+                    ${formatNumber(percent)}%
+                </b>
+            `;
 
-            <span>
-                ${escapeHTML(vertical.name)}
-            </span>
-
-            <b>
-                ${percent(data.percent)}
-            </b>
-        `;
-
-
-        legend.appendChild(row);
-    });
+            legend.appendChild(row);
+        }
+    );
 }
 
 
 /* =========================================================
-   MAIN CAPITAL BAR CHART
+   CAPITAL BAR CHART
 ========================================================= */
 
-function renderCapitalBars() {
+function renderCapitalBars(
+    data,
+    totalCapital
+) {
 
-    const bars =
-        document.getElementById("bars");
+    const container =
+        $("bars");
 
+    container.innerHTML = "";
 
-    if (!bars) {
-        return;
-    }
-
-
-    bars.innerHTML = "";
-
-
-    const totalCapital =
-        number(
-            dashboardData.capital?.total
-        );
-
+    const departments = [
+        {
+            key: "trading",
+            name: "Trading"
+        },
+        {
+            key: "investment",
+            name: "Investment"
+        },
+        {
+            key: "reserve",
+            name: "Reserve"
+        },
+        {
+            key: "rnd",
+            name: "R&D"
+        }
+    ];
 
     const maxCapital =
         Math.max(
-            totalCapital,
-            ...VERTICALS.map(
-                vertical =>
+            totalCapital * 0.5,
+            ...departments.map(
+                d =>
                     totalCapital *
-                    number(
-                        dashboardData
-                            .verticals?.[
-                                vertical.key
-                            ]?.percent
-                    ) /
-                    100
+                    (Number(
+                        data?.verticals?.[d.key]?.percent
+                    ) || 0) / 100
             ),
             1
         );
 
+    departments.forEach(
+        (department) => {
 
-    VERTICALS.forEach(vertical => {
+            const percent =
+                Number(
+                    data?.verticals?.[department.key]?.percent
+                ) || 0;
 
-        const data =
-            dashboardData
-                .verticals?.[
-                    vertical.key
-                ] || {};
+            const capital =
+                totalCapital * percent / 100;
 
+            const height =
+                Math.max(
+                    4,
+                    (capital / maxCapital) * 100
+                );
 
-        const capital =
-            totalCapital *
-            number(data.percent) /
-            100;
+            const group =
+                document.createElement("div");
 
+            group.className =
+                "bar-group";
 
-        const height =
-            capital /
-            maxCapital *
-            100;
+            group.innerHTML = `
+                <div class="bar-value">
+                    ${formatINR(capital)}
+                </div>
 
+                <div
+                    class="bar"
+                    style="height:${height}%"
+                ></div>
 
-        const group =
-            document.createElement("div");
+                <div class="bar-label">
+                    ${escapeHTML(department.name)}
+                </div>
+            `;
 
-
-        group.className =
-            "bar-group";
-
-
-        group.innerHTML = `
-
-            <div
-                class="bar ${vertical.barClass}"
-                style="height:${Math.max(height, 2)}%"
-            >
-                <span>
-                    ${formatShortMoney(capital)}
-                </span>
-            </div>
-
-            <small>
-                ${escapeHTML(
-                    vertical.name
-                )}
-            </small>
-        `;
-
-
-        bars.appendChild(group);
-    });
+            container.appendChild(group);
+        }
+    );
 }
 
 
@@ -554,440 +500,375 @@ function renderCapitalBars() {
    DEPARTMENT TABLES
 ========================================================= */
 
-function renderDepartmentTables() {
+function renderDepartmentTables(
+    data,
+    totalCapital
+) {
 
     const container =
-        document.getElementById(
-            "tablesGrid"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
+        $("tablesGrid");
 
     container.innerHTML = "";
 
+    const departments = [
+        {
+            key: "trading",
+            name: "TRADING",
+            className: "trading-box"
+        },
+        {
+            key: "investment",
+            name: "INVESTMENT",
+            className: "investment-box"
+        },
+        {
+            key: "reserve",
+            name: "RESERVE",
+            className: "reserve-box"
+        },
+        {
+            key: "rnd",
+            name: "RESEARCH & DEVELOPMENT",
+            className: "rnd-box"
+        }
+    ];
 
-    VERTICALS.forEach(vertical => {
+    departments.forEach(
+        (department) => {
 
-        const data =
-            dashboardData
-                .verticals?.[
-                    vertical.key
-                ] || {};
+            const vertical =
+                data?.verticals?.[department.key] || {};
+
+            const departmentPercent =
+                Number(vertical.percent) || 0;
+
+            const departmentCapital =
+                totalCapital *
+                departmentPercent / 100;
+
+            const items =
+                Array.isArray(vertical.items)
+                    ? vertical.items
+                    : [];
+
+            const departmentElement =
+                document.createElement("div");
+
+            departmentElement.className =
+                `department ${department.className}`;
 
 
-        const department =
-            createDepartment(
-                vertical,
-                data
+            /* =================================================
+               HEADER
+            ================================================= */
+
+            const heading =
+                document.createElement("h2");
+
+            heading.textContent =
+                department.name;
+
+            departmentElement.appendChild(
+                heading
             );
 
 
-        container.appendChild(
-            department
-        );
-    });
-}
+            /* =================================================
+               ALLOCATION TABLE
+            ================================================= */
 
+            const table =
+                document.createElement("table");
 
-/* =========================================================
-   CREATE DEPARTMENT
-========================================================= */
+            table.className =
+                "allocation-table";
 
-function createDepartment(
-    vertical,
-    data
-) {
-
-    const department =
-        document.createElement("div");
-
-
-    department.className =
-        `department ${vertical.boxClass}`;
-
-
-    const totalCapital =
-        number(
-            dashboardData
-                .capital?.total
-        );
-
-
-    const departmentCapital =
-        totalCapital *
-        number(data.percent) /
-        100;
-
-
-    const items =
-        Array.isArray(data.items)
-            ? data.items
-            : [];
-
-
-    department.innerHTML = `
-
-        <h2>
-            ${escapeHTML(vertical.name)}
-
-            <span>
-                (${percent(data.percent)})
-            </span>
-        </h2>
-
-        <table>
-
-            <thead>
-                <tr>
-                    <th>Particular</th>
-                    <th>Allocation %</th>
-                    <th>Capital (₹)</th>
-                </tr>
-            </thead>
-
-            <tbody class="allocation-body"></tbody>
-
-            <tfoot>
-                <tr class="total-row">
-                    <th>TOTAL</th>
-                    <th class="total-percent"></th>
-                    <th class="total-capital"></th>
-                </tr>
-
-                <tr class="department-status">
-                    <th>STATUS</th>
-                    <th class="department-status-percent"></th>
-                    <th class="department-status-capital"></th>
-                </tr>
-            </tfoot>
-
-        </table>
-
-        <div class="item-chart">
-
-            <div class="item-chart-title">
-                ${escapeHTML(vertical.name)}
-                Allocation
-            </div>
-
-            <div class="item-bars"></div>
-
-        </div>
-
-        <div class="roi-table-wrap">
-
-            <table class="roi-table">
-
+            table.innerHTML = `
                 <thead>
-
                     <tr>
-
-                        <th>Particular</th>
-
-                        <th>Capital (₹)</th>
-
-                        <th>
-                            Last Week<br>
-                            ROI %
-                        </th>
-
-                        <th>
-                            Last Week<br>
-                            ROI (₹)
-                        </th>
-
-                        <th>
-                            Last Month<br>
-                            ROI %
-                        </th>
-
-                        <th>
-                            Last Month<br>
-                            ROI (₹)
-                        </th>
-
+                        <th>PARTICULAR</th>
+                        <th>ALLOCATION %</th>
+                        <th>CAPITAL</th>
                     </tr>
-
                 </thead>
 
-                <tbody class="roi-body"></tbody>
+                <tbody></tbody>
+            `;
 
-                <tfoot>
+            const tbody =
+                table.querySelector("tbody");
 
-                    <tr class="roi-total">
+            let allocationTotal = 0;
 
-                        <th>TOTAL</th>
+            items.forEach(
+                (item) => {
 
-                        <th class="roi-total-capital"></th>
+                    const normalized =
+                        normalizeItem(item);
 
-                        <th class="roi-total-week-percent"></th>
+                    const name =
+                        normalized.name;
 
-                        <th class="roi-total-week-amount"></th>
+                    const percent =
+                        normalized.percent;
 
-                        <th class="roi-total-month-percent"></th>
+                    const capital =
+                        totalCapital *
+                        percent / 100;
 
-                        <th class="roi-total-month-amount"></th>
+                    allocationTotal +=
+                        percent;
 
-                    </tr>
+                    const row =
+                        document.createElement("tr");
 
-                </tfoot>
+                    row.innerHTML = `
+                        <td>
+                            ${escapeHTML(name)}
+                        </td>
 
-            </table>
+                        <td>
+                            ${formatNumber(percent)}%
+                        </td>
 
-        </div>
+                        <td>
+                            ${formatINR(capital)}
+                        </td>
+                    `;
 
-        <div class="purpose">
-
-            <b>Purpose</b>
-
-            <p>
-                ${escapeHTML(
-                    data.purpose || ""
-                )}
-            </p>
-
-        </div>
-    `;
+                    tbody.appendChild(row);
+                }
+            );
 
 
-    renderAllocationTable(
-        department,
-        items,
-        departmentCapital
+            /* =================================================
+               TOTAL ROW
+            ================================================= */
+
+            const totalRow =
+                document.createElement("tr");
+
+            totalRow.className =
+                "total-row";
+
+            totalRow.innerHTML = `
+                <td>
+                    TOTAL
+                </td>
+
+                <td>
+                    ${formatNumber(allocationTotal)}%
+                </td>
+
+                <td>
+                    ${formatINR(
+                        totalCapital *
+                        allocationTotal / 100
+                    )}
+                </td>
+            `;
+
+            tbody.appendChild(totalRow);
+
+
+            /* =================================================
+               STATUS ROW
+            ================================================= */
+
+            const statusDifference =
+                departmentPercent -
+                allocationTotal;
+
+            const statusRow =
+                document.createElement("tr");
+
+            statusRow.className =
+                "department-status-row";
+
+            let statusText = "";
+            let statusClass = "";
+
+            if (
+                Math.abs(statusDifference) < 0.01
+            ) {
+
+                statusText =
+                    "FULLY ALLOCATED";
+
+                statusClass =
+                    "status-full";
+
+            } else if (
+                statusDifference > 0
+            ) {
+
+                statusText =
+                    `SURPLUS ${formatNumber(
+                        statusDifference
+                    )}%`;
+
+                statusClass =
+                    "status-surplus";
+
+            } else {
+
+                statusText =
+                    `DEFICIT ${formatNumber(
+                        Math.abs(statusDifference)
+                    )}%`;
+
+                statusClass =
+                    "status-deficit";
+            }
+
+            const statusCapital =
+                totalCapital *
+                Math.abs(statusDifference) / 100;
+
+            statusRow.innerHTML = `
+                <td>
+                    <b class="${statusClass}">
+                        ${statusText}
+                    </b>
+                </td>
+
+                <td>
+                    ${formatNumber(
+                        Math.abs(statusDifference)
+                    )}%
+                </td>
+
+                <td>
+                    ${formatINR(statusCapital)}
+                </td>
+            `;
+
+            tbody.appendChild(
+                statusRow
+            );
+
+            departmentElement.appendChild(
+                table
+            );
+
+
+            /* =================================================
+               ITEM BAR CHART
+            ================================================= */
+
+            const chart =
+                createItemChart(
+                    department,
+                    items,
+                    totalCapital
+                );
+
+            departmentElement.appendChild(
+                chart
+            );
+
+
+            /* =================================================
+               ROI TABLE
+            ================================================= */
+
+            const roiSection =
+                createROITable(
+                    items,
+                    totalCapital
+                );
+
+            departmentElement.appendChild(
+                roiSection
+            );
+
+
+            /* =================================================
+               PURPOSE
+            ================================================= */
+
+            const purpose =
+                document.createElement("div");
+
+            purpose.className =
+                "purpose";
+
+            purpose.innerHTML = `
+                <b>PURPOSE</b>
+
+                <div>
+                    ${escapeHTML(
+                        vertical.purpose || ""
+                    )}
+                </div>
+            `;
+
+            departmentElement.appendChild(
+                purpose
+            );
+
+
+            container.appendChild(
+                departmentElement
+            );
+        }
     );
-
-
-    renderItemChart(
-        department,
-        items
-    );
-
-
-    renderROITable(
-        department,
-        items,
-        totalCapital
-    );
-
-
-    return department;
 }
 
 
 /* =========================================================
-   ALLOCATION TABLE
+   NORMALIZE ITEM
 ========================================================= */
 
-function renderAllocationTable(
-    department,
-    items,
-    departmentCapital
-) {
-
-    const body =
-        department.querySelector(
-            ".allocation-body"
-        );
-
-
-    let totalPercent = 0;
-
-    let totalCapital = 0;
-
-
-    items.forEach(item => {
-
-        const name =
-            String(item?.[0] ?? "");
-
-
-        const allocation =
-            number(item?.[1]);
-
-
-        const capital =
-            departmentCapital *
-            allocation /
-            100;
-
-
-        totalPercent +=
-            allocation;
-
-
-        totalCapital +=
-            capital;
-
-
-        const row =
-            document.createElement("tr");
-
-
-        row.innerHTML = `
-
-            <td>
-                ${escapeHTML(name)}
-            </td>
-
-            <td>
-                ${percent(allocation)}
-            </td>
-
-            <td>
-                ${money(capital)}
-            </td>
-        `;
-
-
-        body.appendChild(row);
-    });
-
-
-    department.querySelector(
-        ".total-percent"
-    ).textContent =
-        percent(totalPercent);
-
-
-    department.querySelector(
-        ".total-capital"
-    ).textContent =
-        money(totalCapital);
-
-
-    const targetPercent =
-        getDepartmentPercent(
-            department
-        );
-
-
-    const difference =
-        totalPercent -
-        targetPercent;
-
-
-    const statusRow =
-        department.querySelector(
-            ".department-status"
-        );
-
-
-    const statusPercent =
-        department.querySelector(
-            ".department-status-percent"
-        );
-
-
-    const statusCapital =
-        department.querySelector(
-            ".department-status-capital"
-        );
-
-
-    if (Math.abs(difference) < 0.001) {
-
-        statusRow.className =
-            "department-status fully-allocated";
-
-
-        statusPercent.textContent =
-            "0%";
-
-
-        statusCapital.textContent =
-            "₹0";
-
-
-        statusRow.firstElementChild
-            .textContent =
-            "FULLY ALLOCATED";
-
-
-    } else if (difference > 0) {
-
-        const surplusCapital =
-            departmentCapital *
-            difference /
-            100;
-
-
-        statusRow.className =
-            "department-status surplus";
-
-
-        statusRow.firstElementChild
-            .textContent =
-            "SURPLUS";
-
-
-        statusPercent.textContent =
-            "+" + percent(difference);
-
-
-        statusCapital.textContent =
-            "+" + money(surplusCapital);
-
-
-    } else {
-
-        const deficit =
-            Math.abs(difference);
-
-
-        const deficitCapital =
-            departmentCapital *
-            deficit /
-            100;
-
-
-        statusRow.className =
-            "department-status deficit";
-
-
-        statusRow.firstElementChild
-            .textContent =
-            "DEFICIT";
-
-
-        statusPercent.textContent =
-            "-" + percent(deficit);
-
-
-        statusCapital.textContent =
-            "-" + money(deficitCapital);
+function normalizeItem(item) {
+
+    if (Array.isArray(item)) {
+
+        return {
+            name: item[0] ?? "Item",
+            percent: Number(item[1]) || 0,
+            weekROI: Number(item[2]) || 0,
+            monthROI: Number(item[3]) || 0
+        };
     }
-}
 
+    if (
+        item &&
+        typeof item === "object"
+    ) {
 
-/* =========================================================
-   GET DEPARTMENT TARGET
-========================================================= */
+        return {
+            name: item.name || "Item",
 
-function getDepartmentPercent(
-    department
-) {
+            percent:
+                Number(
+                    item.percent ??
+                    item.allocation ??
+                    0
+                ) || 0,
 
-    const key =
-        VERTICALS.find(
-            vertical =>
-                department.classList.contains(
-                    vertical.boxClass
-                )
-        )?.key;
+            weekROI:
+                Number(
+                    item.weekROI ??
+                    item.lastWeekROI ??
+                    0
+                ) || 0,
 
+            monthROI:
+                Number(
+                    item.monthROI ??
+                    item.lastMonthROI ??
+                    0
+                ) || 0
+        };
+    }
 
-    return key
-        ? number(
-            dashboardData
-                .verticals?.[
-                    key
-                ]?.percent
-        )
-        : 0;
+    return {
+        name: "Item",
+        percent: 0,
+        weekROI: 0,
+        monthROI: 0
+    };
 }
 
 
@@ -995,122 +876,107 @@ function getDepartmentPercent(
    ITEM BAR CHART
 ========================================================= */
 
-function renderItemChart(
+function createItemChart(
     department,
-    items
+    items,
+    totalCapital
 ) {
 
+    const chart =
+        document.createElement("div");
+
+    chart.className =
+        "item-chart";
+
+    const title =
+        document.createElement("div");
+
+    title.className =
+        "item-chart-title";
+
+    title.textContent =
+        `${department.name} - ALLOCATION`;
+
+    chart.appendChild(title);
+
+
     const bars =
-        department.querySelector(
-            ".item-bars"
-        );
+        document.createElement("div");
+
+    bars.className =
+        "item-bars";
 
 
-    if (!bars) {
-        return;
-    }
+    const normalizedItems =
+        items.map(normalizeItem);
 
-
-    bars.innerHTML = "";
-
-
-    if (!items.length) {
-
-        bars.innerHTML =
-            `<div style="
-                width:100%;
-                text-align:center;
-                padding:80px 10px;
-                color:#777;
-            ">
-                No items added
-            </div>`;
-
-        return;
-    }
-
-
-    const max =
+    const maxPercent =
         Math.max(
-            ...items.map(
-                item =>
-                    number(item?.[1])
+            ...normalizedItems.map(
+                item => item.percent
             ),
             1
         );
 
 
-    items.forEach(item => {
+    normalizedItems.forEach(
+        (item) => {
 
-        const name =
-            String(item?.[0] ?? "");
+            const group =
+                document.createElement("div");
 
+            group.className =
+                "item-bar-group";
 
-        const allocation =
-            number(item?.[1]);
+            const value =
+                document.createElement("div");
 
+            value.className =
+                "item-bar-value";
 
-        const height =
-            allocation /
-            max *
-            100;
-
-
-        const group =
-            document.createElement("div");
-
-
-        group.className =
-            "item-bar-group";
+            value.textContent =
+                `${formatNumber(item.percent)}%`;
 
 
-        group.innerHTML = `
+            const bar =
+                document.createElement("div");
 
-            <div class="item-bar-value">
-                ${percent(allocation)}
-            </div>
+            bar.className =
+                "item-bar";
 
-            <div
-                class="item-bar"
-                style="
-                    height:${Math.max(height, 3)}%;
-                    background:${getDepartmentColor(department)};
-                "
-            ></div>
+            const height =
+                Math.max(
+                    8,
+                    (item.percent /
+                        maxPercent) * 100
+                );
 
-            <div class="item-bar-label">
-                ${escapeHTML(name)}
-            </div>
-        `;
+            bar.style.height =
+                `${height}%`;
 
 
-        bars.appendChild(group);
-    });
-}
+            const label =
+                document.createElement("div");
+
+            label.className =
+                "item-bar-label";
+
+            label.textContent =
+                item.name;
 
 
-/* =========================================================
-   DEPARTMENT COLOR
-========================================================= */
+            group.appendChild(value);
+            group.appendChild(bar);
+            group.appendChild(label);
 
-function getDepartmentColor(
-    department
-) {
-
-    for (const vertical of VERTICALS) {
-
-        if (
-            department.classList.contains(
-                vertical.boxClass
-            )
-        ) {
-
-            return vertical.color;
+            bars.appendChild(group);
         }
-    }
+    );
 
 
-    return "#438ddd";
+    chart.appendChild(bars);
+
+    return chart;
 }
 
 
@@ -1118,369 +984,225 @@ function getDepartmentColor(
    ROI TABLE
 ========================================================= */
 
-function renderROITable(
-    department,
+function createROITable(
     items,
     totalCapital
 ) {
 
-    const body =
-        department.querySelector(
-            ".roi-body"
-        );
+    const wrapper =
+        document.createElement("div");
+
+    wrapper.className =
+        "roi-section";
 
 
-    let totalItemCapital = 0;
+    const title =
+        document.createElement("div");
 
-    let totalWeekAmount = 0;
+    title.className =
+        "roi-title";
 
-    let totalMonthAmount = 0;
+    title.textContent =
+        "ROI PERFORMANCE";
 
-
-    items.forEach(item => {
-
-        const name =
-            String(item?.[0] ?? "");
-
-
-        const allocation =
-            number(item?.[1]);
+    wrapper.appendChild(title);
 
 
-        const weekROI =
-            number(item?.[2]);
+    const tableWrap =
+        document.createElement("div");
+
+    tableWrap.className =
+        "roi-table-wrap";
 
 
-        const monthROI =
-            number(item?.[3]);
+    const table =
+        document.createElement("table");
+
+    table.className =
+        "roi-table";
 
 
-        /*
-           Capital is calculated from
-           TOTAL FUND CAPITAL.
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>PARTICULAR</th>
+                <th>CAPITAL (₹)</th>
+                <th>LAST WEEK ROI %</th>
+                <th>LAST WEEK ROI (₹)</th>
+                <th>LAST MONTH ROI %</th>
+                <th>LAST MONTH ROI (₹)</th>
+            </tr>
+        </thead>
 
-           Example:
-
-           Total = ₹1 crore
-           Allocation = 5%
-
-           Capital = ₹5 lakh
-        */
-
-        const capital =
-            totalCapital *
-            allocation /
-            100;
+        <tbody></tbody>
+    `;
 
 
-        const weekAmount =
-            capital *
-            weekROI /
-            100;
+    const tbody =
+        table.querySelector("tbody");
 
 
-        const monthAmount =
-            capital *
-            monthROI /
-            100;
+    let totalCapitalAllocated = 0;
+    let totalWeekROI = 0;
+    let totalMonthROI = 0;
 
 
-        totalItemCapital +=
-            capital;
+    items.forEach(
+        (item) => {
+
+            const normalized =
+                normalizeItem(item);
+
+            const capital =
+                totalCapital *
+                normalized.percent / 100;
+
+            const weekROIAmount =
+                capital *
+                normalized.weekROI / 100;
+
+            const monthROIAmount =
+                capital *
+                normalized.monthROI / 100;
+
+            totalCapitalAllocated +=
+                capital;
+
+            totalWeekROI +=
+                weekROIAmount;
+
+            totalMonthROI +=
+                monthROIAmount;
 
 
-        totalWeekAmount +=
-            weekAmount;
+            const row =
+                document.createElement("tr");
+
+            row.innerHTML = `
+                <td>
+                    ${escapeHTML(
+                        normalized.name
+                    )}
+                </td>
+
+                <td>
+                    ${formatINR(capital)}
+                </td>
+
+                <td>
+                    ${formatNumber(
+                        normalized.weekROI
+                    )}%
+                </td>
+
+                <td>
+                    ${formatINR(
+                        weekROIAmount
+                    )}
+                </td>
+
+                <td>
+                    ${formatNumber(
+                        normalized.monthROI
+                    )}%
+                </td>
+
+                <td>
+                    ${formatINR(
+                        monthROIAmount
+                    )}
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        }
+    );
 
 
-        totalMonthAmount +=
-            monthAmount;
+    /* =================================================
+       ROI TOTAL
+    ================================================= */
 
+    const totalWeekROIPercent =
+        totalCapitalAllocated > 0
+            ? totalWeekROI /
+              totalCapitalAllocated *
+              100
+            : 0;
 
-        const row =
-            document.createElement("tr");
-
-
-        row.innerHTML = `
-
-            <td>
-                ${escapeHTML(name)}
-            </td>
-
-            <td>
-                ${money(capital)}
-            </td>
-
-            <td class="${roiClass(weekROI)}">
-                ${formatROI(weekROI)}
-            </td>
-
-            <td class="${roiClass(weekAmount)}">
-                ${moneyWithSign(weekAmount)}
-            </td>
-
-            <td class="${roiClass(monthROI)}">
-                ${formatROI(monthROI)}
-            </td>
-
-            <td class="${roiClass(monthAmount)}">
-                ${moneyWithSign(monthAmount)}
-            </td>
-        `;
-
-
-        body.appendChild(row);
-    });
-
-
-    const totalAllocationPercent =
-        items.reduce(
-            (
-                total,
-                item
-            ) =>
-                total +
-                number(item?.[1]),
-            0
-        );
-
-
-    /*
-       Weighted average ROI
-    */
-
-    const totalWeekPercent =
-        totalItemCapital
-            ? totalWeekAmount /
-              totalItemCapital *
+    const totalMonthROIPercent =
+        totalCapitalAllocated > 0
+            ? totalMonthROI /
+              totalCapitalAllocated *
               100
             : 0;
 
 
-    const totalMonthPercent =
-        totalItemCapital
-            ? totalMonthAmount /
-              totalItemCapital *
-              100
-            : 0;
+    const totalRow =
+        document.createElement("tr");
+
+    totalRow.className =
+        "roi-total-row";
+
+    totalRow.innerHTML = `
+        <td>
+            TOTAL
+        </td>
+
+        <td>
+            ${formatINR(
+                totalCapitalAllocated
+            )}
+        </td>
+
+        <td>
+            ${formatNumber(
+                totalWeekROIPercent
+            )}%
+        </td>
+
+        <td>
+            ${formatINR(
+                totalWeekROI
+            )}
+        </td>
+
+        <td>
+            ${formatNumber(
+                totalMonthROIPercent
+            )}%
+        </td>
+
+        <td>
+            ${formatINR(
+                totalMonthROI
+            )}
+        </td>
+    `;
+
+    tbody.appendChild(
+        totalRow
+    );
 
 
-    const capitalCell =
-        department.querySelector(
-            ".roi-total-capital"
-        );
+    tableWrap.appendChild(
+        table
+    );
+
+    wrapper.appendChild(
+        tableWrap
+    );
 
 
-    const weekPercentCell =
-        department.querySelector(
-            ".roi-total-week-percent"
-        );
-
-
-    const weekAmountCell =
-        department.querySelector(
-            ".roi-total-week-amount"
-        );
-
-
-    const monthPercentCell =
-        department.querySelector(
-            ".roi-total-month-percent"
-        );
-
-
-    const monthAmountCell =
-        department.querySelector(
-            ".roi-total-month-amount"
-        );
-
-
-    capitalCell.textContent =
-        money(totalItemCapital);
-
-
-    weekPercentCell.textContent =
-        formatROI(totalWeekPercent);
-
-
-    weekAmountCell.textContent =
-        moneyWithSign(totalWeekAmount);
-
-
-    monthPercentCell.textContent =
-        formatROI(totalMonthPercent);
-
-
-    monthAmountCell.textContent =
-        moneyWithSign(totalMonthAmount);
+    return wrapper;
 }
-
-
-/* =========================================================
-   ROI FORMAT
-========================================================= */
-
-function formatROI(value) {
-
-    const n =
-        number(value);
-
-
-    if (n > 0) {
-
-        return "+" +
-            n.toLocaleString(
-                "en-IN",
-                {
-                    maximumFractionDigits: 2
-                }
-            ) +
-            "%";
-    }
-
-
-    if (n < 0) {
-
-        return n.toLocaleString(
-            "en-IN",
-            {
-                maximumFractionDigits: 2
-            }
-        ) + "%";
-    }
-
-
-    return "0%";
-}
-
-
-/* =========================================================
-   MONEY WITH SIGN
-========================================================= */
-
-function moneyWithSign(value) {
-
-    const n =
-        number(value);
-
-
-    if (n > 0) {
-
-        return "+" +
-            money(n);
-    }
-
-
-    if (n < 0) {
-
-        return "-" +
-            money(Math.abs(n));
-    }
-
-
-    return "₹0";
-}
-
-
-/* =========================================================
-   ROI CLASS
-========================================================= */
-
-function roiClass(value) {
-
-    const n =
-        number(value);
-
-
-    if (n > 0) {
-        return "roi-positive";
-    }
-
-
-    if (n < 0) {
-        return "roi-negative";
-    }
-
-
-    return "";
-}
-
-
-/* =========================================================
-   SHORT MONEY
-========================================================= */
-
-function formatShortMoney(value) {
-
-    const n =
-        number(value);
-
-
-    if (n >= 10000000) {
-
-        return "₹" +
-            (n / 10000000)
-                .toFixed(1)
-                .replace(".0", "") +
-            "Cr";
-    }
-
-
-    if (n >= 100000) {
-
-        return "₹" +
-            (n / 100000)
-                .toFixed(1)
-                .replace(".0", "") +
-            "L";
-    }
-
-
-    if (n >= 1000) {
-
-        return "₹" +
-            (n / 1000)
-                .toFixed(1)
-                .replace(".0", "") +
-            "K";
-    }
-
-
-    return money(n);
-}
-
-
-/* =========================================================
-   SET TEXT
-========================================================= */
-
-function setText(
-    id,
-    value
-) {
-
-    const element =
-        document.getElementById(id);
-
-
-    if (element) {
-
-        element.textContent =
-            value ?? "";
-    }
-}
-
-
-/* =========================================================
-   START
-========================================================= */
-
-loadDashboard();
 
 
 /* =========================================================
    AUTO REFRESH
 ========================================================= */
+
+loadDashboard();
 
 setInterval(
     loadDashboard,
