@@ -1,658 +1,977 @@
-let data = null;
+const loginScreen = document.getElementById("loginScreen");
+const adminApp = document.getElementById("adminApp");
 
-const $ = s => document.querySelector(s);
+const loginForm = document.getElementById("loginForm");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const loginError = document.getElementById("loginError");
 
-const keys = [
-    "trading",
-    "investment",
-    "reserve",
-    "rnd"
-];
+const editSections = document.getElementById("editSections");
+const saveBtn = document.getElementById("saveBtn");
+const saveMessage = document.getElementById("saveMessage");
+const logoutBtn = document.getElementById("logoutBtn");
 
-const labels = {
-    trading: "Trading",
-    investment: "Investment",
-    reserve: "Reserve",
-    rnd: "Research & Development"
-};
+let dashboardData = null;
 
-const esc = s =>
-    String(s ?? "").replace(
-        /[&<>"']/g,
-        c => ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;"
-        }[c])
+
+/* =========================================================
+   API
+========================================================= */
+
+async function api(url, options = {}) {
+
+    const response = await fetch(
+        url,
+        {
+            credentials: "same-origin",
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            }
+        }
     );
 
 
-/* =====================================================
-   GET DATA
-===================================================== */
+    let result = {};
 
-function get(o, p) {
+    try {
+        result = await response.json();
+    } catch (e) {
+        result = {};
+    }
 
-    return p
-        .split(".")
-        .reduce(
-            (a, k) => a?.[k],
-            o
+
+    if (!response.ok) {
+
+        throw new Error(
+            result.error ||
+            "Request failed"
         );
+    }
+
+
+    return result;
 }
 
 
-/* =====================================================
-   SET DATA
-===================================================== */
+/* =========================================================
+   CHECK LOGIN
+========================================================= */
 
-function set(o, p, v) {
+async function checkLogin() {
 
-    const a = p.split(".");
+    try {
 
-    const last = a.pop();
+        const result =
+            await api("/api/me");
 
-    const target = a.reduce(
-        (x, k) => x[k],
-        o
-    );
 
-    target[last] = v;
+        if (result.authenticated) {
+
+            showAdmin();
+
+            await loadData();
+
+        } else {
+
+            showLogin();
+        }
+
+    } catch (error) {
+
+        showLogin();
+    }
 }
 
 
-/* =====================================================
-   BIND GENERAL INPUTS
-===================================================== */
+/* =========================================================
+   SHOW LOGIN
+========================================================= */
 
-function bind() {
+function showLogin() {
+
+    loginScreen.classList.remove("hidden");
+    adminApp.classList.add("hidden");
+
+    usernameInput.focus();
+}
+
+
+/* =========================================================
+   SHOW ADMIN
+========================================================= */
+
+function showAdmin() {
+
+    loginScreen.classList.add("hidden");
+    adminApp.classList.remove("hidden");
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+loginForm.addEventListener(
+    "submit",
+
+    async function (event) {
+
+        event.preventDefault();
+
+        loginError.textContent = "";
+
+        const username =
+            usernameInput.value.trim();
+
+        const password =
+            passwordInput.value;
+
+
+        try {
+
+            await api(
+                "/api/login",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                }
+            );
+
+
+            passwordInput.value = "";
+
+            showAdmin();
+
+            await loadData();
+
+
+        } catch (error) {
+
+            loginError.textContent =
+                error.message ||
+                "Login failed";
+        }
+    }
+);
+
+
+/* =========================================================
+   LOAD DATA
+========================================================= */
+
+async function loadData() {
+
+    try {
+
+        const result =
+            await api("/api/data");
+
+        dashboardData =
+            normalizeData(result);
+
+        bindBasicFields();
+
+        buildEditors();
+
+    } catch (error) {
+
+        showMessage(
+            error.message ||
+            "Unable to load dashboard data",
+            true
+        );
+    }
+}
+
+
+/* =========================================================
+   NORMALIZE DATA
+========================================================= */
+
+function normalizeItem(item) {
+
+    if (!Array.isArray(item)) {
+
+        return [
+            "New Item",
+            0,
+            0,
+            0
+        ];
+    }
+
+
+    return [
+        String(item[0] ?? ""),
+        Number(item[1]) || 0,
+        Number(item[2]) || 0,
+        Number(item[3]) || 0
+    ];
+}
+
+
+function normalizeData(data) {
+
+    const result =
+        data || {};
+
+
+    if (!result.meta) {
+        result.meta = {};
+    }
+
+
+    if (!result.capital) {
+        result.capital = {};
+    }
+
+
+    if (!result.verticals) {
+        result.verticals = {};
+    }
+
+
+    for (const key of [
+        "trading",
+        "investment",
+        "reserve",
+        "rnd"
+    ]) {
+
+        if (!result.verticals[key]) {
+
+            result.verticals[key] = {
+                percent: 0,
+                purpose: "",
+                items: []
+            };
+        }
+
+
+        const vertical =
+            result.verticals[key];
+
+
+        if (!Array.isArray(vertical.items)) {
+            vertical.items = [];
+        }
+
+
+        vertical.items =
+            vertical.items.map(
+                normalizeItem
+            );
+    }
+
+
+    return result;
+}
+
+
+/* =========================================================
+   BASIC FIELDS
+========================================================= */
+
+function bindBasicFields() {
+
+    if (!dashboardData) {
+        return;
+    }
+
 
     document
         .querySelectorAll("[data-path]")
-        .forEach(el => {
+        .forEach(input => {
 
-            el.value =
-                get(
-                    data,
-                    el.dataset.path
-                ) ?? "";
-
-
-            el.oninput = () => {
-
-                set(
-                    data,
-                    el.dataset.path,
-                    el.type === "number"
-                        ? Number(el.value)
-                        : el.value
+            const value =
+                getPathValue(
+                    dashboardData,
+                    input.dataset.path
                 );
 
-            };
 
+            if (
+                value !== undefined &&
+                value !== null
+            ) {
+
+                input.value = value;
+            }
         });
 }
 
 
-/* =====================================================
-   BUILD ADMIN SECTIONS
-===================================================== */
+/* =========================================================
+   GET PATH
+========================================================= */
+
+function getPathValue(
+    object,
+    path
+) {
+
+    return path
+        .split(".")
+        .reduce(
+            (current, key) =>
+                current == null
+                    ? undefined
+                    : current[key],
+            object
+        );
+}
+
+
+/* =========================================================
+   SET PATH
+========================================================= */
+
+function setPathValue(
+    object,
+    path,
+    value
+) {
+
+    const parts =
+        path.split(".");
+
+    let current =
+        object;
+
+
+    for (
+        let i = 0;
+        i < parts.length - 1;
+        i++
+    ) {
+
+        if (
+            !current[parts[i]] ||
+            typeof current[parts[i]] !== "object"
+        ) {
+
+            current[parts[i]] = {};
+        }
+
+
+        current =
+            current[parts[i]];
+    }
+
+
+    current[
+        parts[parts.length - 1]
+    ] = value;
+}
+
+
+/* =========================================================
+   BUILD DEPARTMENT EDITORS
+========================================================= */
 
 function buildEditors() {
 
-    $("#editSections").innerHTML = keys
-        .map(k => {
-
-            return `
-
-                <section>
-
-                    <h3>
-                        ${labels[k]}
-                    </h3>
+    editSections.innerHTML = "";
 
 
-                    <div
-                        id="${k}Rows"
-                    ></div>
+    const departments = [
+        {
+            key: "trading",
+            title: "Trading",
+            className: "trading-box"
+        },
+
+        {
+            key: "investment",
+            title: "Investment",
+            className: "investment-box"
+        },
+
+        {
+            key: "reserve",
+            title: "Reserve",
+            className: "reserve-box"
+        },
+
+        {
+            key: "rnd",
+            title: "Research & Development",
+            className: "rnd-box"
+        }
+    ];
 
 
-                    <button
-                        type="button"
-                        class="add-row"
-                        data-add="${k}"
-                    >
-                        + Add Item
-                    </button>
+    departments.forEach(
+        department => {
+
+            const vertical =
+                dashboardData.verticals[
+                    department.key
+                ];
 
 
-                    <label>
-                        Purpose
+            const section =
+                document.createElement(
+                    "section"
+                );
 
-                        <textarea
-                            data-path="verticals.${k}.purpose"
-                        ></textarea>
+            section.className =
+                department.className;
 
-                    </label>
 
-                </section>
+            section.innerHTML = `
+                <h3>
+                    ${escapeHTML(department.title)}
+                    Items
+                </h3>
 
+                <div
+                    class="admin-item-header"
+                    style="
+                        display:grid;
+                        grid-template-columns:
+                            minmax(120px,1fr)
+                            75px
+                            75px
+                            75px
+                            30px;
+                        gap:5px;
+                        font-size:10px;
+                        font-weight:bold;
+                        margin-bottom:5px;
+                    "
+                >
+                    <div>Particular</div>
+                    <div>Allocation %</div>
+                    <div>Last Week ROI %</div>
+                    <div>Last Month ROI %</div>
+                    <div></div>
+                </div>
+
+                <div
+                    class="items-editor"
+                    data-department="${department.key}"
+                ></div>
+
+                <button
+                    type="button"
+                    class="add-row"
+                    data-add="${department.key}"
+                >
+                    + Add Item
+                </button>
+
+                <label>
+                    Purpose
+                    <textarea
+                        rows="3"
+                        data-purpose="${department.key}"
+                    >${escapeHTML(vertical.purpose || "")}</textarea>
+                </label>
             `;
 
-        })
-        .join("");
+
+            editSections.appendChild(
+                section
+            );
+
+
+            renderItems(
+                department.key
+            );
+
+
+            const purpose =
+                section.querySelector(
+                    `[data-purpose="${department.key}"]`
+                );
+
+
+            purpose.addEventListener(
+                "input",
+                function () {
+
+                    dashboardData
+                        .verticals[
+                            department.key
+                        ]
+                        .purpose =
+                        purpose.value;
+                }
+            );
+        }
+    );
 
 
     document
         .querySelectorAll("[data-add]")
         .forEach(button => {
 
-            button.onclick = () => {
-
-                const department =
-                    button.dataset.add;
-
-
-                /*
-                 * New item structure:
-                 *
-                 * [Particular,
-                 *  Allocation %,
-                 *  Last Week ROI %,
-                 *  Last Month ROI %]
-                 */
-
-                data.verticals[
-                    department
-                ].items.push([
-                    "New Item",
-                    0,
-                    0,
-                    0
-                ]);
-
-
-                renderEditors();
-
-            };
-
-        });
-
-
-    renderEditors();
-}
-
-
-/* =====================================================
-   RENDER ADMIN ITEMS
-===================================================== */
-
-function renderEditors() {
-
-    keys.forEach(k => {
-
-        const box =
-            $("#" + k + "Rows");
-
-
-        box.innerHTML =
-            data.verticals[k].items
-                .map((x, i) => {
-
-                    /*
-                     * Support old items that only have:
-                     *
-                     * [name, percentage]
-                     *
-                     * by automatically creating ROI values.
-                     */
-
-                    if (
-                        x[2] === undefined
-                    ) {
-                        x[2] = 0;
-                    }
-
-
-                    if (
-                        x[3] === undefined
-                    ) {
-                        x[3] = 0;
-                    }
-
-
-                    return `
-
-                        <div
-                            class="item-row roi-admin-row"
-                        >
-
-                            <!-- PARTICULAR -->
-
-                            <input
-                                type="text"
-                                value="${esc(x[0])}"
-                                placeholder="Particular"
-                                data-name="${k}"
-                                data-i="${i}"
-                            >
-
-
-                            <!-- ALLOCATION % -->
-
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.1"
-                                value="${Number(x[1] || 0)}"
-                                placeholder="Allocation %"
-                                title="Allocation %"
-                                data-pct="${k}"
-                                data-i="${i}"
-                            >
-
-
-                            <!-- LAST WEEK ROI % -->
-
-                            <input
-                                type="number"
-                                min="-100"
-                                max="1000"
-                                step="0.01"
-                                value="${Number(x[2] || 0)}"
-                                placeholder="Last Week ROI %"
-                                title="Last Week ROI %"
-                                data-week-roi="${k}"
-                                data-i="${i}"
-                            >
-
-
-                            <!-- LAST MONTH ROI % -->
-
-                            <input
-                                type="number"
-                                min="-100"
-                                max="1000"
-                                step="0.01"
-                                value="${Number(x[3] || 0)}"
-                                placeholder="Last Month ROI %"
-                                title="Last Month ROI %"
-                                data-month-roi="${k}"
-                                data-i="${i}"
-                            >
-
-
-                            <!-- DELETE -->
-
-                            <button
-                                type="button"
-                                data-del="${k}"
-                                data-i="${i}"
-                                title="Delete item"
-                            >
-                                ×
-                            </button>
-
-                        </div>
-
-                    `;
-
-                })
-                .join("");
-
-    });
-
-
-    bind();
-
-
-    /* =================================================
-       PARTICULAR NAME
-    ================================================= */
-
-    document
-        .querySelectorAll("[data-name]")
-        .forEach(input => {
-
-            input.oninput = () => {
-
-                const k =
-                    input.dataset.name;
-
-                const i =
-                    Number(input.dataset.i);
-
-                data.verticals[k]
-                    .items[i][0] =
-                    input.value;
-
-            };
-
-        });
-
-
-    /* =================================================
-       ALLOCATION %
-    ================================================= */
-
-    document
-        .querySelectorAll("[data-pct]")
-        .forEach(input => {
-
-            input.oninput = () => {
-
-                const k =
-                    input.dataset.pct;
-
-                const i =
-                    Number(input.dataset.i);
-
-                data.verticals[k]
-                    .items[i][1] =
-                    Number(input.value);
-
-            };
-
-        });
-
-
-    /* =================================================
-       LAST WEEK ROI %
-    ================================================= */
-
-    document
-        .querySelectorAll("[data-week-roi]")
-        .forEach(input => {
-
-            input.oninput = () => {
-
-                const k =
-                    input.dataset.weekRoi;
-
-                const i =
-                    Number(input.dataset.i);
-
-                data.verticals[k]
-                    .items[i][2] =
-                    Number(input.value);
-
-            };
-
-        });
-
-
-    /* =================================================
-       LAST MONTH ROI %
-    ================================================= */
-
-    document
-        .querySelectorAll("[data-month-roi]")
-        .forEach(input => {
-
-            input.oninput = () => {
-
-                const k =
-                    input.dataset.monthRoi;
-
-                const i =
-                    Number(input.dataset.i);
-
-                data.verticals[k]
-                    .items[i][3] =
-                    Number(input.value);
-
-            };
-
-        });
-
-
-    /* =================================================
-       DELETE ITEM
-    ================================================= */
-
-    document
-        .querySelectorAll("[data-del]")
-        .forEach(button => {
-
-            button.onclick = () => {
-
-                const k =
-                    button.dataset.del;
-
-                const i =
-                    Number(button.dataset.i);
-
-
-                data.verticals[k]
-                    .items
-                    .splice(i, 1);
-
-
-                renderEditors();
-
-            };
-
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const key =
+                        button.dataset.add;
+
+
+                    dashboardData
+                        .verticals[key]
+                        .items
+                        .push([
+                            "New Item",
+                            0,
+                            0,
+                            0
+                        ]);
+
+
+                    renderItems(key);
+                }
+            );
         });
 }
 
 
-/* =====================================================
-   LOGIN / LOAD
-===================================================== */
+/* =========================================================
+   RENDER ITEMS
+========================================================= */
 
-async function load() {
+function renderItems(key) {
 
-    try {
-
-        let r =
-            await fetch("/api/me");
-
-        const me =
-            await r.json();
+    const container =
+        document.querySelector(
+            `.items-editor[data-department="${key}"]`
+        );
 
 
-        if (!me.authenticated) {
-
-            $("#loginScreen")
-                .classList
-                .remove("hidden");
-
-            return;
-        }
-
-
-        r =
-            await fetch("/api/data");
-
-        data =
-            await r.json();
-
-
-        $("#loginScreen")
-            .classList
-            .add("hidden");
-
-
-        $("#adminApp")
-            .classList
-            .remove("hidden");
-
-
-        buildEditors();
-
+    if (!container) {
+        return;
     }
 
-    catch (error) {
 
-        console.error(error);
-
-        $("#loginError").textContent =
-            "Unable to load admin panel.";
-
-    }
-}
+    container.innerHTML = "";
 
 
-/* =====================================================
-   LOGIN
-===================================================== */
-
-$("#loginForm").onsubmit =
-    async e => {
-
-        e.preventDefault();
+    const items =
+        dashboardData
+            .verticals[key]
+            .items;
 
 
-        const r =
-            await fetch(
-                "/api/login",
-                {
-                    method: "POST",
+    items.forEach(
+        (item, index) => {
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+            const row =
+                document.createElement(
+                    "div"
+                );
 
-                    body:
-                        JSON.stringify({
-                            username:
-                                $("#username")
-                                    .value,
 
-                            password:
-                                $("#password")
-                                    .value
-                        })
+            row.className =
+                "item-row";
+
+
+            row.innerHTML = `
+
+                <input
+                    type="text"
+                    placeholder="Particular"
+                    value="${escapeAttribute(item[0])}"
+                    data-name
+                >
+
+                <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value="${item[1]}"
+                    data-allocation
+                >
+
+                <input
+                    type="number"
+                    step="0.01"
+                    value="${item[2]}"
+                    data-week-roi
+                >
+
+                <input
+                    type="number"
+                    step="0.01"
+                    value="${item[3]}"
+                    data-month-roi
+                >
+
+                <button
+                    type="button"
+                    title="Delete item"
+                    data-delete
+                >
+                    ×
+                </button>
+            `;
+
+
+            const nameInput =
+                row.querySelector(
+                    "[data-name]"
+                );
+
+            const allocationInput =
+                row.querySelector(
+                    "[data-allocation]"
+                );
+
+            const weekROIInput =
+                row.querySelector(
+                    "[data-week-roi]"
+                );
+
+            const monthROIInput =
+                row.querySelector(
+                    "[data-month-roi]"
+                );
+
+            const deleteButton =
+                row.querySelector(
+                    "[data-delete]"
+                );
+
+
+            /* ---------------------------------------------
+               NAME
+            --------------------------------------------- */
+
+            nameInput.addEventListener(
+                "input",
+                function () {
+
+                    items[index][0] =
+                        nameInput.value;
                 }
             );
 
 
-        if (r.ok) {
+            /* ---------------------------------------------
+               ALLOCATION
+            --------------------------------------------- */
 
-            load();
+            allocationInput.addEventListener(
+                "input",
+                function () {
 
+                    items[index][1] =
+                        numberValue(
+                            allocationInput.value
+                        );
+                }
+            );
+
+
+            /* ---------------------------------------------
+               LAST WEEK ROI
+            --------------------------------------------- */
+
+            weekROIInput.addEventListener(
+                "input",
+                function () {
+
+                    items[index][2] =
+                        numberValue(
+                            weekROIInput.value
+                        );
+                }
+            );
+
+
+            /* ---------------------------------------------
+               LAST MONTH ROI
+            --------------------------------------------- */
+
+            monthROIInput.addEventListener(
+                "input",
+                function () {
+
+                    items[index][3] =
+                        numberValue(
+                            monthROIInput.value
+                        );
+                }
+            );
+
+
+            /* ---------------------------------------------
+               DELETE
+            --------------------------------------------- */
+
+            deleteButton.addEventListener(
+                "click",
+                function () {
+
+                    items.splice(
+                        index,
+                        1
+                    );
+
+
+                    renderItems(key);
+                }
+            );
+
+
+            container.appendChild(row);
         }
-
-        else {
-
-            $("#loginError")
-                .textContent =
-                "Invalid username or password.";
-
-        }
-
-    };
+    );
+}
 
 
-/* =====================================================
+/* =========================================================
    SAVE
-===================================================== */
+========================================================= */
 
-$("#saveBtn").onclick =
-    async () => {
+saveBtn.addEventListener(
+    "click",
 
-        const button =
-            $("#saveBtn");
+    async function () {
 
+        saveBtn.disabled = true;
 
-        button.disabled = true;
-
-        button.textContent =
+        saveBtn.textContent =
             "Saving...";
+
+        saveMessage.textContent = "";
 
 
         try {
 
-            const r =
-                await fetch(
-                    "/api/data",
-                    {
-                        method: "PUT",
+            collectBasicFields();
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
 
-                        body:
-                            JSON.stringify(data)
-                    }
+            dashboardData =
+                normalizeData(
+                    dashboardData
                 );
 
 
-            $("#saveMessage")
-                .textContent =
-                r.ok
-                    ? "Saved successfully"
-                    : "Save failed";
+            await api(
+                "/api/data",
+                {
+                    method: "PUT",
 
-
-            if (r.ok) {
-
-                const iframe =
-                    document
-                        .querySelector(
-                            ".preview iframe"
-                        );
-
-
-                if (iframe) {
-
-                    iframe.contentWindow
-                        .location
-                        .reload();
-
+                    body:
+                        JSON.stringify(
+                            dashboardData
+                        )
                 }
+            );
 
+
+            showMessage(
+                "✓ Changes saved successfully"
+            );
+
+
+            /*
+               Refresh the preview iframe
+               after successful save.
+            */
+
+            const iframe =
+                document.querySelector(
+                    ".preview iframe"
+                );
+
+
+            if (iframe) {
+
+                iframe.src =
+                    iframe.src;
             }
 
+
+        } catch (error) {
+
+            showMessage(
+                error.message ||
+                "Save failed",
+                true
+            );
+
+        } finally {
+
+            saveBtn.disabled = false;
+
+            saveBtn.textContent =
+                "Save All Changes";
         }
-
-        catch (error) {
-
-            console.error(error);
-
-            $("#saveMessage")
-                .textContent =
-                "Save failed";
-
-        }
+    }
+);
 
 
-        button.disabled = false;
+/* =========================================================
+   COLLECT BASIC FIELDS
+========================================================= */
 
-        button.textContent =
-            "Save Changes";
+function collectBasicFields() {
 
-    };
+    document
+        .querySelectorAll("[data-path]")
+        .forEach(input => {
+
+            let value =
+                input.value;
 
 
-/* =====================================================
+            if (
+                input.type === "number"
+            ) {
+
+                value =
+                    numberValue(value);
+            }
+
+
+            setPathValue(
+                dashboardData,
+                input.dataset.path,
+                value
+            );
+        });
+}
+
+
+/* =========================================================
    LOGOUT
-===================================================== */
+========================================================= */
 
-$("#logoutBtn").onclick =
-    async () => {
+logoutBtn.addEventListener(
+    "click",
 
-        await fetch(
-            "/api/logout",
-            {
-                method: "POST"
-            }
+    async function () {
+
+        try {
+
+            await api(
+                "/api/logout",
+                {
+                    method: "POST"
+                }
+            );
+
+        } catch (error) {
+            // Continue to login screen.
+        }
+
+
+        dashboardData = null;
+
+        showLogin();
+
+        usernameInput.value = "";
+        passwordInput.value = "";
+
+        loginError.textContent = "";
+    }
+);
+
+
+/* =========================================================
+   NUMBER
+========================================================= */
+
+function numberValue(value) {
+
+    const number =
+        Number(value);
+
+    return Number.isFinite(number)
+        ? number
+        : 0;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showMessage(
+    message,
+    isError = false
+) {
+
+    saveMessage.textContent =
+        message;
+
+    saveMessage.style.color =
+        isError
+            ? "#ff9d9d"
+            : "#a8f0b8";
+
+
+    clearTimeout(
+        showMessage.timer
+    );
+
+
+    showMessage.timer =
+        setTimeout(
+            () => {
+
+                saveMessage.textContent =
+                    "";
+
+            },
+            5000
         );
+}
 
 
-        location.reload();
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
 
-    };
+function escapeHTML(value) {
+
+    return String(value ?? "")
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
 
 
-/* =====================================================
+function escapeAttribute(value) {
+
+    return escapeHTML(value);
+}
+
+
+/* =========================================================
    START
-===================================================== */
+========================================================= */
 
-load();
+checkLogin();
