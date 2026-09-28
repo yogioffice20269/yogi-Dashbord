@@ -1,8 +1,14 @@
+```javascript
 let data = null;
 
 const $ = s => document.querySelector(s);
 
-const keys = ["trading", "investment", "reserve", "rnd"];
+const keys = [
+    "trading",
+    "investment",
+    "reserve",
+    "rnd"
+];
 
 const labels = {
     trading: "Trading",
@@ -20,16 +26,24 @@ const esc = s =>
         "'": "&#39;"
     }[c]));
 
-function get(o, p) {
-    return p.split(".").reduce((a, k) => a?.[k], o);
+function get(obj, path) {
+    return path
+        .split(".")
+        .reduce((a, k) => a?.[k], obj);
 }
 
-function set(o, p, v) {
-    let a = p.split(".");
-    let l = a.pop();
-    let t = a.reduce((x, k) => x[k], o);
-    t[l] = v;
+function set(obj, path, value) {
+    const parts = path.split(".");
+    const last = parts.pop();
+
+    const target = parts.reduce(
+        (x, k) => x[k],
+        obj
+    );
+
+    target[last] = value;
 }
+
 
 /* =========================================================
    BUILD ADMIN EDITOR
@@ -37,22 +51,33 @@ function set(o, p, v) {
 
 function buildEditors() {
 
-    /* Default ON */
+    /* ---------------------------------------------
+       SETTINGS
+    --------------------------------------------- */
+
     if (!data.settings) {
         data.settings = {};
     }
 
     if (
-        typeof data.settings.overallROIEnabled !== "boolean"
+        typeof data.settings.overallROIEnabled !==
+        "boolean"
     ) {
         data.settings.overallROIEnabled = true;
     }
 
+
+    /* ---------------------------------------------
+       MAIN EDITOR HTML
+    --------------------------------------------- */
+
     $("#editSections").innerHTML = `
 
-        <!-- OVERALL ROI CONTROL -->
+        <!-- =========================================
+             DASHBOARD CONTROLS
+        ========================================== -->
 
-        <section class="overall-roi-control">
+        <section>
 
             <h3>Dashboard Controls</h3>
 
@@ -61,10 +86,10 @@ function buildEditors() {
                 align-items:center;
                 justify-content:space-between;
                 gap:20px;
-                padding:16px;
+                padding:18px;
                 background:#f5f7f6;
                 border:1px solid #ddd;
-                border-radius:10px;
+                border-radius:12px;
                 margin-bottom:20px;
             ">
 
@@ -79,15 +104,16 @@ function buildEditors() {
                     </div>
 
                     <div style="
-                        margin-top:5px;
+                        margin-top:6px;
                         color:#666;
                         font-size:13px;
                     ">
-                        Show or hide the overall ROI table and pie chart
-                        on the public dashboard.
+                        Show or hide the overall ROI table
+                        and pie chart on the public dashboard.
                     </div>
 
                 </div>
+
 
                 <label style="
                     position:relative;
@@ -125,36 +151,90 @@ function buildEditors() {
 
         </section>
 
+
+        <!-- =========================================
+             DEPARTMENT EDITORS
+        ========================================== -->
+
         ${keys.map(k => `
 
             <section>
 
-                <h3>${labels[k]}</h3>
+                <h3>
+                    ${labels[k]}
+                </h3>
+
+
+                <!-- TABLE HEADER -->
+
+                <div style="
+                    display:grid;
+                    grid-template-columns:
+                        1.5fr
+                        .7fr
+                        .7fr
+                        .7fr
+                        40px;
+                    gap:8px;
+                    margin-bottom:8px;
+                    font-size:12px;
+                    font-weight:800;
+                    color:#555;
+                ">
+
+                    <div>PARTICULAR</div>
+                    <div>ALLOCATION %</div>
+                    <div>WEEK ROI %</div>
+                    <div>MONTH ROI %</div>
+                    <div></div>
+
+                </div>
+
+
+                <!-- ITEMS -->
 
                 <div id="${k}Rows"></div>
+
+
+                <!-- ADD ITEM -->
 
                 <button
                     type="button"
                     class="add-row"
                     data-add="${k}"
+                    style="
+                        margin-top:8px;
+                    "
                 >
                     + Add Item
                 </button>
 
-                <label>
+
+                <!-- PURPOSE -->
+
+                <label style="
+                    display:block;
+                    margin-top:15px;
+                ">
+
                     Purpose
+
                     <textarea
                         data-path="verticals.${k}.purpose"
+                        rows="3"
                     ></textarea>
+
                 </label>
 
             </section>
 
         `).join("")}
+
     `;
 
+
     /* =====================================================
-       OVERALL ROI TOGGLE
+       OVERALL ROI SWITCH
     ===================================================== */
 
     const toggle =
@@ -162,6 +242,7 @@ function buildEditors() {
 
     const slider =
         $("#overallROISlider");
+
 
     function updateToggleUI() {
 
@@ -176,6 +257,7 @@ function buildEditors() {
                 : "#999";
 
         slider.innerHTML = `
+
             <span style="
                 position:absolute;
                 height:24px;
@@ -185,10 +267,13 @@ function buildEditors() {
                 background:white;
                 border-radius:50%;
                 transition:.25s;
-                box-shadow:0 1px 4px rgba(0,0,0,.25);
+                box-shadow:
+                    0 1px 4px rgba(0,0,0,.25);
             "></span>
+
         `;
     }
+
 
     toggle.onchange = () => {
 
@@ -196,9 +281,12 @@ function buildEditors() {
             toggle.checked;
 
         updateToggleUI();
+
     };
 
+
     updateToggleUI();
+
 
     /* =====================================================
        ADD ITEM BUTTONS
@@ -210,8 +298,18 @@ function buildEditors() {
 
             button.onclick = () => {
 
+                const department =
+                    button.dataset.add;
+
+                if (
+                    !data.verticals[department]
+                ) {
+                    return;
+                }
+
+
                 data.verticals[
-                    button.dataset.add
+                    department
                 ].items.push([
                     "New Item",
                     0,
@@ -219,142 +317,207 @@ function buildEditors() {
                     0
                 ]);
 
+
                 renderEditors();
+
             };
+
         });
+
 
     renderEditors();
 }
 
+
 /* =========================================================
-   RENDER ITEMS
+   RENDER DEPARTMENT ITEMS
 ========================================================= */
 
 function renderEditors() {
 
     keys.forEach(k => {
 
-        let box = $("#" + k + "Rows");
+        const box =
+            $("#" + k + "Rows");
+
+        if (!box) {
+            return;
+        }
+
+
+        const items =
+            data.verticals[k].items || [];
+
 
         box.innerHTML =
-            data.verticals[k].items
-                .map((x, i) => {
+            items.map((item, index) => {
 
-                    /* Support old 2-value items */
-                    const name =
-                        Array.isArray(x)
-                            ? x[0]
-                            : x.name || "Item";
+                /* -----------------------------------------
+                   SUPPORT OLD DATA FORMAT
+                ----------------------------------------- */
 
-                    const percent =
-                        Array.isArray(x)
-                            ? Number(x[1]) || 0
-                            : Number(
-                                x.percent ??
-                                x.allocation ??
-                                0
-                            ) || 0;
+                let name = "";
+                let allocation = 0;
+                let weekROI = 0;
+                let monthROI = 0;
 
-                    const weekROI =
-                        Array.isArray(x)
-                            ? Number(x[2]) || 0
-                            : Number(
-                                x.weekROI ??
-                                x.lastWeekROI ??
-                                0
-                            ) || 0;
 
-                    const monthROI =
-                        Array.isArray(x)
-                            ? Number(x[3]) || 0
-                            : Number(
-                                x.monthROI ??
-                                x.lastMonthROI ??
-                                0
-                            ) || 0;
+                if (Array.isArray(item)) {
 
-                    return `
+                    name =
+                        item[0] ?? "";
 
-                        <div
-                            class="item-row"
-                            style="
-                                display:grid;
-                                grid-template-columns:
+                    allocation =
+                        Number(item[1]) || 0;
+
+                    weekROI =
+                        Number(item[2]) || 0;
+
+                    monthROI =
+                        Number(item[3]) || 0;
+
+                } else {
+
+                    name =
+                        item.name ||
+                        "Item";
+
+                    allocation =
+                        Number(
+                            item.percent ??
+                            item.allocation ??
+                            0
+                        ) || 0;
+
+                    weekROI =
+                        Number(
+                            item.weekROI ??
+                            item.lastWeekROI ??
+                            0
+                        ) || 0;
+
+                    monthROI =
+                        Number(
+                            item.monthROI ??
+                            item.lastMonthROI ??
+                            0
+                        ) || 0;
+
+                }
+
+
+                return `
+
+                    <div
+                        class="item-row"
+                        style="
+                            display:grid;
+                            grid-template-columns:
                                 1.5fr
                                 .7fr
                                 .7fr
                                 .7fr
-                                auto;
-                                gap:8px;
-                                align-items:center;
-                                margin-bottom:8px;
-                            "
+                                40px;
+                            gap:8px;
+                            align-items:center;
+                            margin-bottom:8px;
+                        "
+                    >
+
+                        <!-- PARTICULAR -->
+
+                        <input
+                            value="${esc(name)}"
+                            data-name="${k}"
+                            data-i="${index}"
+                            placeholder="Particular"
+                            type="text"
                         >
 
-                            <input
-                                value="${esc(name)}"
-                                data-name="${k}"
-                                data-i="${i}"
-                                placeholder="Particular"
-                            >
 
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step=".1"
-                                value="${percent}"
-                                data-pct="${k}"
-                                data-i="${i}"
-                                placeholder="Allocation %"
-                            >
+                        <!-- ALLOCATION % -->
 
-                            <input
-                                type="number"
-                                step=".01"
-                                value="${weekROI}"
-                                data-week-roi="${k}"
-                                data-i="${i}"
-                                placeholder="Week ROI %"
-                            >
+                        <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            value="${allocation}"
+                            data-pct="${k}"
+                            data-i="${index}"
+                            placeholder="Allocation %"
+                        >
 
-                            <input
-                                type="number"
-                                step=".01"
-                                value="${monthROI}"
-                                data-month-roi="${k}"
-                                data-i="${i}"
-                                placeholder="Month ROI %"
-                            >
 
-                            <button
-                                type="button"
-                                data-del="${k}"
-                                data-i="${i}"
-                            >
-                                ×
-                            </button>
+                        <!-- LAST WEEK ROI % -->
 
-                        </div>
-                    `;
+                        <input
+                            type="number"
+                            step="0.01"
+                            value="${weekROI}"
+                            data-week-roi="${k}"
+                            data-i="${index}"
+                            placeholder="Week ROI %"
+                        >
 
-                })
-                .join("");
-    });
+
+                        <!-- LAST MONTH ROI % -->
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            value="${monthROI}"
+                            data-month-roi="${k}"
+                            data-i="${index}"
+                            placeholder="Month ROI %"
+                        >
+
+
+                        <!-- DELETE -->
+
+                        <button
+                            type="button"
+                            data-del="${k}"
+                            data-i="${index}"
+                            title="Delete item"
+                            style="
+                                background:#d32f2f;
+                                color:white;
+                                border:0;
+                                border-radius:6px;
+                                cursor:pointer;
+                                font-size:18px;
+                                height:36px;
+                            "
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                `;
+
+            }).join("");
+
 
     /* =====================================================
-       NORMAL INPUT BINDING
+       NORMAL DATA-PATH INPUTS
     ===================================================== */
 
     document
         .querySelectorAll("[data-path]")
         .forEach(el => {
 
-            el.value =
+            const value =
                 get(
                     data,
                     el.dataset.path
-                ) ?? "";
+                );
+
+
+            el.value =
+                value ?? "";
+
 
             el.oninput = () => {
 
@@ -365,8 +528,11 @@ function renderEditors() {
                         ? Number(el.value)
                         : el.value
                 );
+
             };
+
         });
+
 
     /* =====================================================
        ITEM NAME
@@ -374,29 +540,38 @@ function renderEditors() {
 
     document
         .querySelectorAll("[data-name]")
-        .forEach(e => {
+        .forEach(el => {
 
-            e.oninput = () => {
+            el.oninput = () => {
+
+                const department =
+                    el.dataset.name;
+
+                const index =
+                    Number(el.dataset.i);
 
                 const item =
                     data.verticals[
-                        e.dataset.name
-                    ].items[
-                        e.dataset.i
-                    ];
+                        department
+                    ].items[index];
+
 
                 if (Array.isArray(item)) {
 
                     item[0] =
-                        e.value;
+                        el.value;
 
                 } else {
 
                     item.name =
-                        e.value;
+                        el.value;
+
                 }
+
             };
+
         });
+
 
     /* =====================================================
        ALLOCATION %
@@ -404,29 +579,42 @@ function renderEditors() {
 
     document
         .querySelectorAll("[data-pct]")
-        .forEach(e => {
+        .forEach(el => {
 
-            e.oninput = () => {
+            el.oninput = () => {
+
+                const department =
+                    el.dataset.pct;
+
+                const index =
+                    Number(el.dataset.i);
 
                 const item =
                     data.verticals[
-                        e.dataset.pct
-                    ].items[
-                        e.dataset.i
-                    ];
+                        department
+                    ].items[index];
+
+
+                const value =
+                    Number(el.value) || 0;
+
 
                 if (Array.isArray(item)) {
 
                     item[1] =
-                        Number(e.value);
+                        value;
 
                 } else {
 
                     item.percent =
-                        Number(e.value);
+                        value;
+
                 }
+
             };
+
         });
+
 
     /* =====================================================
        LAST WEEK ROI %
@@ -434,29 +622,42 @@ function renderEditors() {
 
     document
         .querySelectorAll("[data-week-roi]")
-        .forEach(e => {
+        .forEach(el => {
 
-            e.oninput = () => {
+            el.oninput = () => {
+
+                const department =
+                    el.dataset.weekRoi;
+
+                const index =
+                    Number(el.dataset.i);
 
                 const item =
                     data.verticals[
-                        e.dataset.weekRoi
-                    ].items[
-                        e.dataset.i
-                    ];
+                        department
+                    ].items[index];
+
+
+                const value =
+                    Number(el.value) || 0;
+
 
                 if (Array.isArray(item)) {
 
                     item[2] =
-                        Number(e.value);
+                        value;
 
                 } else {
 
                     item.weekROI =
-                        Number(e.value);
+                        value;
+
                 }
+
             };
+
         });
+
 
     /* =====================================================
        LAST MONTH ROI %
@@ -464,29 +665,42 @@ function renderEditors() {
 
     document
         .querySelectorAll("[data-month-roi]")
-        .forEach(e => {
+        .forEach(el => {
 
-            e.oninput = () => {
+            el.oninput = () => {
+
+                const department =
+                    el.dataset.monthRoi;
+
+                const index =
+                    Number(el.dataset.i);
 
                 const item =
                     data.verticals[
-                        e.dataset.monthRoi
-                    ].items[
-                        e.dataset.i
-                    ];
+                        department
+                    ].items[index];
+
+
+                const value =
+                    Number(el.value) || 0;
+
 
                 if (Array.isArray(item)) {
 
                     item[3] =
-                        Number(e.value);
+                        value;
 
                 } else {
 
                     item.monthROI =
-                        Number(e.value);
+                        value;
+
                 }
+
             };
+
         });
+
 
     /* =====================================================
        DELETE ITEM
@@ -494,21 +708,42 @@ function renderEditors() {
 
     document
         .querySelectorAll("[data-del]")
-        .forEach(e => {
+        .forEach(button => {
 
-            e.onclick = () => {
+            button.onclick = () => {
+
+                const department =
+                    button.dataset.del;
+
+                const index =
+                    Number(button.dataset.i);
+
+
+                if (
+                    !data.verticals[
+                        department
+                    ]
+                ) {
+                    return;
+                }
+
 
                 data.verticals[
-                    e.dataset.del
+                    department
                 ].items.splice(
-                    Number(e.dataset.i),
+                    index,
                     1
                 );
 
+
                 renderEditors();
+
             };
+
         });
+
 }
+
 
 /* =========================================================
    LOGIN / LOAD
@@ -516,128 +751,311 @@ function renderEditors() {
 
 async function load() {
 
-    let r =
-        await fetch("/api/me");
+    try {
 
-    let me =
-        await r.json();
+        let response =
+            await fetch(
+                "/api/me",
+                {
+                    cache: "no-store"
+                }
+            );
 
-    if (!me.authenticated) {
+
+        const me =
+            await response.json();
+
+
+        if (!me.authenticated) {
+
+            $("#loginScreen")
+                .classList
+                .remove("hidden");
+
+            $("#adminApp")
+                .classList
+                .add("hidden");
+
+            return;
+
+        }
+
+
+        response =
+            await fetch(
+                "/api/data",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to load dashboard data."
+            );
+        }
+
+
+        data =
+            await response.json();
+
+
+        /* -----------------------------------------
+           SAFETY DEFAULTS
+        ----------------------------------------- */
+
+        if (!data.settings) {
+            data.settings = {};
+        }
+
+        if (
+            typeof
+            data.settings.overallROIEnabled
+            !== "boolean"
+        ) {
+            data.settings.overallROIEnabled =
+                true;
+        }
+
+
+        if (!data.verticals) {
+            data.verticals = {};
+        }
+
+
+        keys.forEach(k => {
+
+            if (!data.verticals[k]) {
+
+                data.verticals[k] = {
+                    percent: 0,
+                    purpose: "",
+                    items: []
+                };
+
+            }
+
+
+            if (
+                !Array.isArray(
+                    data.verticals[k].items
+                )
+            ) {
+
+                data.verticals[k].items = [];
+
+            }
+
+        });
+
 
         $("#loginScreen")
             .classList
+            .add("hidden");
+
+        $("#adminApp")
+            .classList
             .remove("hidden");
 
-        return;
+
+        buildEditors();
+
+    } catch (error) {
+
+        console.error(error);
+
+        $("#loginError").textContent =
+            "Unable to load dashboard.";
+
     }
 
-    r =
-        await fetch(
-            "/api/data",
-            {
-                cache: "no-store"
-            }
-        );
-
-    data =
-        await r.json();
-
-    $("#loginScreen")
-        .classList
-        .add("hidden");
-
-    $("#adminApp")
-        .classList
-        .remove("hidden");
-
-    buildEditors();
 }
+
 
 /* =========================================================
    LOGIN
 ========================================================= */
 
 $("#loginForm").onsubmit =
-    async e => {
+    async event => {
 
-        e.preventDefault();
+        event.preventDefault();
 
-        let r =
-            await fetch(
-                "/api/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body:
-                        JSON.stringify({
-                            username:
-                                $("#username")
-                                    .value,
 
-                            password:
-                                $("#password")
-                                    .value
-                        })
-                }
-            );
+        try {
 
-        if (r.ok) {
+            const response =
+                await fetch(
+                    "/api/login",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body:
+                            JSON.stringify({
+                                username:
+                                    $("#username")
+                                        .value,
 
-            load();
+                                password:
+                                    $("#password")
+                                        .value
+                            })
+                    }
+                );
 
-        } else {
+
+            if (response.ok) {
+
+                $("#loginError")
+                    .textContent = "";
+
+                await load();
+
+            } else {
+
+                $("#loginError")
+                    .textContent =
+                    "Invalid username or password.";
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
 
             $("#loginError")
                 .textContent =
-                "Invalid username or password.";
+                "Login failed. Please try again.";
+
         }
+
     };
 
+
 /* =========================================================
-   SAVE
+   SAVE ALL DATA
 ========================================================= */
 
 $("#saveBtn").onclick =
     async () => {
 
-        let r =
-            await fetch(
-                "/api/data",
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body:
-                        JSON.stringify(data)
-                }
-            );
+        const saveButton =
+            $("#saveBtn");
 
-        $("#saveMessage")
-            .textContent =
-            r.ok
-                ? "Saved successfully"
-                : "Save failed";
 
-        if (r.ok) {
+        try {
+
+            saveButton.disabled =
+                true;
+
+            saveButton.textContent =
+                "Saving...";
+
+
+            const response =
+                await fetch(
+                    "/api/data",
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(data)
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.error ||
+                    "Save failed"
+                );
+
+            }
+
+
+            /* -----------------------------------------
+               USE SERVER'S CLEANED DATA
+            ----------------------------------------- */
+
+            if (result.data) {
+                data = result.data;
+            }
+
+
+            $("#saveMessage")
+                .textContent =
+                "✓ Saved successfully";
+
+
+            /* -----------------------------------------
+               REFRESH ADMIN PREVIEW
+            ----------------------------------------- */
 
             const iframe =
                 document.querySelector(
                     ".preview iframe"
                 );
 
+
             if (iframe) {
 
                 iframe.contentWindow
                     .location
                     .reload();
+
             }
+
+
+            /* -----------------------------------------
+               REMOVE MESSAGE AFTER A FEW SECONDS
+            ----------------------------------------- */
+
+            setTimeout(() => {
+
+                $("#saveMessage")
+                    .textContent = "";
+
+            }, 4000);
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            $("#saveMessage")
+                .textContent =
+                "✕ " +
+                (
+                    error.message ||
+                    "Save failed"
+                );
+
+        } finally {
+
+            saveButton.disabled =
+                false;
+
+            saveButton.textContent =
+                "Save All Changes";
+
         }
+
     };
+
 
 /* =========================================================
    LOGOUT
@@ -646,14 +1064,30 @@ $("#saveBtn").onclick =
 $("#logoutBtn").onclick =
     async () => {
 
-        await fetch(
-            "/api/logout",
-            {
-                method: "POST"
-            }
-        );
+        try {
+
+            await fetch(
+                "/api/logout",
+                {
+                    method: "POST"
+                }
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
 
         location.reload();
+
     };
 
+
+/* =========================================================
+   START
+========================================================= */
+
 load();
+```
