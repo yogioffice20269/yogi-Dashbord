@@ -502,54 +502,68 @@ function periodPerformanceVisual() {
     {
       label: "P&L",
       value: p.pnl,
-      formatted: money(p.pnl),
-      cls: "pnl"
+      formatted: money(p.pnl)
     },
     {
       label: "ROI",
       value: p.roi,
-      formatted: pct(p.roi),
-      cls: "roi"
+      formatted: pct(p.roi)
     },
     {
       label: "Capital Deployed",
       value: p.deployed,
-      formatted: money(p.deployed),
-      cls: "deployed"
+      formatted: money(p.deployed)
     },
     {
       label: "Available Capital",
       value: p.available,
-      formatted: money(p.available),
-      cls: "available"
+      formatted: money(p.available)
     }
   ];
 
+  const max = Math.max(
+    1,
+    ...values.map(x => Math.abs(num(x.value)))
+  );
+
   return `
-    <div class="fund-performance-list">
+    <div class="bar-list fund-performance-list">
 
-      ${values.map(x => `
-        <div class="fund-performance-row ${x.cls}">
+      ${values.map(x => {
 
-          <div class="fund-performance-label">
-            ${x.label}
+        const width = Math.min(
+          100,
+          Math.abs(num(x.value)) / max * 100
+        );
+
+        return `
+          <div class="bar-line fund-performance-line">
+
+            <span>
+              ${x.label}
+            </span>
+
+            <div class="bar-track">
+              <i
+                style="
+                  width:${width}%;
+                  background:#0a7544;
+                "
+              ></i>
+            </div>
+
+            <b>
+              ${x.formatted}
+            </b>
+
           </div>
+        `;
 
-          <div class="fund-performance-bar">
-            <div class="fund-performance-fill"></div>
-          </div>
-
-          <div class="fund-performance-value">
-            ${x.formatted}
-          </div>
-
-        </div>
-      `).join("")}
+      }).join("")}
 
     </div>
   `;
-}
-/* =========================================================
+}/* =========================================================
    ALLOCATION TABLE
 ========================================================= */
 
