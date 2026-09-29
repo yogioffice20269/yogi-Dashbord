@@ -158,7 +158,7 @@ function allWeekPnl() {
    performance.daily
    performance.mtd
    performance.qtd
-   performance.ytd
+   performance.weekly
    performance.monthly
 ========================================================= */
 
@@ -229,7 +229,7 @@ function periodLabel(period = currentPeriod) {
     daily: "Today",
     mtd: "MTD",
     qtd: "QTD",
-    ytd: "YTD",
+    weekly: "Weekly",
     monthly: "Monthly"
   };
 
@@ -241,7 +241,7 @@ function periodDescription(period = currentPeriod) {
     daily: "Today's performance data",
     mtd: "Month-to-date performance",
     qtd: "Quarter-to-date performance",
-    ytd: "Year-to-date performance",
+    weekly: "Weekly performance",
     monthly: "Monthly performance"
   };
 
@@ -2922,8 +2922,8 @@ function setPeriod(period) {
       btnPeriod = "qtd";
     }
 
-    if (text === "ytd") {
-      btnPeriod = "ytd";
+    if (text === "weekly") {
+    btnPeriod = "weekly";
     }
 
     btn.classList.toggle(
@@ -3084,8 +3084,8 @@ $$(".period").forEach(
           setPeriod("qtd");
         }
 
-        else if (text === "ytd") {
-          setPeriod("ytd");
+        else if (text === "weekly") {
+          setPeriod("weekly");
         }
 
       }
