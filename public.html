@@ -3,255 +3,908 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
 
-<title>
-    Yogi Growing Together - Fund Allocation System
-</title>
+    <title>
+        YOGI - Capital Management System
+    </title>
 
-<link
-    rel="stylesheet"
-    href="/styles.css"
->
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
 
 </head>
 
 
 <body>
 
-<div class="public-wrap">
-
-    <div
-        id="loading"
-        class="loading"
-    >
-        Loading dashboard...
-    </div>
+<div id="loading" class="loading">
+    Loading Capital Management System...
+</div>
 
 
-    <main
-        id="dashboard"
-        class="hidden"
-    >
+<div
+    id="dashboard"
+    class="dashboard-shell hidden"
+>
 
 
-        <!-- =========================
-             HEADER
-        ========================== -->
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
 
-        <div class="header">
+    <aside class="sidebar">
 
-            <div class="logo-wrap">
+        <div class="sidebar-brand">
 
-                <img
-                    src="/yogi-logo.jpeg"
-                    alt="Yogi Growing Together Logo"
-                >
-
-            </div>
-
-
-            <div class="brand">
-
-                <h1 id="orgName"></h1>
-
-                <div class="title">
-                    FUND ALLOCATION SYSTEM
-                </div>
-
-            </div>
-
-
-            <div class="meta">
-
-                <div>
-                    <span>Date:</span>
-                    <b id="metaDate"></b>
-                </div>
-
-              
-
-                <div>
-                    <span>Prepared By:</span>
-                    <b id="metaPrepared"></b>
-                </div>
-
-            </div>
+            <img
+                src="/yogi-logo.jpeg"
+                alt="YOGI Growing Together"
+            >
 
         </div>
 
 
-        <!-- =========================
-             SUMMARY
-        ========================== -->
+        <div class="system-name">
 
-        <section class="summary-grid">
+            <strong>
+                Capital Management System
+            </strong>
 
-            <div class="summary-card">
+            <span>
+                Capital Allocation & Performance Control
+            </span>
 
-                <div class="label">
-                    TOTAL FUND CAPITAL
+        </div>
+
+
+        <nav class="side-navigation">
+
+            <button
+                class="nav-item active"
+                data-page="overview"
+            >
+                <span class="nav-icon">⌂</span>
+                <span>Overview</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="allocation"
+            >
+                <span class="nav-icon">▦</span>
+                <span>Allocation</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="trading"
+            >
+                <span class="nav-icon">↗</span>
+                <span>Trading</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="investment"
+            >
+                <span class="nav-icon">◈</span>
+                <span>Investment</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="reserve"
+            >
+                <span class="nav-icon">▣</span>
+                <span>Reserve</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="rnd"
+            >
+                <span class="nav-icon">⚙</span>
+                <span>R&D</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="performance"
+            >
+                <span class="nav-icon">⌁</span>
+                <span>Performance</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="risk"
+            >
+                <span class="nav-icon">△</span>
+                <span>Risk</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="movements"
+            >
+                <span class="nav-icon">⇄</span>
+                <span>Capital Movements</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="reports"
+            >
+                <span class="nav-icon">▤</span>
+                <span>Reports</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="settings"
+            >
+                <span class="nav-icon">⚙</span>
+                <span>Settings</span>
+            </button>
+
+        </nav>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN AREA
+    ====================================================== -->
+
+    <main class="main-area">
+
+
+        <!-- =================================================
+             TOP HEADER
+        ================================================== -->
+
+        <header class="top-header">
+
+
+            <div class="mobile-menu">
+                ☰
+            </div>
+
+
+            <div class="top-brand">
+
+                <div class="top-brand-title">
+                    <span id="orgName">
+                        YOGI GROWING TOGETHER LLP
+                    </span>
                 </div>
 
-                <div
-                    id="totalCapital"
-                    class="big"
-                ></div>
+                <div class="top-brand-subtitle">
+                    CAPITAL ALLOCATION & PERFORMANCE CONTROL
+                </div>
 
             </div>
 
 
-            <div class="summary-card">
+            <div class="top-meta">
 
-                <div class="label">
-                    ALLOCATED CAPITAL
+
+                <div class="live-status">
+
+                    <span class="live-dot"></span>
+
+                    <span>
+                        Data: Live
+                    </span>
+
                 </div>
 
-                <div
-                    id="allocatedCapital"
-                    class="big"
-                ></div>
 
-            </div>
+                <div class="header-date">
 
+                    <span>
+                        <span id="metaDate"></span>
+                    </span>
 
-            <div class="summary-card">
-
-                <div class="label">
-                    UNALLOCATED CAPITAL
                 </div>
 
-                <div
-                    id="unallocatedCapital"
-                    class="big"
-                ></div>
 
-            </div>
+                <div class="manager-box">
 
+                    <span class="manager-icon">
+                        ●
+                    </span>
 
-            <div class="summary-card">
+                    <span>
+                        Manager
+                    </span>
 
-                <div class="label">
-                    ALLOCATION STATUS
-                </div>
-
-                <div
-                    id="status"
-                    class="status"
-                ></div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             ALLOCATION CARDS
-        ========================== -->
-
-        <section
-            id="allocationCards"
-            class="allocation-row"
-        ></section>
-
-
-        <!-- =========================
-             BOTH CHARTS
-        ========================== -->
-
-        <section class="charts-row">
-
-
-            <!-- ROUND CHART -->
-
-            <div class="chart-panel">
-
-                <h3>
-                    VERTICAL WISE FUND ALLOCATION
-                </h3>
-
-
-                <div class="donut-wrap">
-
-                    <div
-                        id="donut"
-                        class="donut"
-                    ></div>
-
-
-                    <div
-                        id="legend"
-                        class="legend"
-                    ></div>
+                    <span>
+                        ▾
+                    </span>
 
                 </div>
 
             </div>
 
+        </header>
 
 
-            <!-- BAR CHART -->
 
-            <div class="chart-panel">
+        <!-- =================================================
+             PAGE CONTENT
+        ================================================== -->
 
-                <h3>
-                    CAPITAL ALLOCATION (₹)
-                </h3>
-
-
-                <div class="bar-chart">
+        <div class="content-area">
 
 
-                    <div class="y-axis">
+            <!-- =============================================
+                 OVERVIEW
+            ============================================== -->
 
-                        <span>50L</span>
+            <section
+                id="overviewPage"
+                class="dashboard-page active-page"
+            >
 
-                        <span>40L</span>
 
-                        <span>30L</span>
+                <div class="page-heading">
 
-                        <span>20L</span>
+                    <div>
 
-                        <span>10L</span>
+                        <h1>
+                            Overview
+                        </h1>
 
-                        <span>0</span>
+                        <p>
+                            Capital allocation and fund performance overview
+                        </p>
 
                     </div>
 
 
-                    <div
-                        id="bars"
-                        class="bars"
-                    ></div>
+                    <div class="period-buttons">
 
+                        <button class="period active">
+                            Today
+                        </button>
+
+                        <button class="period">
+                            MTD
+                        </button>
+
+                        <button class="period">
+                            QTD
+                        </button>
+
+                        <button class="period">
+                            YTD
+                        </button>
+
+                    </div>
 
                 </div>
 
-            </div>
 
 
-        </section>
+                <!-- =========================================
+                     KPI CARDS
+                ========================================== -->
+
+                <section class="overview-kpis">
 
 
-        <!-- =========================
-             DEPARTMENT TABLES
-        ========================== -->
+                    <div class="kpi-card">
 
-        <section
-            id="tablesGrid"
-            class="tables-grid"
-        ></section>
+                        <div class="kpi-top">
+
+                            <span class="kpi-icon blue">
+                                ₹
+                            </span>
+
+                            <span class="kpi-title">
+                                Total Fund Capital
+                            </span>
+
+                        </div>
 
 
-        <footer>
-            Fund Allocation Dashboard • View Only
+                        <div
+                            id="totalCapital"
+                            class="kpi-value"
+                        >
+                            ₹0
+                        </div>
+
+
+                        <div class="kpi-bottom positive">
+                            ● Fund capital
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="kpi-card">
+
+                        <div class="kpi-top">
+
+                            <span class="kpi-icon green">
+                                ↗
+                            </span>
+
+                            <span class="kpi-title">
+                                Capital Deployed
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            id="allocatedCapital"
+                            class="kpi-value"
+                        >
+                            ₹0
+                        </div>
+
+
+                        <div class="kpi-bottom positive">
+                            ● Allocated capital
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="kpi-card">
+
+                        <div class="kpi-top">
+
+                            <span class="kpi-icon orange">
+                                ◉
+                            </span>
+
+                            <span class="kpi-title">
+                                Available Capital
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            id="unallocatedCapital"
+                            class="kpi-value"
+                        >
+                            ₹0
+                        </div>
+
+
+                        <div class="kpi-bottom positive">
+                            ● Available
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="kpi-card">
+
+                        <div class="kpi-top">
+
+                            <span class="kpi-icon teal">
+                                ₹
+                            </span>
+
+                            <span class="kpi-title">
+                                Allocation Status
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            id="status"
+                            class="kpi-status"
+                        >
+                            —
+                        </div>
+
+
+                        <div class="kpi-bottom">
+                            Overall allocation
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="kpi-card">
+
+                        <div class="kpi-top">
+
+                            <span class="kpi-icon purple">
+                                %
+                            </span>
+
+                            <span class="kpi-title">
+                                Fund ROI
+                            </span>
+
+                        </div>
+
+
+                        <div class="kpi-value">
+                            —
+                        </div>
+
+
+                        <div class="kpi-bottom">
+                            MTD
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="kpi-card">
+
+                        <div class="kpi-top">
+
+                            <span class="kpi-icon red">
+                                ↓
+                            </span>
+
+                            <span class="kpi-title">
+                                Max Drawdown
+                            </span>
+
+                        </div>
+
+
+                        <div class="kpi-value">
+                            —
+                        </div>
+
+
+                        <div class="kpi-bottom negative">
+                            Risk monitoring
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =========================================
+                     ALLOCATION + PERFORMANCE
+                ========================================== -->
+
+                <section class="overview-grid">
+
+
+                    <!-- ALLOCATION -->
+
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <h2>
+                                    Allocation vs Target
+                                </h2>
+
+                                <span>
+                                    Current fund allocation
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="allocationCards"
+                            class="allocation-overview"
+                        ></div>
+
+                    </div>
+
+
+
+                    <!-- FUND PERFORMANCE -->
+
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <h2>
+                                    Fund Performance
+                                </h2>
+
+                                <span>
+                                    MTD performance
+                                </span>
+
+                            </div>
+
+                            <span class="chart-badge">
+                                MTD
+                            </span>
+
+                        </div>
+
+
+                        <div class="performance-chart">
+
+                            <div class="chart-placeholder">
+
+                                <div class="chart-line"></div>
+
+                                <span>
+                                    Fund performance
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- CAPITAL UTILIZATION -->
+
+                    <div class="dashboard-card utilization-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <h2>
+                                    Capital Utilization
+                                </h2>
+
+                                <span>
+                                    Deployed vs available
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="utilization-content">
+
+                            <div
+                                id="utilizationCircle"
+                                class="utilization-circle"
+                            >
+
+                                <div>
+
+                                    <strong>
+                                        —
+                                    </strong>
+
+                                    <span>
+                                        Deployed
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="utilization-legend">
+
+                                <div>
+                                    <span class="legend-color deployed"></span>
+                                    Deployed
+                                </div>
+
+                                <div>
+                                    <span class="legend-color available"></span>
+                                    Available
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =========================================
+                     KEY METRICS + ATTRIBUTION
+                ========================================== -->
+
+                <section class="overview-bottom-grid">
+
+
+                    <!-- KEY METRICS -->
+
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <h2>
+                                    Key Metrics
+                                </h2>
+
+                                <span>
+                                    Department overview
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="metrics-table">
+
+                            <div class="metric-row metric-head">
+
+                                <span>
+                                    Vertical
+                                </span>
+
+                                <span>
+                                    Allocated
+                                </span>
+
+                                <span>
+                                    Allocation
+                                </span>
+
+                                <span>
+                                    Status
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                id="overviewMetrics"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- MTD P&L ATTRIBUTION -->
+
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <h2>
+                                    MTD P&L Attribution
+                                </h2>
+
+                                <span>
+                                    Performance alerts
+                                </span>
+
+                            </div>
+
+                            <span class="alert-count">
+                                0
+                            </span>
+
+                        </div>
+
+
+                        <div class="attribution-list">
+
+                            <div class="attribution-item">
+
+                                <span class="alert-dot red"></span>
+
+                                <div>
+
+                                    <strong>
+                                        Capital allocation
+                                    </strong>
+
+                                    <small>
+                                        Allocation monitoring
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="attribution-item">
+
+                                <span class="alert-dot orange"></span>
+
+                                <div>
+
+                                    <strong>
+                                        Fund utilization
+                                    </strong>
+
+                                    <small>
+                                        Utilization monitoring
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="attribution-item">
+
+                                <span class="alert-dot green"></span>
+
+                                <div>
+
+                                    <strong>
+                                        Department performance
+                                    </strong>
+
+                                    <small>
+                                        Performance monitoring
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =========================================
+                     EXISTING CHART DATA
+                ========================================== -->
+
+                <section class="legacy-data-area">
+
+
+                    <div class="dashboard-card">
+
+                        <div class="card-header">
+
+                            <h2>
+                                Capital Allocation
+                            </h2>
+
+                        </div>
+
+
+                        <div class="legacy-chart-wrap">
+
+                            <div class="legacy-donut-wrap">
+
+                                <div
+                                    id="donut"
+                                    class="donut"
+                                ></div>
+
+                                <div
+                                    id="legend"
+                                    class="legend"
+                                ></div>
+
+                            </div>
+
+
+                            <div class="legacy-bar-wrap">
+
+                                <div
+                                    id="bars"
+                                    class="bars"
+                                ></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+
+
+                <!-- =========================================
+                     EXISTING TABLE CONTAINER
+                ========================================== -->
+
+                <section
+                    id="tablesGrid"
+                    class="tables-grid"
+                ></section>
+
+
+            </section>
+
+
+
+            <!-- =============================================
+                 FUTURE PAGES
+            ============================================== -->
+
+            <section
+                id="placeholderPage"
+                class="dashboard-page hidden"
+            >
+
+                <div class="empty-page">
+
+                    <h1>
+                        Coming Next
+                    </h1>
+
+                    <p>
+                        This section will be built in the next step.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+
+
+        <!-- ===============================================
+             FOOTER
+        ================================================ -->
+
+        <footer class="dashboard-footer">
+
+            <span>
+                YOGI GROWING TOGETHER LLP
+            </span>
+
+            <span>
+                Capital Management System
+            </span>
+
+            <span>
+                View Only
+            </span>
+
         </footer>
-
 
     </main>
 
@@ -259,6 +912,129 @@
 
 
 <script src="/dashboard.js"></script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const buttons =
+            document.querySelectorAll(
+                ".nav-item"
+            );
+
+
+        buttons.forEach(
+            function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        buttons.forEach(
+                            function (item) {
+                                item.classList.remove(
+                                    "active"
+                                );
+                            }
+                        );
+
+
+                        button.classList.add(
+                            "active"
+                        );
+
+
+                        if (
+                            button.dataset.page !==
+                            "overview"
+                        ) {
+
+                            const placeholder =
+                                document.getElementById(
+                                    "placeholderPage"
+                                );
+
+                            const overview =
+                                document.getElementById(
+                                    "overviewPage"
+                                );
+
+
+                            if (overview) {
+                                overview.classList.add(
+                                    "hidden"
+                                );
+                            }
+
+
+                            if (placeholder) {
+
+                                placeholder.classList.remove(
+                                    "hidden"
+                                );
+
+                                placeholder.classList.add(
+                                    "active-page"
+                                );
+
+                                const title =
+                                    placeholder.querySelector(
+                                        "h1"
+                                    );
+
+                                if (title) {
+
+                                    title.textContent =
+                                        button
+                                            .querySelector(
+                                                "span:last-child"
+                                            )
+                                            .textContent;
+                                }
+
+                            }
+
+                        } else {
+
+                            const placeholder =
+                                document.getElementById(
+                                    "placeholderPage"
+                                );
+
+                            const overview =
+                                document.getElementById(
+                                    "overviewPage"
+                                );
+
+
+                            if (placeholder) {
+                                placeholder.classList.add(
+                                    "hidden"
+                                );
+                            }
+
+
+                            if (overview) {
+                                overview.classList.remove(
+                                    "hidden"
+                                );
+                            }
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+</script>
 
 </body>
 
