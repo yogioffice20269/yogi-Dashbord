@@ -1,146 +1,2818 @@
-const $=s=>document.querySelector(s);
-const $$=s=>[...document.querySelectorAll(s)];
-const DEPTS=[
- {key:"trading",name:"Trading",color:"#2f75b5",tag:"blue",className:"blue"},
- {key:"investment",name:"Investment",color:"#0a9a5b",tag:"green",className:"green"},
- {key:"reserve",name:"Reserve",color:"#e4a915",tag:"yellow",className:"yellow"},
- {key:"rnd",name:"R&D",color:"#7042a0",tag:"purple",className:"purple"}
-];
-let DATA=null, currentPage="overview";
+/* =========================================================
+   YOGI GROWING TOGETHER LLP
+   CAPITAL MANAGEMENT SYSTEM
+   STEP 1
+   PERIOD FILTER + HISTORY + CHARTS
+========================================================= */
 
-const money=n=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(n)||0);
-const pct=n=>`${Number(n||0).toFixed(2)}%`;
-const num=n=>Number(n)||0;
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function dateDisplay(v){
- if(!v)return "—"; const d=new Date(v); if(!Number.isNaN(d.getTime())) return d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
- const m=String(v).match(/^(\d{1,2})[-\/]([A-Za-z]+|\d{1,2})[-\/](\d{2,4})$/); if(m)return `${m[1]}-${m[2]}-${m[3]}`;
- return v;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const DEPTS = [
+    {
+        key: "trading",
+        name: "Trading",
+        color: "#2f75b5",
+        tag: "blue",
+        className: "blue"
+    },
+    {
+        key: "investment",
+        name: "Investment",
+        color: "#0a9a5b",
+        tag: "green",
+        className: "green"
+    },
+    {
+        key: "reserve",
+        name: "Reserve",
+        color: "#e4a915",
+        tag: "yellow",
+        className: "yellow"
+    },
+    {
+        key: "rnd",
+        name: "R&D",
+        color: "#7042a0",
+        tag: "purple",
+        className: "purple"
+    }
+];
+
+let DATA = null;
+let HISTORY = [];
+let CURRENT_PERIOD = "Today";
+let currentPage = "overview";
+
+const HISTORY_KEY =
+    "yogi_capital_history_v1";
+
+/* =========================================================
+   FORMATTERS
+========================================================= */
+
+const money = n =>
+    new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+    }).format(Number(n) || 0);
+
+const number = n =>
+    new Intl.NumberFormat("en-IN", {
+        maximumFractionDigits: 2
+    }).format(Number(n) || 0);
+
+const pct = n =>
+    `${Number(n || 0).toFixed(2)}%`;
+
+const num = n =>
+    Number(n) || 0;
+
+function esc(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
-function totalAllocated(){
- return DEPTS.reduce((s,d)=>s+num(DATA.verticals?.[d.key]?.percent),0)*num(DATA.capital?.total)/100;
+
+/* =========================================================
+   DATE FUNCTIONS
+========================================================= */
+
+function todayISO() {
+
+    const d = new Date();
+
+    return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0")
+    ].join("-");
 }
-function deptCapital(k){return num(DATA.capital?.total)*num(DATA.verticals?.[k]?.percent)/100}
-function itemRows(k){return Array.isArray(DATA.verticals?.[k]?.items)?DATA.verticals[k].items:[]}
-function itemCapital(k,item){return deptCapital(k)*num(item?.[1])/100}
-function roiValue(k,item,idx){return itemCapital(k,item)*num(item?.[idx])/100}
-function monthPnl(k){return itemRows(k).reduce((s,x)=>s+roiValue(k,x,3),0)}
-function weekPnl(k){return itemRows(k).reduce((s,x)=>s+roiValue(k,x,2),0)}
-function allMonthPnl(){return DEPTS.reduce((s,d)=>s+monthPnl(d.key),0)}
-function allWeekPnl(){return DEPTS.reduce((s,d)=>s+weekPnl(d.key),0)}
-function renderShell(){
- $("#orgName").textContent=DATA.meta?.organization||"YOGI GROWING TOGETHER LLP";
- const dt=dateDisplay(DATA.meta?.date); $("#topDate").textContent=dt; $("#sideDate").textContent=dt;
+
+function parseDate(value) {
+
+    if (!value) return null;
+
+    const text = String(value).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+
+        const d = new Date(text + "T00:00:00");
+
+        return Number.isNaN(d.getTime())
+            ? null
+            : d;
+    }
+
+    const d = new Date(text);
+
+    if (!Number.isNaN(d.getTime())) {
+        return d;
+    }
+
+    const match = text.match(
+        /^(\d{1,2})[-\/]([A-Za-z]+|\d{1,2})[-\/](\d{2,4})$/
+    );
+
+    if (!match) return null;
+
+    let month = match[2];
+
+    const months = {
+        Jan: 0,
+        Feb: 1,
+        Mar: 2,
+        Apr: 3,
+        May: 4,
+        Jun: 5,
+        Jul: 6,
+        Aug: 7,
+        Sep: 8,
+        Oct: 9,
+        Nov: 10,
+        Dec: 11
+    };
+
+    if (isNaN(month)) {
+
+        const key =
+            month.charAt(0).toUpperCase() +
+            month.slice(1, 3).toLowerCase();
+
+        month = months[key];
+
+    } else {
+
+        month = Number(month) - 1;
+
+    }
+
+    let year = Number(match[3]);
+
+    if (year < 100) {
+        year += 2000;
+    }
+
+    return new Date(
+        year,
+        month,
+        Number(match[1])
+    );
 }
-function card(cls,label,value,delta=""){
- return `<div class="card kpi ${cls||""}"><div class="label">${label}</div><div class="value">${value}</div><div class="delta">${delta}</div></div>`;
+
+function dateKey(value) {
+
+    const d = parseDate(value);
+
+    if (!d) return todayISO();
+
+    return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0")
+    ].join("-");
 }
-function deptCards(){
- return `<div class="alloc-row">${DEPTS.map(d=>`<div class="alloc-card ${d.key}">
- <div class="alloc-title">${d.name.toUpperCase()}</div><div class="alloc-pct">${pct(DATA.verticals?.[d.key]?.percent)}</div>
- <div class="alloc-money">${money(deptCapital(d.key))}</div><div class="progress ${d.className}" style="margin-top:10px"><i style="width:${Math.min(100,num(DATA.verticals?.[d.key]?.percent))}%"></i></div>
- </div>`).join("")}</div>`;
+
+function dateDisplay(value) {
+
+    const d = parseDate(value);
+
+    if (!d) return "—";
+
+    return d.toLocaleDateString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }
+    );
 }
-function donut(){
- const parts=DEPTS.map(d=>num(DATA.verticals?.[d.key]?.percent)); const sum=parts.reduce((a,b)=>a+b,0)||1;
- let start=0, stops=[]; DEPTS.forEach((d,i)=>{const end=start+parts[i]/sum*360;stops.push(`${d.color} ${start}deg ${end}deg`);start=end});
- return `<div class="donut-area"><div class="donut" style="background:conic-gradient(${stops.join(",")})"><div class="donut-center"><div><b>${pct(sum)}</b><small>allocated target</small></div></div></div>
- <div class="legend">${DEPTS.map(d=>`<div class="legend-row"><i class="dot" style="background:${d.color}"></i><span>${d.name}</span><b>${pct(DATA.verticals?.[d.key]?.percent)}</b></div>`).join("")}</div></div>`;
+
+/* =========================================================
+   CAPITAL CALCULATIONS
+========================================================= */
+
+function totalCapital(data = DATA) {
+
+    return num(
+        data?.capital?.total
+    );
 }
-function lineChart(){
- const vals=DEPTS.map(d=>monthPnl(d.key)); const max=Math.max(1,...vals.map(Math.abs)); const w=760,h=220,p=24;
- const pts=vals.map((v,i)=>`${p+i*((w-2*p)/(Math.max(1,vals.length-1)))} ${h-p-(v/max*(h-2*p)*.75)}`).join(" ");
- return `<div class="chart"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><line x1="${p}" y1="${h-p}" x2="${w-p}" y2="${h-p}" stroke="#e6ecef"/><polyline points="${pts}" fill="none" stroke="#0a7544" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${vals.map((v,i)=>{const x=p+i*((w-2*p)/(Math.max(1,vals.length-1)));const y=h-p-(v/max*(h-2*p)*.75);return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#0a7544" stroke-width="3"/><text x="${x}" y="${h-5}" text-anchor="middle" font-size="10" fill="#71808c">${DEPTS[i].name}</text>`}).join("")}</svg></div>`;
+
+function deptPercent(key, data = DATA) {
+
+    return num(
+        data?.verticals?.[key]?.percent
+    );
 }
-function allocationTable(){
- const total=num(DATA.capital?.total);
- return `<div class="table-wrap"><table class="table"><thead><tr><th>Vertical</th><th class="num">Target</th><th class="num">Capital</th><th class="num">Week ROI</th><th class="num">Month ROI</th><th>Status</th></tr></thead><tbody>
- ${DEPTS.map(d=>{const p=num(DATA.verticals?.[d.key]?.percent),c=deptCapital(d.key),r=c?monthPnl(d.key)/c*100:0;return `<tr><td><b>${d.name}</b></td><td class="num">${pct(p)}</td><td class="num">${money(c)}</td><td class="num">${pct(c?weekPnl(d.key)/c*100:0)}</td><td class="num">${pct(r)}</td><td><span class="tag ${d.tag}">${p>0?"Allocated":"Not Allocated"}</span></td></tr>`}).join("")}
- <tr><td><b>Total</b></td><td class="num"><b>${pct(DEPTS.reduce((s,d)=>s+num(DATA.verticals?.[d.key]?.percent),0))}</b></td><td class="num"><b>${money(totalAllocated())}</b></td><td class="num"><b>${pct(totalAllocated()?allWeekPnl()/totalAllocated()*100:0)}</b></td><td class="num"><b>${pct(totalAllocated()?allMonthPnl()/totalAllocated()*100:0)}</b></td><td><span class="tag green">Live</span></td></tr>
- </tbody></table></div>`;
+
+function deptCapital(
+    key,
+    data = DATA
+) {
+
+    return (
+        totalCapital(data) *
+        deptPercent(key, data) /
+        100
+    );
 }
-function attribution(){
- return `<div class="bar-list">${DEPTS.map(d=>{const v=monthPnl(d.key),m=Math.min(100,Math.abs(v)/(Math.max(1,...DEPTS.map(x=>Math.abs(monthPnl(x)))))*100);return `<div class="bar-line"><span>${d.name}</span><div class="bar-track"><i style="width:${m}%;background:${d.color}"></i></div><b>${money(v)}</b></div>`}).join("")}</div>`;
+
+function itemRows(
+    key,
+    data = DATA
+) {
+
+    const rows =
+        data?.verticals?.[key]?.items;
+
+    return Array.isArray(rows)
+        ? rows
+        : [];
 }
-function renderOverview(){
- const total=num(DATA.capital?.total),alloc=totalAllocated(),avail=total-alloc,roi=total?allMonthPnl()/total*100:0;
- $("#page-overview").innerHTML=`
- <div class="grid kpis">${card("green-top","TOTAL FUND CAPITAL",money(total),"Core fund capital")}
- ${card("blue-top","CAPITAL DEPLOYED",money(alloc),"Based on current allocation")}
- ${card("yellow-top","AVAILABLE CAPITAL",money(avail),avail>=0?"Unallocated balance":"Over allocation")}
- ${card("green-top","MTD P&L",money(allMonthPnl()),allMonthPnl()>=0?"Positive contribution":"Negative contribution")}
- ${card("blue-top","MTD ROI",pct(roi),"Calculated from month ROI inputs")}
- ${card("red-top","MAX DRAWDOWN","—","Not stored in current data model")}</div>
- ${deptCards()}
- <div class="grid two mt"><div class="card"><div class="card-head"><h3>Allocation vs Target</h3><span>Current vertical allocation</span></div>${allocationTable()}</div>
- <div class="card"><div class="card-head"><h3>Capital Utilization</h3><span>${money(alloc)} / ${money(total)}</span></div>${donut()}</div></div>
- <div class="grid two mt"><div class="card"><div class="card-head"><h3>Fund Performance</h3><span>Month ROI contribution by vertical</span></div>${lineChart()}</div>
- <div class="card"><div class="card-head"><h3>MTD P&amp;L Attribution</h3><span>Calculated from item ROI</span></div><div class="card-body">${attribution()}</div></div></div>
- <div class="grid three mt"><div class="card"><div class="card-head"><h3>Key Metrics</h3></div><div class="card-body metric-list">
- <div class="metric-line"><span>Allocation Coverage</span><b>${pct(total?alloc/total*100:0)}</b></div><div class="metric-line"><span>Week P&amp;L</span><b>${money(allWeekPnl())}</b></div><div class="metric-line"><span>Month P&amp;L</span><b>${money(allMonthPnl())}</b></div></div></div>
- <div class="card"><div class="card-head"><h3>Control Status</h3></div><div class="card-body"><div class="callout">${Math.abs(alloc-total)<1?"Fund is fully allocated.":alloc<total?"Capital remains available for allocation.":"Allocation exceeds available capital."}</div><p class="page-note">Public view is read-only. Use Settings → Admin Panel to edit.</p></div></div>
- <div class="card"><div class="card-head"><h3>Data Source</h3></div><div class="card-body"><div class="metric-line"><span>Organization</span><b>${esc(DATA.meta?.organization)}</b></div><div class="metric-line"><span>Prepared By</span><b>${esc(DATA.meta?.preparedBy)}</b></div><div class="metric-line"><span>Last Date</span><b>${esc(dateDisplay(DATA.meta?.date))}</b></div></div></div></div>`;
+
+function itemCapital(
+    key,
+    item,
+    data = DATA
+) {
+
+    return (
+        deptCapital(key, data) *
+        num(item?.[1]) /
+        100
+    );
 }
-function renderAllocation(){
- $("#page-allocation").innerHTML=`<div class="subnav"><button class="active">Overview</button><button>Vertical Allocation</button><button>Sub Allocation</button></div>
- <div class="grid kpis">${card("green-top","TOTAL CAPITAL",money(DATA.capital?.total),"Fund size")}${card("blue-top","ALLOCATED",money(totalAllocated()),"Target allocation")}${card("yellow-top","AVAILABLE",money(num(DATA.capital?.total)-totalAllocated()),"Remaining")}${card("purple-top","VERTICALS",DEPTS.length,"Controlled buckets")}${card("green-top","WEEK P&L",money(allWeekPnl()),"From item ROI")}${card("blue-top","MONTH P&L",money(allMonthPnl()),"From item ROI")}</div>
- <div class="grid two mt"><div class="card"><div class="card-head"><h3>Vertical Allocation</h3><span>Target / capital / performance</span></div>${allocationTable()}</div><div class="card"><div class="card-head"><h3>Allocation Visualization</h3></div>${donut()}</div></div>
- <div class="card mt"><div class="card-head"><h3>Sub Allocation by Department</h3><span>All items from admin data</span></div><div class="card-body">${DEPTS.map(d=>`<div class="dept-head"><h3>${d.name}</h3><span class="tag ${d.tag}">${pct(DATA.verticals?.[d.key]?.percent)} • ${money(deptCapital(d.key))}</span></div>${itemTable(d.key)}<div style="height:16px"></div>`).join("")}</div></div>`;
+
+function itemROI(
+    key,
+    item,
+    index,
+    data = DATA
+) {
+
+    return (
+        itemCapital(
+            key,
+            item,
+            data
+        ) *
+        num(item?.[index]) /
+        100
+    );
 }
-function itemTable(k){
- const rows=itemRows(k),cap=deptCapital(k); return `<div class="table-wrap"><table class="table"><thead><tr><th>Particular</th><th class="num">Allocation</th><th class="num">Capital</th><th class="num">Week ROI</th><th class="num">Month ROI</th><th class="num">Month P&L</th></tr></thead><tbody>${rows.map(x=>`<tr><td><b>${esc(x[0])}</b></td><td class="num">${pct(x[1])}</td><td class="num">${money(cap*num(x[1])/100)}</td><td class="num">${pct(x[2])}</td><td class="num">${pct(x[3])}</td><td class="num">${money(roiValue(k,x,3))}</td></tr>`).join("")}${rows.length?`<tr><td><b>Total</b></td><td class="num"><b>${pct(rows.reduce((s,x)=>s+num(x[1]),0))}</b></td><td class="num"><b>${money(rows.reduce((s,x)=>s+itemCapital(k,x),0))}</b></td><td colspan="3"></td></tr>`:"<tr><td colspan=6>No items configured.</td></tr>"}</tbody></table></div>`;
+
+function weekPnl(
+    key,
+    data = DATA
+) {
+
+    return itemRows(
+        key,
+        data
+    ).reduce(
+        (sum, item) =>
+            sum +
+            itemROI(
+                key,
+                item,
+                2,
+                data
+            ),
+        0
+    );
 }
-function renderDept(k){
- const d=DEPTS.find(x=>x.key===k), capital=deptCapital(k),week=weekPnl(k),month=monthPnl(k),roi=capital?month/capital*100:0, rows=itemRows(k);
- let extra="";
- if(k==="trading") extra=`<div class="grid two mt"><div class="card"><div class="card-head"><h3>Book-wise Allocation</h3></div><div class="card-body">${barBooks(k)}</div></div><div class="card"><div class="card-head"><h3>Trading Control</h3></div><div class="card-body metric-list"><div class="metric-line"><span>Trades</span><b>Not stored</b></div><div class="metric-line"><span>Win Rate</span><b>Not stored</b></div><div class="metric-line"><span>Profit Factor</span><b>Not stored</b></div></div></div></div>`;
- if(k==="investment") extra=`<div class="grid two mt"><div class="card"><div class="card-head"><h3>Portfolio Allocation</h3></div><div class="card-body">${barBooks(k)}</div></div><div class="card"><div class="card-head"><h3>Portfolio Metrics</h3></div><div class="card-body metric-list"><div class="metric-line"><span>Invested Capital</span><b>${money(capital)}</b></div><div class="metric-line"><span>Current Value</span><b>Not stored</b></div><div class="metric-line"><span>Unrealized P&L</span><b>Not stored</b></div></div></div></div>`;
- if(k==="reserve") extra=`<div class="grid two mt"><div class="card"><div class="card-head"><h3>Reserve Composition</h3></div><div class="card-body">${barBooks(k)}</div></div><div class="card"><div class="card-head"><h3>Liquidity Controls</h3></div><div class="card-body metric-list"><div class="metric-line"><span>Required Minimum</span><b>Not stored</b></div><div class="metric-line"><span>Months of Expenses</span><b>Not stored</b></div><div class="metric-line"><span>Emergency Cover</span><b>Not stored</b></div></div></div></div>`;
- if(k==="rnd") extra=`<div class="grid two mt"><div class="card"><div class="card-head"><h3>R&amp;D Pipeline</h3></div><div class="card-body">${barBooks(k)}</div></div><div class="card"><div class="card-head"><h3>Project Controls</h3></div><div class="card-body metric-list"><div class="metric-line"><span>Active Projects</span><b>Not stored</b></div><div class="metric-line"><span>Testing / Approved</span><b>Not stored</b></div><div class="metric-line"><span>Success Rate</span><b>Not stored</b></div></div></div></div>`;
- $("#page-"+k).innerHTML=`<div class="grid kpis">${card(d.key==="trading"?"blue-top":d.key==="investment"?"green-top":d.key==="reserve"?"yellow-top":"purple-top","ALLOCATED CAPITAL",money(capital),pct(DATA.verticals?.[k]?.percent)+" target")}${card("green-top","WEEK P&L",money(week),"Calculated")}${card("green-top","MONTH P&L",money(month),"Calculated")}${card("blue-top","MONTH ROI",pct(roi),"Calculated")}${card("yellow-top","AVAILABLE","—","Not stored")}${card("red-top","RISK","—","Not stored")}</div>
- <div class="card mt"><div class="card-head"><h3>${d.name} — Allocation &amp; Performance</h3><span>${esc(DATA.verticals?.[k]?.purpose||"")}</span></div>${itemTable(k)}</div>${extra}
- <div class="card mt"><div class="card-head"><h3>Purpose / Mandate</h3></div><div class="card-body"><div class="callout">${esc(DATA.verticals?.[k]?.purpose||"No purpose configured.")}</div></div></div>`;
+
+function monthPnl(
+    key,
+    data = DATA
+) {
+
+    return itemRows(
+        key,
+        data
+    ).reduce(
+        (sum, item) =>
+            sum +
+            itemROI(
+                key,
+                item,
+                3,
+                data
+            ),
+        0
+    );
 }
-function barBooks(k){const rows=itemRows(k),mx=Math.max(1,...rows.map(x=>num(x[1])));return `<div class="bar-list">${rows.map(x=>`<div class="bar-line"><span>${esc(x[0])}</span><div class="bar-track"><i style="width:${num(x[1])/mx*100}%;background:${DEPTS.find(d=>d.key===k).color}"></i></div><b>${pct(x[1])}</b></div>`).join("")||"<div class=empty-state>No allocation items.</div>"}</div>`}
-function renderPerformance(){
- $("#page-performance").innerHTML=`<div class="grid kpis">${card("green-top","MONTH P&L",money(allMonthPnl()),"Calculated from item ROI")}${card("blue-top","WEEK P&L",money(allWeekPnl()),"Calculated from item ROI")}${card("green-top","MONTH ROI",pct(num(DATA.capital?.total)?allMonthPnl()/num(DATA.capital.total)*100:0),"Fund-level")}${card("yellow-top","WEEK ROI",pct(num(DATA.capital?.total)?allWeekPnl()/num(DATA.capital.total)*100:0),"Fund-level")}${card("red-top","MAX DRAWDOWN","—","Not stored")}${card("purple-top","BENCHMARK","—","Not stored")}</div>
- <div class="grid two mt"><div class="card"><div class="card-head"><h3>ROI by Vertical</h3></div>${allocationTable()}</div><div class="card"><div class="card-head"><h3>P&amp;L Contribution</h3></div><div class="card-body">${attribution()}</div></div></div>
- <div class="card mt"><div class="card-head"><h3>Detailed ROI Performance</h3><span>${DATA.settings?.overallROIEnabled===false?"Overall ROI section disabled by admin":"Enabled"}</span></div><div class="card-body">${DATA.settings?.overallROIEnabled===false?'<div class="empty-state"><div><strong>Overall ROI Performance is OFF</strong><span>Enable it from the Admin Panel.</span></div></div>':itemTable("trading")+itemTable("investment")+itemTable("reserve")+itemTable("rnd")}</div></div>`;
+
+function allWeekPnl(
+    data = DATA
+) {
+
+    return DEPTS.reduce(
+        (sum, dept) =>
+            sum +
+            weekPnl(
+                dept.key,
+                data
+            ),
+        0
+    );
 }
-function renderRisk(){
- $("#page-risk").innerHTML=`<div class="grid kpis">${card("red-top","MAX DRAWDOWN","—","Not stored in current schema")}${card("yellow-top","RISK LIMIT","—","Not stored")}${card("blue-top","CONCENTRATION","—","Not stored")}${card("green-top","LIQUIDITY","—","Reserve metrics not stored")}${card("purple-top","EXPOSURE","—","Not stored")}${card("red-top","STATUS","DATA GAP","Risk module requires extra fields")}</div>
- <div class="grid two mt"><div class="card"><div class="card-head"><h3>Risk Register</h3></div><div class="card-body"><div class="empty-state"><div><strong>Risk metrics are not part of the existing data model.</strong><span>The current backend stores capital, vertical allocation, item allocation and ROI only.</span></div></div></div></div>
- <div class="card"><div class="card-head"><h3>Available Controls</h3></div><div class="card-body metric-list"><div class="metric-line"><span>Vertical allocation cap</span><b>100%</b></div><div class="metric-line"><span>Input validation</span><b class="positive">Server-side</b></div><div class="metric-line"><span>Admin write access</span><b class="positive">Authenticated</b></div><div class="metric-line"><span>Public write access</span><b class="negative">Blocked</b></div></div></div></div>`;
+
+function allMonthPnl(
+    data = DATA
+) {
+
+    return DEPTS.reduce(
+        (sum, dept) =>
+            sum +
+            monthPnl(
+                dept.key,
+                data
+            ),
+        0
+    );
 }
-function renderMovements(){
- $("#page-movements").innerHTML=`<div class="grid kpis">${card("green-top","TOTAL CAPITAL",money(DATA.capital?.total),"Current")}${card("blue-top","ALLOCATED",money(totalAllocated()),"Current")}${card("yellow-top","AVAILABLE",money(num(DATA.capital?.total)-totalAllocated()),"Current")}${card("purple-top","LAST UPDATE",dateDisplay(DATA.meta?.date),"Admin date")}</div>
- <div class="card mt"><div class="card-head"><h3>Capital Movement Register</h3><span>Historical transactions are not stored</span></div><div class="card-body"><div class="empty-state"><div><strong>No capital movement records</strong><span>Add a transaction/history data model if you want deposits, withdrawals or transfers tracked.</span></div></div></div></div>`;
+
+function totalAllocated(
+    data = DATA
+) {
+
+    return DEPTS.reduce(
+        (sum, dept) =>
+            sum +
+            deptCapital(
+                dept.key,
+                data
+            ),
+        0
+    );
 }
-function renderReports(){
- $("#page-reports").innerHTML=`<div class="grid three"><div class="card report-card"><h3>Capital Allocation Report</h3><p>Vertical and item-level allocation with capital values.</p><button onclick="window.print()">Print / Save PDF</button></div><div class="card report-card"><h3>Performance Report</h3><p>Week and month ROI/P&amp;L calculated from the current dashboard inputs.</p><button onclick="window.print()">Print / Save PDF</button></div><div class="card report-card"><h3>Management Snapshot</h3><p>Executive dashboard view with current fund totals and controls.</p><button onclick="window.print()">Print / Save PDF</button></div></div>
- <div class="card mt"><div class="card-head"><h3>Report Summary</h3></div>${allocationTable()}<div class="footer-note">Generated from live server data • ${esc(dateDisplay(DATA.meta?.date))}</div></div>`;
+
+/* =========================================================
+   HISTORY STORAGE
+========================================================= */
+
+function createSnapshot(data) {
+
+    const snapshot = {
+        date: dateKey(
+            data?.meta?.date
+        ),
+
+        organization:
+            data?.meta?.organization || "",
+
+        totalCapital:
+            totalCapital(data),
+
+        departments: {},
+
+        totalAllocated:
+            totalAllocated(data),
+
+        availableCapital:
+            totalCapital(data) -
+            totalAllocated(data),
+
+        weekPnl:
+            allWeekPnl(data),
+
+        monthPnl:
+            allMonthPnl(data),
+
+        monthROI:
+            totalCapital(data)
+                ? (
+                    allMonthPnl(data) /
+                    totalCapital(data)
+                ) * 100
+                : 0,
+
+        weekROI:
+            totalCapital(data)
+                ? (
+                    allWeekPnl(data) /
+                    totalCapital(data)
+                ) * 100
+                : 0
+    };
+
+    DEPTS.forEach(
+        dept => {
+
+            snapshot.departments[
+                dept.key
+            ] = {
+
+                percent:
+                    deptPercent(
+                        dept.key,
+                        data
+                    ),
+
+                capital:
+                    deptCapital(
+                        dept.key,
+                        data
+                    ),
+
+                weekPnl:
+                    weekPnl(
+                        dept.key,
+                        data
+                    ),
+
+                monthPnl:
+                    monthPnl(
+                        dept.key,
+                        data
+                    ),
+
+                monthROI:
+                    deptCapital(
+                        dept.key,
+                        data
+                    )
+                        ? (
+                            monthPnl(
+                                dept.key,
+                                data
+                            ) /
+                            deptCapital(
+                                dept.key,
+                                data
+                            )
+                        ) * 100
+                        : 0
+            };
+        }
+    );
+
+    return snapshot;
 }
-function renderSettings(){
- $("#page-settings").innerHTML=`<div class="grid settings-grid"><div class="card"><div class="card-head"><h3>System Settings</h3></div><div class="card-body metric-list"><div class="metric-line"><span>Organization</span><b>${esc(DATA.meta?.organization)}</b></div><div class="metric-line"><span>Prepared By</span><b>${esc(DATA.meta?.preparedBy)}</b></div><div class="metric-line"><span>Dashboard Date</span><b>${esc(dateDisplay(DATA.meta?.date))}</b></div><div class="metric-line"><span>Overall ROI</span><b>${DATA.settings?.overallROIEnabled===false?"OFF":"ON"}</b></div></div></div>
- <div class="card"><div class="card-head"><h3>Administration</h3></div><div class="card-body"><p style="font-size:11px;color:#71808c;line-height:1.6">Public dashboard is view-only. The secure editor is protected by the existing server-side admin session.</p><a class="admin-link" href="/admin">Open Admin Panel</a></div></div></div>
- <div class="card mt"><div class="card-head"><h3>Current Data Model</h3></div><div class="card-body"><div class="callout">The existing backend stores total fund capital, four verticals, allocation percentages, purpose text, item allocation percentages and week/month ROI percentages. Advanced Risk, Trade History, Holdings and Capital Movement metrics are intentionally shown as unavailable until those fields are added to the backend.</div></div></div>`;
+
+function loadHistory() {
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                HISTORY_KEY
+            );
+
+        if (!raw) {
+            HISTORY = [];
+            return;
+        }
+
+        const parsed =
+            JSON.parse(raw);
+
+        HISTORY =
+            Array.isArray(parsed)
+                ? parsed
+                : [];
+
+    } catch (error) {
+
+        console.error(
+            "History load error:",
+            error
+        );
+
+        HISTORY = [];
+    }
 }
-function renderAll(){
- renderShell();renderOverview();renderAllocation();DEPTS.forEach(d=>renderDept(d.key));renderPerformance();renderRisk();renderMovements();renderReports();renderSettings();
+
+function saveHistory() {
+
+    try {
+
+        localStorage.setItem(
+            HISTORY_KEY,
+            JSON.stringify(HISTORY)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "History save error:",
+            error
+        );
+    }
 }
-function showPage(page){
- currentPage=page; $$(".page").forEach(x=>x.classList.remove("active")); $("#page-"+page)?.classList.add("active");
- $$(".nav-item").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
- const titles={overview:["Overview","Executive view of fund capital, allocation and performance."],allocation:["Allocation","Vertical and sub-allocation control."],trading:["Trading","Trading capital, books and ROI performance."],investment:["Investment","Investment allocation and portfolio controls."],reserve:["Reserve","Liquidity reserve and expense protection."],rnd:["R&D","Research, innovation and strategy development."],performance:["Performance","Fund and vertical performance analysis."],risk:["Risk","Risk and control framework."],movements:["Capital Movements","Capital movement register and current balances."],reports:["Reports","Management reporting and printable snapshots."],settings:["Settings","System information and administration."]};
- $("#pageTitle").textContent=titles[page][0];$("#pageSub").textContent=titles[page][1];
+
+function recordSnapshot(data) {
+
+    const snapshot =
+        createSnapshot(data);
+
+    const existing =
+        HISTORY.findIndex(
+            item =>
+                item.date ===
+                snapshot.date
+        );
+
+    if (existing >= 0) {
+
+        HISTORY[existing] =
+            snapshot;
+
+    } else {
+
+        HISTORY.push(snapshot);
+
+    }
+
+    HISTORY.sort(
+        (a, b) =>
+            a.date.localeCompare(
+                b.date
+            )
+    );
+
+    saveHistory();
 }
-async function load(){
- try{
-  const r=await fetch("/api/data",{cache:"no-store"}); if(!r.ok)throw new Error("Unable to load data");
-  DATA=await r.json(); renderAll(); showPage("overview"); $("#loading").classList.add("hidden");$("#app").classList.remove("hidden");
- }catch(e){console.error(e);$("#loading").innerHTML="<b>Unable to load dashboard.</b><span>Please refresh the page.</span>";}
+
+function getPeriodStart(period) {
+
+    const now = new Date();
+
+    if (period === "Today") {
+
+        return new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        );
+    }
+
+    if (period === "MTD") {
+
+        return new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1
+        );
+    }
+
+    if (period === "QTD") {
+
+        const quarter =
+            Math.floor(
+                now.getMonth() / 3
+            );
+
+        return new Date(
+            now.getFullYear(),
+            quarter * 3,
+            1
+        );
+    }
+
+    if (period === "YTD") {
+
+        return new Date(
+            now.getFullYear(),
+            0,
+            1
+        );
+    }
+
+    return new Date(
+        now.getFullYear(),
+        0,
+        1
+    );
 }
-$$(".nav-item").forEach(b=>b.addEventListener("click",()=>{showPage(b.dataset.page);$("#sidebar").classList.remove("open")}));
-$("#menuBtn")?.addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
-$$(".period").forEach(b=>b.addEventListener("click",()=>{$$(".period").forEach(x=>x.classList.remove("active"));b.classList.add("active")}));
+
+function getFilteredHistory() {
+
+    const start =
+        getPeriodStart(
+            CURRENT_PERIOD
+        );
+
+    return HISTORY.filter(
+        snapshot => {
+
+            const d =
+                parseDate(
+                    snapshot.date
+                );
+
+            if (!d) return false;
+
+            return d >= start;
+        }
+    );
+}
+
+function getCurrentSnapshot() {
+
+    return createSnapshot(
+        DATA
+    );
+}
+
+function getDisplayHistory() {
+
+    const rows =
+        getFilteredHistory();
+
+    const current =
+        getCurrentSnapshot();
+
+    if (!rows.length) {
+
+        return [
+            current
+        ];
+    }
+
+    const last =
+        rows[rows.length - 1];
+
+    if (
+        last.date !==
+        current.date
+    ) {
+
+        rows.push(current);
+
+    }
+
+    return rows;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+function renderShell() {
+
+    const org =
+        DATA?.meta?.organization ||
+        "YOGI GROWING TOGETHER LLP";
+
+    if ($("#orgName")) {
+
+        $("#orgName")
+            .textContent = org;
+    }
+
+    const dt =
+        dateDisplay(
+            DATA?.meta?.date
+        );
+
+    if ($("#topDate")) {
+
+        $("#topDate")
+            .textContent = dt;
+    }
+
+    if ($("#sideDate")) {
+
+        $("#sideDate")
+            .textContent = dt;
+    }
+}
+
+/* =========================================================
+   KPI CARD
+========================================================= */
+
+function card(
+    cls,
+    label,
+    value,
+    delta = ""
+) {
+
+    return `
+        <div class="card kpi ${cls || ""}">
+
+            <div class="label">
+                ${label}
+            </div>
+
+            <div class="value">
+                ${value}
+            </div>
+
+            <div class="delta">
+                ${delta}
+            </div>
+
+        </div>
+    `;
+}
+
+/* =========================================================
+   DEPARTMENT CARDS
+========================================================= */
+
+function deptCards() {
+
+    return `
+        <div class="alloc-row">
+
+            ${DEPTS.map(
+                dept => {
+
+                    const p =
+                        deptPercent(
+                            dept.key
+                        );
+
+                    const capital =
+                        deptCapital(
+                            dept.key
+                        );
+
+                    return `
+                        <div
+                            class="alloc-card ${dept.key}"
+                        >
+
+                            <div class="alloc-title">
+                                ${dept.name.toUpperCase()}
+                            </div>
+
+                            <div class="alloc-pct">
+                                ${pct(p)}
+                            </div>
+
+                            <div class="alloc-money">
+                                ${money(capital)}
+                            </div>
+
+                            <div
+                                class="progress ${dept.className}"
+                                style="margin-top:10px"
+                            >
+                                <i
+                                    style="width:${Math.min(
+                                        100,
+                                        Math.max(
+                                            0,
+                                            p
+                                        )
+                                    )}%"
+                                ></i>
+                            </div>
+
+                        </div>
+                    `;
+                }
+            ).join("")}
+
+        </div>
+    `;
+}
+
+/* =========================================================
+   PIE CHART
+========================================================= */
+
+function allocationPie(
+    snapshot = null
+) {
+
+    const values =
+        DEPTS.map(
+            dept =>
+                snapshot
+                    ? num(
+                        snapshot.departments?.[
+                            dept.key
+                        ]?.percent
+                    )
+                    : deptPercent(
+                        dept.key
+                    )
+        );
+
+    const total =
+        values.reduce(
+            (a, b) =>
+                a + b,
+            0
+        ) || 1;
+
+    let start = 0;
+
+    const segments = [];
+
+    DEPTS.forEach(
+        (dept, index) => {
+
+            const end =
+                start +
+                (
+                    values[index] /
+                    total
+                ) *
+                360;
+
+            segments.push(
+                `${dept.color} ${start}deg ${end}deg`
+            );
+
+            start = end;
+        }
+    );
+
+    return `
+        <div class="donut-area">
+
+            <div
+                class="donut"
+                style="
+                    background:
+                    conic-gradient(
+                        ${segments.join(",")}
+                    );
+                "
+            >
+
+                <div class="donut-center">
+
+                    <div>
+
+                        <b>
+                            ${pct(total)}
+                        </b>
+
+                        <small>
+                            allocated
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="legend">
+
+                ${DEPTS.map(
+                    (dept, index) => `
+                        <div class="legend-row">
+
+                            <i
+                                class="dot"
+                                style="
+                                    background:
+                                    ${dept.color}
+                                "
+                            ></i>
+
+                            <span>
+                                ${dept.name}
+                            </span>
+
+                            <b>
+                                ${pct(
+                                    values[index]
+                                )}
+                            </b>
+
+                        </div>
+                    `
+                ).join("")}
+
+            </div>
+
+        </div>
+    `;
+}
+
+/* =========================================================
+   GROWTH LINE CHART
+========================================================= */
+
+function growthChart(
+    rows,
+    metric = "totalCapital",
+    title = "Capital Growth"
+) {
+
+    if (!rows.length) {
+
+        return `
+            <div class="empty-state">
+                No historical data available.
+            </div>
+        `;
+    }
+
+    const values =
+        rows.map(
+            row =>
+                num(
+                    row[metric]
+                )
+        );
+
+    const width = 900;
+    const height = 300;
+    const padding = 45;
+
+    const max =
+        Math.max(
+            1,
+            ...values
+        );
+
+    const min =
+        Math.min(
+            0,
+            ...values
+        );
+
+    const range =
+        max - min || 1;
+
+    const xStep =
+        rows.length > 1
+            ? (
+                width -
+                padding * 2
+            ) /
+            (rows.length - 1)
+            : 0;
+
+    const points =
+        values.map(
+            (value, index) => {
+
+                const x =
+                    padding +
+                    index *
+                    xStep;
+
+                const y =
+                    height -
+                    padding -
+                    (
+                        (
+                            value -
+                            min
+                        ) /
+                        range
+                    ) *
+                    (
+                        height -
+                        padding * 2
+                    );
+
+                return {
+                    x,
+                    y,
+                    value
+                };
+            }
+        );
+
+    const polyline =
+        points
+            .map(
+                p =>
+                    `${p.x},${p.y}`
+            )
+            .join(" ");
+
+    return `
+        <div class="growth-chart">
+
+            <div class="chart-title">
+                ${title}
+            </div>
+
+            <svg
+                viewBox="
+                    0 0
+                    ${width}
+                    ${height}
+                "
+                preserveAspectRatio="none"
+                class="growth-svg"
+            >
+
+                <line
+                    x1="${padding}"
+                    y1="${padding}"
+                    x2="${padding}"
+                    y2="${height - padding}"
+                    stroke="#dfe5e8"
+                />
+
+                <line
+                    x1="${padding}"
+                    y1="${height - padding}"
+                    x2="${width - padding}"
+                    y2="${height - padding}"
+                    stroke="#dfe5e8"
+                />
+
+                <polyline
+                    points="${polyline}"
+                    fill="none"
+                    stroke="#087443"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+
+                ${points.map(
+                    (point, index) => {
+
+                        return `
+                            <circle
+                                cx="${point.x}"
+                                cy="${point.y}"
+                                r="5"
+                                fill="#ffffff"
+                                stroke="#087443"
+                                stroke-width="3"
+                            />
+
+                            <text
+                                x="${point.x}"
+                                y="${height - 12}"
+                                text-anchor="middle"
+                                font-size="11"
+                                fill="#71808c"
+                            >
+                                ${dateDisplay(
+                                    rows[index].date
+                                )}
+                            </text>
+                        `;
+                    }
+                ).join("")}
+
+            </svg>
+
+            <div class="chart-current">
+
+                <span>
+                    Latest
+                </span>
+
+                <b>
+                    ${money(
+                        values[
+                            values.length - 1
+                        ]
+                    )}
+                </b>
+
+            </div>
+
+        </div>
+    `;
+}
+
+/* =========================================================
+   ROI GROWTH CHART
+========================================================= */
+
+function roiGrowthChart(
+    rows
+) {
+
+    return growthChart(
+        rows,
+        "monthROI",
+        "ROI Growth"
+    );
+}
+
+/* =========================================================
+   HISTORICAL TABLE
+========================================================= */
+
+function historyTable(
+    rows
+) {
+
+    return `
+        <div class="table-wrap">
+
+            <table class="table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            DATE
+                        </th>
+
+                        <th class="num">
+                            TOTAL CAPITAL
+                        </th>
+
+                        <th class="num">
+                            TRADING
+                        </th>
+
+                        <th class="num">
+                            INVESTMENT
+                        </th>
+
+                        <th class="num">
+                            RESERVE
+                        </th>
+
+                        <th class="num">
+                            R&D
+                        </th>
+
+                        <th class="num">
+                            ROI %
+                        </th>
+
+                        <th class="num">
+                            ROI ₹
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${rows.map(
+                        row => {
+
+                            const total =
+                                num(
+                                    row.totalCapital
+                                );
+
+                            const roi =
+                                num(
+                                    row.monthROI
+                                );
+
+                            const roiAmount =
+                                num(
+                                    row.monthPnl
+                                );
+
+                            return `
+                                <tr>
+
+                                    <td>
+                                        <b>
+                                            ${dateDisplay(
+                                                row.date
+                                            )}
+                                        </b>
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            total
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            row.departments?.trading?.capital || 0
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            row.departments?.investment?.capital || 0
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            row.departments?.reserve?.capital || 0
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            row.departments?.rnd?.capital || 0
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${pct(
+                                            roi
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            roiAmount
+                                        )}
+                                    </td>
+
+                                </tr>
+                            `;
+                        }
+                    ).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+}
+
+/* =========================================================
+   DEPARTMENT HISTORY TABLE
+========================================================= */
+
+function departmentHistoryTable(
+    key,
+    rows
+) {
+
+    const dept =
+        DEPTS.find(
+            d => d.key === key
+        );
+
+    if (!dept) return "";
+
+    return `
+        <div class="table-wrap">
+
+            <table class="table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            DATE
+                        </th>
+
+                        <th class="num">
+                            ALLOCATION %
+                        </th>
+
+                        <th class="num">
+                            CAPITAL
+                        </th>
+
+                        <th class="num">
+                            WEEK P&L
+                        </th>
+
+                        <th class="num">
+                            MONTH P&L
+                        </th>
+
+                        <th class="num">
+                            MONTH ROI
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${rows.map(
+                        row => {
+
+                            const d =
+                                row.departments?.[
+                                    key
+                                ] || {};
+
+                            return `
+                                <tr>
+
+                                    <td>
+                                        <b>
+                                            ${dateDisplay(
+                                                row.date
+                                            )}
+                                        </b>
+                                    </td>
+
+                                    <td class="num">
+                                        ${pct(
+                                            d.percent
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            d.capital
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            d.weekPnl
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            d.monthPnl
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${pct(
+                                            d.monthROI
+                                        )}
+                                    </td>
+
+                                </tr>
+                            `;
+                        }
+                    ).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+}
+
+/* =========================================================
+   OVERVIEW
+========================================================= */
+
+function renderOverview() {
+
+    const total =
+        totalCapital();
+
+    const allocated =
+        totalAllocated();
+
+    const available =
+        total - allocated;
+
+    const rows =
+        getDisplayHistory();
+
+    const latest =
+        rows[
+            rows.length - 1
+        ];
+
+    const roi =
+        latest?.monthROI || 0;
+
+    $("#page-overview").innerHTML = `
+
+        <div class="grid kpis">
+
+            ${card(
+                "green-top",
+                "TOTAL FUND CAPITAL",
+                money(total),
+                "Current fund capital"
+            )}
+
+            ${card(
+                "blue-top",
+                "CAPITAL DEPLOYED",
+                money(allocated),
+                "Current allocation"
+            )}
+
+            ${card(
+                "yellow-top",
+                "AVAILABLE CAPITAL",
+                money(available),
+                available >= 0
+                    ? "Unallocated balance"
+                    : "Over allocation"
+            )}
+
+            ${card(
+                "green-top",
+                CURRENT_PERIOD === "Today"
+                    ? "TODAY P&L"
+                    : `${CURRENT_PERIOD} P&L`,
+                money(
+                    latest?.monthPnl || 0
+                ),
+                "Calculated from ROI"
+            )}
+
+            ${card(
+                "blue-top",
+                CURRENT_PERIOD === "Today"
+                    ? "TODAY ROI"
+                    : `${CURRENT_PERIOD} ROI`,
+                pct(roi),
+                "Historical performance"
+            )}
+
+            ${card(
+                "red-top",
+                "MAX DRAWDOWN",
+                "—",
+                "Not stored"
+            )}
+
+        </div>
+
+        ${deptCards()}
+
+        <div class="grid two mt">
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        Capital Growth
+                    </h3>
+
+                    <span>
+                        ${CURRENT_PERIOD}
+                    </span>
+
+                </div>
+
+                ${growthChart(
+                    rows,
+                    "totalCapital",
+                    "Total Capital Growth"
+                )}
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        ROI Growth
+                    </h3>
+
+                    <span>
+                        ${CURRENT_PERIOD}
+                    </span>
+
+                </div>
+
+                ${roiGrowthChart(
+                    rows
+                )}
+
+            </div>
+
+        </div>
+
+        <div class="grid two mt">
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        Capital Allocation
+                    </h3>
+
+                    <span>
+                        ${CURRENT_PERIOD}
+                    </span>
+
+                </div>
+
+                ${allocationPie(
+                    latest
+                )}
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        Historical Capital
+                    </h3>
+
+                    <span>
+                        ${rows.length} record(s)
+                    </span>
+
+                </div>
+
+                ${historyTable(
+                    rows
+                )}
+
+            </div>
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    ${CURRENT_PERIOD}
+                    Department Performance
+                </h3>
+
+                <span>
+                    Trading • Investment • Reserve • R&D
+                </span>
+
+            </div>
+
+            <div class="card-body">
+
+                ${DEPTS.map(
+                    dept => `
+
+                        <div
+                            style="
+                                margin-bottom:30px;
+                            "
+                        >
+
+                            <h3
+                                style="
+                                    margin-bottom:12px;
+                                    color:${dept.color};
+                                "
+                            >
+                                ${dept.name}
+                            </h3>
+
+                            ${departmentHistoryTable(
+                                dept.key,
+                                rows
+                            )}
+
+                        </div>
+
+                    `
+                ).join("")}
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   ALLOCATION
+========================================================= */
+
+function renderAllocation() {
+
+    const rows =
+        getDisplayHistory();
+
+    const latest =
+        rows[
+            rows.length - 1
+        ];
+
+    $("#page-allocation").innerHTML = `
+
+        <div class="grid kpis">
+
+            ${card(
+                "green-top",
+                "TOTAL CAPITAL",
+                money(
+                    latest?.totalCapital ||
+                    totalCapital()
+                ),
+                CURRENT_PERIOD
+            )}
+
+            ${card(
+                "blue-top",
+                "ALLOCATED",
+                money(
+                    latest?.totalAllocated ||
+                    totalAllocated()
+                ),
+                "Capital allocated"
+            )}
+
+            ${card(
+                "yellow-top",
+                "AVAILABLE",
+                money(
+                    latest?.availableCapital ||
+                    0
+                ),
+                "Remaining"
+            )}
+
+            ${card(
+                "purple-top",
+                "VERTICALS",
+                DEPTS.length,
+                "Controlled buckets"
+            )}
+
+        </div>
+
+        <div class="grid two mt">
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        Allocation Growth
+                    </h3>
+
+                    <span>
+                        ${CURRENT_PERIOD}
+                    </span>
+
+                </div>
+
+                ${growthChart(
+                    rows,
+                    "totalAllocated",
+                    "Allocated Capital"
+                )}
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        Allocation Distribution
+                    </h3>
+
+                </div>
+
+                ${allocationPie(
+                    latest
+                )}
+
+            </div>
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Historical Allocation
+                </h3>
+
+            </div>
+
+            ${historyTable(
+                rows
+            )}
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   DEPARTMENT PAGE
+========================================================= */
+
+function renderDepartment(
+    key
+) {
+
+    const dept =
+        DEPTS.find(
+            d => d.key === key
+        );
+
+    if (!dept) return;
+
+    const rows =
+        getDisplayHistory();
+
+    const latest =
+        rows[
+            rows.length - 1
+        ];
+
+    const d =
+        latest?.departments?.[
+            key
+        ] || {};
+
+    const capital =
+        num(d.capital);
+
+    const week =
+        num(d.weekPnl);
+
+    const month =
+        num(d.monthPnl);
+
+    const roi =
+        num(d.monthROI);
+
+    $("#page-" + key).innerHTML = `
+
+        <div class="grid kpis">
+
+            ${card(
+                dept.key === "trading"
+                    ? "blue-top"
+                    : dept.key === "investment"
+                    ? "green-top"
+                    : dept.key === "reserve"
+                    ? "yellow-top"
+                    : "purple-top",
+
+                "ALLOCATED CAPITAL",
+
+                money(capital),
+
+                pct(
+                    d.percent
+                ) +
+                " target"
+            )}
+
+            ${card(
+                "green-top",
+                "WEEK P&L",
+                money(week),
+                CURRENT_PERIOD
+            )}
+
+            ${card(
+                "green-top",
+                "MONTH P&L",
+                money(month),
+                CURRENT_PERIOD
+            )}
+
+            ${card(
+                "blue-top",
+                "MONTH ROI",
+                pct(roi),
+                CURRENT_PERIOD
+            )}
+
+        </div>
+
+        <div class="grid two mt">
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        ${dept.name}
+                        Capital Growth
+                    </h3>
+
+                    <span>
+                        ${CURRENT_PERIOD}
+                    </span>
+
+                </div>
+
+                ${growthChart(
+                    rows,
+                    "totalCapital",
+                    `${dept.name} — Fund Capital Trend`
+                )}
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        ${dept.name}
+                        Allocation
+                    </h3>
+
+                </div>
+
+                ${allocationPie(
+                    latest
+                )}
+
+            </div>
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    ${dept.name}
+                    Historical Performance
+                </h3>
+
+                <span>
+                    ${CURRENT_PERIOD}
+                </span>
+
+            </div>
+
+            ${departmentHistoryTable(
+                key,
+                rows
+            )}
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Current Allocation Items
+                </h3>
+
+            </div>
+
+            <div class="table-wrap">
+
+                <table class="table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                PARTICULAR
+                            </th>
+
+                            <th class="num">
+                                ALLOCATION
+                            </th>
+
+                            <th class="num">
+                                CAPITAL
+                            </th>
+
+                            <th class="num">
+                                WEEK ROI
+                            </th>
+
+                            <th class="num">
+                                MONTH ROI
+                            </th>
+
+                            <th class="num">
+                                MONTH P&L
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${itemRows(
+                            key
+                        ).map(
+                            item => `
+
+                                <tr>
+
+                                    <td>
+                                        <b>
+                                            ${esc(
+                                                item?.[0]
+                                            )}
+                                        </b>
+                                    </td>
+
+                                    <td class="num">
+                                        ${pct(
+                                            item?.[1]
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            itemCapital(
+                                                key,
+                                                item
+                                            )
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${pct(
+                                            item?.[2]
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${pct(
+                                            item?.[3]
+                                        )}
+                                    </td>
+
+                                    <td class="num">
+                                        ${money(
+                                            itemROI(
+                                                key,
+                                                item,
+                                                3
+                                            )
+                                        )}
+                                    </td>
+
+                                </tr>
+
+                            `
+                        ).join("")}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Purpose / Mandate
+                </h3>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="callout">
+
+                    ${esc(
+                        DATA?.verticals?.[
+                            key
+                        ]?.purpose ||
+                        "No purpose configured."
+                    )}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   PERFORMANCE
+========================================================= */
+
+function renderPerformance() {
+
+    const rows =
+        getDisplayHistory();
+
+    const latest =
+        rows[
+            rows.length - 1
+        ];
+
+    $("#page-performance").innerHTML = `
+
+        <div class="grid kpis">
+
+            ${card(
+                "green-top",
+                "PERIOD P&L",
+                money(
+                    latest?.monthPnl ||
+                    0
+                ),
+                CURRENT_PERIOD
+            )}
+
+            ${card(
+                "blue-top",
+                "PERIOD ROI",
+                pct(
+                    latest?.monthROI ||
+                    0
+                ),
+                CURRENT_PERIOD
+            )}
+
+            ${card(
+                "green-top",
+                "WEEK P&L",
+                money(
+                    latest?.weekPnl ||
+                    0
+                ),
+                "Current snapshot"
+            )}
+
+            ${card(
+                "yellow-top",
+                "WEEK ROI",
+                pct(
+                    latest?.weekROI ||
+                    0
+                ),
+                "Current snapshot"
+            )}
+
+        </div>
+
+        <div class="grid two mt">
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        Capital Growth
+                    </h3>
+
+                </div>
+
+                ${growthChart(
+                    rows,
+                    "totalCapital",
+                    "Capital Growth"
+                )}
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        ROI Growth
+                    </h3>
+
+                </div>
+
+                ${roiGrowthChart(
+                    rows
+                )}
+
+            </div>
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Historical Performance
+                </h3>
+
+                <span>
+                    ${CURRENT_PERIOD}
+                </span>
+
+            </div>
+
+            ${historyTable(
+                rows
+            )}
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   RISK
+========================================================= */
+
+function renderRisk() {
+
+    $("#page-risk").innerHTML = `
+
+        <div class="grid kpis">
+
+            ${card(
+                "red-top",
+                "MAX DRAWDOWN",
+                "—",
+                "Not stored"
+            )}
+
+            ${card(
+                "yellow-top",
+                "RISK LIMIT",
+                "—",
+                "Not stored"
+            )}
+
+            ${card(
+                "blue-top",
+                "CONCENTRATION",
+                "—",
+                "Not stored"
+            )}
+
+            ${card(
+                "green-top",
+                "LIQUIDITY",
+                "—",
+                "Not stored"
+            )}
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Risk Register
+                </h3>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="empty-state">
+
+                    <div>
+
+                        <strong>
+                            Risk history is not
+                            stored yet.
+                        </strong>
+
+                        <span>
+                            This will be added in
+                            a later step.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   CAPITAL MOVEMENTS
+========================================================= */
+
+function renderMovements() {
+
+    const rows =
+        getDisplayHistory();
+
+    $("#page-movements").innerHTML = `
+
+        <div class="grid kpis">
+
+            ${card(
+                "green-top",
+                "TOTAL CAPITAL",
+                money(
+                    totalCapital()
+                ),
+                CURRENT_PERIOD
+            )}
+
+            ${card(
+                "blue-top",
+                "ALLOCATED",
+                money(
+                    totalAllocated()
+                ),
+                CURRENT_PERIOD
+            )}
+
+            ${card(
+                "yellow-top",
+                "AVAILABLE",
+                money(
+                    totalCapital() -
+                    totalAllocated()
+                ),
+                "Current"
+            )}
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Capital History
+                </h3>
+
+                <span>
+                    ${CURRENT_PERIOD}
+                </span>
+
+            </div>
+
+            ${historyTable(
+                rows
+            )}
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   REPORTS
+========================================================= */
+
+function renderReports() {
+
+    const rows =
+        getDisplayHistory();
+
+    $("#page-reports").innerHTML = `
+
+        <div class="grid three">
+
+            <div class="card report-card">
+
+                <h3>
+                    Capital Report
+                </h3>
+
+                <p>
+                    Historical capital and
+                    allocation data.
+                </p>
+
+                <button
+                    onclick="window.print()"
+                >
+                    Print / Save PDF
+                </button>
+
+            </div>
+
+            <div class="card report-card">
+
+                <h3>
+                    Performance Report
+                </h3>
+
+                <p>
+                    Historical ROI and P&L
+                    data.
+                </p>
+
+                <button
+                    onclick="window.print()"
+                >
+                    Print / Save PDF
+                </button>
+
+            </div>
+
+            <div class="card report-card">
+
+                <h3>
+                    Management Snapshot
+                </h3>
+
+                <p>
+                    ${CURRENT_PERIOD}
+                    management view.
+                </p>
+
+                <button
+                    onclick="window.print()"
+                >
+                    Print / Save PDF
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Historical Report
+                </h3>
+
+            </div>
+
+            ${historyTable(
+                rows
+            )}
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+function renderSettings() {
+
+    $("#page-settings").innerHTML = `
+
+        <div class="grid settings-grid">
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        System Settings
+                    </h3>
+
+                </div>
+
+                <div class="card-body metric-list">
+
+                    <div class="metric-line">
+
+                        <span>
+                            Organization
+                        </span>
+
+                        <b>
+                            ${esc(
+                                DATA?.meta?.organization
+                            )}
+                        </b>
+
+                    </div>
+
+                    <div class="metric-line">
+
+                        <span>
+                            Prepared By
+                        </span>
+
+                        <b>
+                            ${esc(
+                                DATA?.meta?.preparedBy
+                            )}
+                        </b>
+
+                    </div>
+
+                    <div class="metric-line">
+
+                        <span>
+                            Dashboard Date
+                        </span>
+
+                        <b>
+                            ${dateDisplay(
+                                DATA?.meta?.date
+                            )}
+                        </b>
+
+                    </div>
+
+                    <div class="metric-line">
+
+                        <span>
+                            Selected Period
+                        </span>
+
+                        <b>
+                            ${CURRENT_PERIOD}
+                        </b>
+
+                    </div>
+
+                    <div class="metric-line">
+
+                        <span>
+                            Stored History Records
+                        </span>
+
+                        <b>
+                            ${HISTORY.length}
+                        </b>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-head">
+
+                    <h3>
+                        Administration
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <p
+                        style="
+                            font-size:11px;
+                            color:#71808c;
+                            line-height:1.6;
+                        "
+                    >
+                        Public dashboard is
+                        view-only.
+                    </p>
+
+                    <a
+                        class="admin-link"
+                        href="/admin"
+                    >
+                        Open Admin Panel
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card mt">
+
+            <div class="card-head">
+
+                <h3>
+                    Historical Data
+                </h3>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="callout">
+
+                    History is currently stored
+                    locally in this browser.
+                    Persistent server history
+                    will be added in the next
+                    step.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+/* =========================================================
+   RENDER ALL
+========================================================= */
+
+function renderAll() {
+
+    renderShell();
+
+    renderOverview();
+
+    renderAllocation();
+
+    DEPTS.forEach(
+        dept =>
+            renderDepartment(
+                dept.key
+            )
+    );
+
+    renderPerformance();
+
+    renderRisk();
+
+    renderMovements();
+
+    renderReports();
+
+    renderSettings();
+}
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function showPage(
+    page
+) {
+
+    currentPage =
+        page;
+
+    $$(".page").forEach(
+        element =>
+            element.classList.remove(
+                "active"
+            )
+    );
+
+    $("#page-" + page)
+        ?.classList.add(
+            "active"
+        );
+
+    $$(".nav-item").forEach(
+        element =>
+            element.classList.toggle(
+                "active",
+                element.dataset.page ===
+                page
+            )
+    );
+
+    const titles = {
+
+        overview: [
+            "Overview",
+            "Executive view of fund capital, allocation and performance."
+        ],
+
+        allocation: [
+            "Allocation",
+            "Vertical and historical allocation control."
+        ],
+
+        trading: [
+            "Trading",
+            "Trading capital, allocation and historical performance."
+        ],
+
+        investment: [
+            "Investment",
+            "Investment allocation and historical performance."
+        ],
+
+        reserve: [
+            "Reserve",
+            "Reserve allocation and historical performance."
+        ],
+
+        rnd: [
+            "R&D",
+            "Research and development allocation and historical performance."
+        ],
+
+        performance: [
+            "Performance",
+            "Historical fund performance and ROI."
+        ],
+
+        risk: [
+            "Risk",
+            "Risk and control framework."
+        ],
+
+        movements: [
+            "Capital Movements",
+            "Historical capital movement view."
+        ],
+
+        reports: [
+            "Reports",
+            "Historical management reports."
+        ],
+
+        settings: [
+            "Settings",
+            "System information and administration."
+        ]
+
+    };
+
+    if (
+        $("#pageTitle") &&
+        titles[page]
+    ) {
+
+        $("#pageTitle")
+            .textContent =
+            titles[page][0];
+
+        $("#pageSub")
+            .textContent =
+            titles[page][1];
+    }
+}
+
+/* =========================================================
+   PERIOD SELECTOR
+========================================================= */
+
+function setupPeriods() {
+
+    $$(".period").forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    CURRENT_PERIOD =
+                        button.textContent
+                            .trim();
+
+                    $$(".period")
+                        .forEach(
+                            x =>
+                                x.classList.remove(
+                                    "active"
+                                )
+                        );
+
+                    button.classList.add(
+                        "active"
+                    );
+
+                    renderAll();
+
+                    showPage(
+                        currentPage
+                    );
+
+                }
+            );
+
+        }
+    );
+}
+
+/* =========================================================
+   LOAD DATA
+========================================================= */
+
+async function load() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/data",
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load dashboard data."
+            );
+        }
+
+        DATA =
+            await response.json();
+
+        loadHistory();
+
+        /*
+         * Record today's/current dashboard
+         * state.
+         */
+        recordSnapshot(
+            DATA
+        );
+
+        renderAll();
+
+        showPage(
+            "overview"
+        );
+
+        if ($("#loading")) {
+
+            $("#loading")
+                .classList
+                .add("hidden");
+        }
+
+        if ($("#app")) {
+
+            $("#app")
+                .classList
+                .remove("hidden");
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard Error:",
+            error
+        );
+
+        if ($("#loading")) {
+
+            $("#loading").innerHTML = `
+                <b>
+                    Unable to load dashboard.
+                </b>
+
+                <span>
+                    Please refresh the page.
+                </span>
+            `;
+        }
+
+    }
+}
+
+/* =========================================================
+   NAVIGATION EVENTS
+========================================================= */
+
+function setupNavigation() {
+
+    $$(".nav-item")
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        showPage(
+                            button.dataset.page
+                        );
+
+                        $("#sidebar")
+                            ?.classList
+                            .remove(
+                                "open"
+                            );
+                    }
+                );
+
+            }
+        );
+
+    $("#menuBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                $("#sidebar")
+                    ?.classList
+                    .toggle(
+                        "open"
+                    );
+
+            }
+        );
+}
+
+/* =========================================================
+   START
+========================================================= */
+
+setupNavigation();
+
+setupPeriods();
+
 load();
