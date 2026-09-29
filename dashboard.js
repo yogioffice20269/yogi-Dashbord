@@ -494,84 +494,61 @@ function lineChart() {
 /* =========================================================
    PERIOD PERFORMANCE VISUAL
 ========================================================= */
-
 function periodPerformanceVisual() {
+
   const p = performanceData();
 
   const values = [
-  {
-    label: "P&L",
-    value: p.pnl,
-    formatted: money(p.pnl)
-  },
-  {
-    label: "ROI",
-    value: p.roi,
-    formatted: pct(p.roi)
-  },
-  {
-    label: "Capital Deployed",
-    value: p.deployed,
-    formatted: money(p.deployed)
-  },
-  {
-    label: "Available Capital",
-    value: p.available,
-    formatted: money(p.available)
-  }
-];
-
-  const max =
-    Math.max(
-      1,
-      ...values.map(x =>
-        Math.abs(num(x.value))
-      )
-    );
+    {
+      label: "P&L",
+      value: p.pnl,
+      formatted: money(p.pnl),
+      cls: "pnl"
+    },
+    {
+      label: "ROI",
+      value: p.roi,
+      formatted: pct(p.roi),
+      cls: "roi"
+    },
+    {
+      label: "Capital Deployed",
+      value: p.deployed,
+      formatted: money(p.deployed),
+      cls: "deployed"
+    },
+    {
+      label: "Available Capital",
+      value: p.available,
+      formatted: money(p.available),
+      cls: "available"
+    }
+  ];
 
   return `
-    <div class="bar-list">
+    <div class="fund-performance-list">
 
-      ${values.map(x => {
+      ${values.map(x => `
+        <div class="fund-performance-row ${x.cls}">
 
-        const width =
-          Math.min(
-            100,
-            Math.abs(
-              num(x.value)
-            ) /
-              max *
-              100
-          );
-
-        return `
-          <div class="bar-line">
-
-            <span>
-              ${x.label}
-            </span>
-
-            <div class="bar-track">
-              <i
-                style="
-                  width:${width}%;
-                  background:#0a7544
-                "
-              ></i>
-            </div>
-
-            <b>
-              ${x.formatted}
-            </b>
-
+          <div class="fund-performance-label">
+            ${x.label}
           </div>
-        `;
-      }).join("")}
+
+          <div class="fund-performance-bar">
+            <div class="fund-performance-fill"></div>
+          </div>
+
+          <div class="fund-performance-value">
+            ${x.formatted}
+          </div>
+
+        </div>
+      `).join("")}
 
     </div>
   `;
 }
-
 /* =========================================================
    ALLOCATION TABLE
 ========================================================= */
