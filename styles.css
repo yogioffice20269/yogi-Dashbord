@@ -36,3 +36,81 @@ textarea {
 svg text {
   font-family: "Times New Roman", Times, serif !important;
 }
+/* =========================================================
+   FUND PERFORMANCE BOX
+========================================================= */
+
+.fund-performance-list {
+  width: 100%;
+  padding: 4px 0 6px;
+}
+
+.fund-performance-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 95px;
+  align-items: center;
+  gap: 12px;
+  min-height: 34px;
+}
+
+.fund-performance-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #102a43;
+}
+
+.fund-performance-bar {
+  height: 9px;
+  background: #edf1f3;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.fund-performance-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 10px;
+  background: #0a7544;
+}
+
+.fund-performance-value {
+  text-align: right;
+  font-weight: 700;
+  font-size: 13px;
+  color: #102a43;
+}
+
+/* P&L */
+.fund-performance-row.pnl .fund-performance-fill {
+  background: #0a7544;
+}
+
+/* ROI */
+.fund-performance-row.roi .fund-performance-fill {
+  background: #2878b8;
+}
+
+/* Capital Deployed */
+.fund-performance-row.deployed .fund-performance-fill {
+  background: #e5a400;
+}
+
+/* Available Capital */
+.fund-performance-row.available .fund-performance-fill {
+  background: #7542a5;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+
+  .fund-performance-row {
+    grid-template-columns: 115px 1fr 75px;
+    gap: 8px;
+  }
+
+  .fund-performance-label,
+  .fund-performance-value {
+    font-size: 11px;
+  }
+
+}
