@@ -495,75 +495,43 @@ function lineChart() {
    PERIOD PERFORMANCE VISUAL
 ========================================================= */
 function periodPerformanceVisual() {
-
   const p = performanceData();
 
   const values = [
     {
       label: "P&L",
-      value: p.pnl,
       formatted: money(p.pnl)
     },
     {
       label: "ROI",
-      value: p.roi,
       formatted: pct(p.roi)
     },
     {
       label: "Capital Deployed",
-      value: p.deployed,
       formatted: money(p.deployed)
     },
     {
       label: "Available Capital",
-      value: p.available,
       formatted: money(p.available)
     }
   ];
 
-  const max = Math.max(
-    1,
-    ...values.map(x => Math.abs(num(x.value)))
-  );
-
   return `
     <div class="bar-list fund-performance-list">
+      ${values.map(x => `
+        <div class="bar-line fund-performance-line">
+          <span class="fund-label">${x.label}</span>
 
-      ${values.map(x => {
-
-        const width = Math.min(
-          100,
-          Math.abs(num(x.value)) / max * 100
-        );
-
-        return `
-          <div class="bar-line fund-performance-line">
-
-            <span>
-              ${x.label}
-            </span>
-
-            <div class="bar-track">
-              <i
-                style="
-                  width:${width}%;
-                  background:#0a7544;
-                "
-              ></i>
-            </div>
-
-            <b>
-              ${x.formatted}
-            </b>
-
+          <div class="bar-track">
+            <i style="width:0%"></i>
           </div>
-        `;
 
-      }).join("")}
-
+          <b>${x.formatted}</b>
+        </div>
+      `).join("")}
     </div>
   `;
-}/* =========================================================
+}}/* =========================================================
    ALLOCATION TABLE
 ========================================================= */
 
