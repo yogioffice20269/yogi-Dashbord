@@ -499,27 +499,27 @@ function periodPerformanceVisual() {
   const p = performanceData();
 
   const values = [
-    {
-      label: "P&L",
-      value: p.pnl,
-      formatted: money(p.pnl)
-    },
-    {
-      label: "ROI",
-      value: p.roi,
-      formatted: pct(p.roi)
-    },
-    {
-      label: "Deployed",
-      value: p.deployed,
-      formatted: money(p.deployed)
-    },
-    {
-      label: "Available",
-      value: p.available,
-      formatted: money(p.available)
-    }
-  ];
+  {
+    label: "P&L",
+    value: p.pnl,
+    formatted: money(p.pnl)
+  },
+  {
+    label: "ROI",
+    value: p.roi,
+    formatted: pct(p.roi)
+  },
+  {
+    label: "Capital Deployed",
+    value: p.deployed,
+    formatted: money(p.deployed)
+  },
+  {
+    label: "Available Capital",
+    value: p.available,
+    formatted: money(p.available)
+  }
+];
 
   const max =
     Math.max(
